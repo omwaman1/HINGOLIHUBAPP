@@ -42,11 +42,13 @@ android {
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/dev/\"")
         }
         release {
             isMinifyEnabled = true      // Enable code shrinking
             isShrinkResources = true    // Enable resource shrinking
             signingConfig = signingConfigs.getByName("release")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/api/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -71,6 +73,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     
     // Packaging options to exclude duplicate files

@@ -30,7 +30,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     
-    private const val BASE_URL = "https://hellohingoli.com/api/"
+    // Uses BuildConfig to switch between dev (debug) and prod (release) URLs
+    private val BASE_URL = com.hingoli.hub.BuildConfig.API_BASE_URL
     
     @Provides
     @Singleton
