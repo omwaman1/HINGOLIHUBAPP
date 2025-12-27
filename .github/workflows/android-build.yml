@@ -26,23 +26,34 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug
     
-    - name: Build Release APK
+    - name: Build Signed Release APK
       run: ./gradlew assembleRelease
     
     - name: Get version name
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
+    - name: Rename APKs with version
+      run: |
+        mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
+        mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
+    
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ steps.get_version.outputs.VERSION }}
+        name: Hingoli Hub ${{ steps.get_version.outputs.VERSION }}
         tag_name: ${{ github.ref_name }}
         draft: false
         prerelease: false
         files: |
-          app/build/outputs/apk/debug/app-debug.apk
-          app/build/outputs/apk/release/app-release-unsigned.apk
+          app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
+          app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
         generate_release_notes: true
+        body: |
+          ## Hingoli Hub ${{ steps.get_version.outputs.VERSION }}
+          
+          ### Downloads
+          - **Release APK** (Signed, for production): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk`
+          - **Debug APK** (For testing): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk`
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

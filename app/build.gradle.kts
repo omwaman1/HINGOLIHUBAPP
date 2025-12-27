@@ -11,6 +11,15 @@ android {
     namespace = "com.hingoli.hub"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../HINGOLIHUBKEY")
+            storePassword = "Som@1973"
+            keyAlias = "key0"
+            keyPassword = "Som@1973"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.hingoli.hub"
         minSdk = 26
@@ -37,6 +46,7 @@ android {
         release {
             isMinifyEnabled = true      // Enable code shrinking
             isShrinkResources = true    // Enable resource shrinking
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
