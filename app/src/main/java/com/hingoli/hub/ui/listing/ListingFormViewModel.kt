@@ -686,6 +686,20 @@ class ListingFormViewModel @Inject constructor(
                             addField("stock_qty", state.stockQty)
                         }
                         addField("sell_online", if (state.sellOnline) "1" else "0")
+                        
+                        // DEBUG: Log all selling fields
+                        Log.d("DebugNew", "=== SELLING NEW PRODUCT DEBUG ===")
+                        Log.d("DebugNew", "condition: ${state.condition}")
+                        Log.d("DebugNew", "title: ${state.title}")
+                        Log.d("DebugNew", "price: ${state.price}")
+                        Log.d("DebugNew", "discountedPrice: ${state.discountedPrice}")
+                        Log.d("DebugNew", "stockQty: ${state.stockQty}")
+                        Log.d("DebugNew", "sellOnline: ${state.sellOnline} -> sending: ${if (state.sellOnline) "1" else "0"}")
+                        Log.d("DebugNew", "categoryId: ${state.selectedCategory?.categoryId}")
+                        Log.d("DebugNew", "subcategoryId: ${state.selectedSubcategory?.categoryId}")
+                        Log.d("DebugNew", "selectedImageUri: ${state.selectedImageUri}")
+                        Log.d("DebugNew", "imagePart is null: ${imagePart == null}")
+                        Log.d("DebugNew", "=================================")
                     }
                     "business" -> {
                         // Use title as business name (they're the same field now)
@@ -701,6 +715,20 @@ class ListingFormViewModel @Inject constructor(
                     apiService.updateListing(state.listingId, requestMap, imagePart)
                 } else {
                     apiService.createListing(requestMap, imagePart)
+                }
+                
+                // DEBUG: Log API response
+                if (state.listingType == "selling") {
+                    Log.d("DebugNew", "=== API RESPONSE ===")
+                    Log.d("DebugNew", "HTTP Code: ${response.code()}")
+                    Log.d("DebugNew", "isSuccessful: ${response.isSuccessful}")
+                    Log.d("DebugNew", "body success: ${response.body()?.success}")
+                    Log.d("DebugNew", "body message: ${response.body()?.message}")
+                    Log.d("DebugNew", "body data: ${response.body()?.data}")
+                    if (!response.isSuccessful) {
+                        Log.d("DebugNew", "errorBody: ${response.errorBody()?.string()}")
+                    }
+                    Log.d("DebugNew", "====================")
                 }
                 
                 if (response.isSuccessful && response.body()?.success == true) {
