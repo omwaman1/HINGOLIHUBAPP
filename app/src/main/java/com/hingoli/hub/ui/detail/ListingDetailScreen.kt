@@ -1294,6 +1294,27 @@ private fun ShopProductGridCard(
                     contentScale = ContentScale.Crop
                 )
                 
+                // Condition Tag (OLD/NEW)
+                val isOld = product.condition == "old" || product.isOldProduct
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(4.dp)
+                        .background(
+                            color = if (isOld) Color(0xFFFF9800) else Color(0xFF4CAF50),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (isOld) "OLD" else "NEW",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 8.sp
+                    )
+                }
+                
                 // Delete button for owner
                 if (isOwner) {
                     IconButton(
