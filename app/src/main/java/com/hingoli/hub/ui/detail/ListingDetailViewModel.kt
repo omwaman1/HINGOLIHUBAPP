@@ -556,6 +556,17 @@ class ListingDetailViewModel @Inject constructor(
                     addField("subcategory_id", subcategoryId.toString())
                 }
                 
+                // DEBUG: Log all product fields
+                android.util.Log.d("DebugProduct", "=== ADD PRODUCT FROM BUSINESS DETAIL ===")
+                android.util.Log.d("DebugProduct", "listingId: $listingId")
+                android.util.Log.d("DebugProduct", "productName: $productName")
+                android.util.Log.d("DebugProduct", "price: $price")
+                android.util.Log.d("DebugProduct", "condition: $condition")
+                android.util.Log.d("DebugProduct", "sellOnline: $sellOnline")
+                android.util.Log.d("DebugProduct", "categoryId: $categoryId (sent as: ${if (condition == "new") "shop_category_id" else "category_id"})")
+                android.util.Log.d("DebugProduct", "subcategoryId: $subcategoryId")
+                android.util.Log.d("DebugProduct", "imageUri: $imageUri")
+                
                 // Handle image if provided
                 var imagePart: okhttp3.MultipartBody.Part? = null
                 if (imageUri != null) {
@@ -577,8 +588,20 @@ class ListingDetailViewModel @Inject constructor(
                         imagePart = okhttp3.MultipartBody.Part.createFormData("image", compressedFile.name, requestBody)
                     }
                 }
+                android.util.Log.d("DebugProduct", "imagePart is null: ${imagePart == null}")
+                android.util.Log.d("DebugProduct", "=========================================")
                 
                 val response = apiService.addBusinessProduct(requestMap, imagePart)
+                android.util.Log.d("DebugProduct", "=== API RESPONSE ===")
+                android.util.Log.d("DebugProduct", "HTTP Code: ${response.code()}")
+                android.util.Log.d("DebugProduct", "isSuccessful: ${response.isSuccessful}")
+                android.util.Log.d("DebugProduct", "success: ${response.body()?.success}")
+                android.util.Log.d("DebugProduct", "message: ${response.body()?.message}")
+                if (!response.isSuccessful) {
+                    android.util.Log.d("DebugProduct", "errorBody: ${response.errorBody()?.string()}")
+                }
+                android.util.Log.d("DebugProduct", "====================")
+                
                 if (response.isSuccessful && response.body()?.success == true) {
                     // Reload shop products
                     loadShopProducts(listingId)
@@ -588,6 +611,7 @@ class ListingDetailViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                android.util.Log.d("DebugProduct", "Add product EXCEPTION: ${e.message}")
                 _uiState.value = _uiState.value.copy(error = e.message)
             }
         }
