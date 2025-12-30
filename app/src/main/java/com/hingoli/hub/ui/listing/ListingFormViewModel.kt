@@ -634,7 +634,14 @@ class ListingFormViewModel @Inject constructor(
                 addField("listing_type", state.listingType)
                 addField("title", state.title)
                 addField("description", state.description)
-                state.selectedCategory?.let { addField("category_id", it.categoryId.toString()) }
+                
+                // For NEW products (selling), send shop_category_id since they use shop_categories table
+                // For OLD products and other types, send category_id as before
+                if (state.listingType == "selling" && state.condition == "new") {
+                    state.selectedCategory?.let { addField("shop_category_id", it.categoryId.toString()) }
+                } else {
+                    state.selectedCategory?.let { addField("category_id", it.categoryId.toString()) }
+                }
                 state.selectedSubcategory?.let { addField("subcategory_id", it.categoryId.toString()) }
                 
                 // Location fields - only for non-selling and non-services types
@@ -695,7 +702,7 @@ class ListingFormViewModel @Inject constructor(
                         Log.d("DebugNew", "discountedPrice: ${state.discountedPrice}")
                         Log.d("DebugNew", "stockQty: ${state.stockQty}")
                         Log.d("DebugNew", "sellOnline: ${state.sellOnline} -> sending: ${if (state.sellOnline) "1" else "0"}")
-                        Log.d("DebugNew", "categoryId: ${state.selectedCategory?.categoryId}")
+                        Log.d("DebugNew", "shop_category_id (for new): ${state.selectedCategory?.categoryId}")
                         Log.d("DebugNew", "subcategoryId: ${state.selectedSubcategory?.categoryId}")
                         Log.d("DebugNew", "selectedImageUri: ${state.selectedImageUri}")
                         Log.d("DebugNew", "imagePart is null: ${imagePart == null}")
