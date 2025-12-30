@@ -1006,7 +1006,7 @@ private fun GridShopProductCard(
 }
 
 /**
- * Social Media Footer with buttons for YouTube, Instagram, and Facebook pages
+ * Social Media Footer with buttons for YouTube, Instagram, Facebook and Play Store
  */
 @Composable
 private fun SocialMediaFooter(
@@ -1014,10 +1014,11 @@ private fun SocialMediaFooter(
 ) {
     val context = LocalContext.current
     
-    // Social media URLs - UPDATE THESE WITH YOUR ACTUAL PAGES
+    // URLs
     val youtubeUrl = "https://www.youtube.com/@hingolihub"
     val instagramUrl = "https://www.instagram.com/hingolihub"
     val facebookUrl = "https://www.facebook.com/hingolihub"
+    val playStoreUrl = "https://play.google.com/store/apps/details?id=com.hingoli.hub"
     
     Column(
         modifier = Modifier
@@ -1034,15 +1035,14 @@ private fun SocialMediaFooter(
             modifier = Modifier.padding(bottom = 12.dp)
         )
         
-        // Social Media Buttons - Vertical Stack
-        Column(
+        // First Row - YouTube & Instagram
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // YouTube Button
             SocialMediaButton(
-                iconSymbol = "▶",
+                modifier = Modifier.weight(1f),
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/1384/1384060.png",
                 label = "YouTube",
                 backgroundColor = Color(0xFFFF0000),
                 onClick = {
@@ -1051,9 +1051,9 @@ private fun SocialMediaFooter(
                 }
             )
             
-            // Instagram Button
             SocialMediaButton(
-                iconSymbol = "📷",
+                modifier = Modifier.weight(1f),
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/174/174855.png",
                 label = "Instagram",
                 backgroundColor = Color(0xFFE4405F),
                 onClick = {
@@ -1061,14 +1061,33 @@ private fun SocialMediaFooter(
                     context.startActivity(intent)
                 }
             )
-            
-            // Facebook Button
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Second Row - Facebook & Play Store
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             SocialMediaButton(
-                iconSymbol = "f",
+                modifier = Modifier.weight(1f),
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/124/124010.png",
                 label = "Facebook",
                 backgroundColor = Color(0xFF1877F2),
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(facebookUrl))
+                    context.startActivity(intent)
+                }
+            )
+            
+            SocialMediaButton(
+                modifier = Modifier.weight(1f),
+                iconUrl = "https://cdn-icons-png.flaticon.com/512/300/300218.png",
+                label = "Play Store",
+                backgroundColor = Color(0xFF01875F),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(playStoreUrl))
                     context.startActivity(intent)
                 }
             )
@@ -1080,47 +1099,48 @@ private fun SocialMediaFooter(
 }
 
 /**
- * Rectangular social media button with icon and name
+ * Social media button with icon from URL and name
  */
 @Composable
 private fun SocialMediaButton(
-    iconSymbol: String,
+    modifier: Modifier = Modifier,
+    iconUrl: String,
     label: String,
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth(0.7f)
+        modifier = modifier
             .height(48.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(10.dp),
         color = backgroundColor,
         shadowElevation = 4.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
-            Text(
-                text = iconSymbol,
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+            // Icon from URL
+            AsyncImage(
+                model = iconUrl,
+                contentDescription = label,
+                modifier = Modifier.size(22.dp),
+                contentScale = ContentScale.Fit
             )
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             
             // Label
             Text(
                 text = label,
                 color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
             )
         }
     }
