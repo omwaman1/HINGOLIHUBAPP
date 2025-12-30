@@ -98,6 +98,14 @@ class SharedDataRepository @Inject constructor(
     private val _subcategoriesByParent = MutableStateFlow<Map<Int, List<Category>>>(emptyMap())
     val subcategoriesByParent: StateFlow<Map<Int, List<Category>>> = _subcategoriesByParent
     
+    // Shop categories cache (for new products)
+    private val _shopCategories = MutableStateFlow<List<ShopCategory>>(emptyList())
+    val shopCategories: StateFlow<List<ShopCategory>> = _shopCategories
+    
+    // Shop subcategories indexed by parent ID for quick lookup
+    private val _shopSubcategoriesByParent = MutableStateFlow<Map<Int, List<ShopCategory>>>(emptyMap())
+    val shopSubcategoriesByParent: StateFlow<Map<Int, List<ShopCategory>>> = _shopSubcategoriesByParent
+    
     // Listings cache by type
     private val _servicesListings = MutableStateFlow<List<Listing>>(emptyList())
     val servicesListings: StateFlow<List<Listing>> = _servicesListings
@@ -501,13 +509,23 @@ class SharedDataRepository @Inject constructor(
     
     /**
      * Get shop categories (for NEW products)
-     * These are fetched from API, not prefetched.
+     * Uses cache if available, falls back to API call
      */
     suspend fun getShopCategories(): List<ShopCategory> {
+        // Return cached categories if available
+        if (_shopCategories.value.isNotEmpty()) {
+            Log.d(TAG, "📦 Using cached shop categories: ${_shopCategories.value.size}")
+            return _shopCategories.value
+        }
+        
+        // Fetch from API
+        Log.d(TAG, "🌐 Fetching shop categories from API")
         return try {
             val response = apiService.getShopCategories(level = 1)
             if (response.isSuccessful && response.body()?.success == true) {
-                response.body()?.data ?: emptyList()
+                val categories = response.body()?.data ?: emptyList()
+                _shopCategories.value = categories
+                categories
             } else {
                 Log.e(TAG, "Failed to fetch shop categories: ${response.message()}")
                 emptyList()
@@ -520,12 +538,27 @@ class SharedDataRepository @Inject constructor(
     
     /**
      * Get subcategories for a shop category (for NEW products)
+     * Uses cache if available, falls back to API call
      */
     suspend fun getShopSubcategories(parentId: Int): List<ShopCategory> {
+        // Return cached subcategories if available
+        val cached = _shopSubcategoriesByParent.value[parentId]
+        if (cached != null) {
+            Log.d(TAG, "📦 Using cached shop subcategories for parent $parentId: ${cached.size}")
+            return cached
+        }
+        
+        // Fetch from API
+        Log.d(TAG, "🌐 Fetching shop subcategories from API for parent $parentId")
         return try {
             val response = apiService.getShopSubcategories(parentId)
             if (response.isSuccessful && response.body()?.success == true) {
-                response.body()?.data ?: emptyList()
+                val subcats = response.body()?.data ?: emptyList()
+                // Update cache
+                val updatedMap = _shopSubcategoriesByParent.value.toMutableMap()
+                updatedMap[parentId] = subcats
+                _shopSubcategoriesByParent.value = updatedMap
+                subcats
             } else {
                 Log.e(TAG, "Failed to fetch shop subcategories: ${response.message()}")
                 emptyList()
@@ -680,6 +713,8 @@ class SharedDataRepository @Inject constructor(
         _oldCategories.value = emptyList()
         _oldSubcategoriesByParent.value = emptyMap()
         _subcategoriesByParent.value = emptyMap()
+        _shopCategories.value = emptyList()
+        _shopSubcategoriesByParent.value = emptyMap()
         _servicesListings.value = emptyList()
         _businessListings.value = emptyList()
         _jobsListings.value = emptyList()
