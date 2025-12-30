@@ -1,6 +1,5 @@
 ﻿package com.hingoli.hub.ui.product
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -148,8 +147,6 @@ fun ProductDetailScreen(
                     val productUserId = uiState.product!!.userId
                     val currentUserId = uiState.currentUserId
                     val isOwner = productUserId != null && productUserId == currentUserId
-                    
-                    Log.d("OldProductDebug", "🔍 Owner check - productUserId: $productUserId, currentUserId: $currentUserId, isOwner: $isOwner")
                     
                     // Show Call and Chat buttons for old products
                     ContactSellerBar(
