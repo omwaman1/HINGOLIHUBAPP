@@ -544,8 +544,13 @@ class ListingDetailViewModel @Inject constructor(
                 if (!description.isNullOrBlank()) {
                     addField("description", description)
                 }
+                // For NEW products, send shop_category_id; for OLD products, send category_id
                 if (categoryId != null) {
-                    addField("category_id", categoryId.toString())
+                    if (condition == "new") {
+                        addField("shop_category_id", categoryId.toString())
+                    } else {
+                        addField("category_id", categoryId.toString())
+                    }
                 }
                 if (subcategoryId != null) {
                     addField("subcategory_id", subcategoryId.toString())
@@ -591,9 +596,22 @@ class ListingDetailViewModel @Inject constructor(
     fun deleteBusinessProduct(productId: Long) {
         val listingId = currentListingId ?: return
         
+        // Find the product to get its condition
+        val product = _uiState.value.shopProducts.find { it.productId == productId }
+        val isOldProduct = product?.condition == "old" || product?.isOldProduct == true
+        
         viewModelScope.launch {
             try {
-                val response = apiService.deleteBusinessProduct(productId)
+                android.util.Log.d("DebugDelete", "deleteBusinessProduct - productId: $productId, isOldProduct: $isOldProduct, condition: ${product?.condition}")
+                
+                val response = if (isOldProduct) {
+                    // Old products use DELETE /old-products/{id}
+                    apiService.deleteOldProduct(productId)
+                } else {
+                    // New products use DELETE /products/{id}
+                    apiService.deleteBusinessProduct(productId)
+                }
+                
                 if (response.isSuccessful && response.body()?.success == true) {
                     // Update list locally
                     val updatedProducts = _uiState.value.shopProducts.filter { it.productId != productId }
