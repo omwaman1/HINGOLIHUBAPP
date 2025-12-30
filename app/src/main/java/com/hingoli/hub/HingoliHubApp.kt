@@ -55,7 +55,9 @@ class HingoliHubApp : Application() {
         
         // Clear caches when app closes
         imageCacheManager.clearSessionCache()
-        sharedDataRepository.clearCache()
+        applicationScope.launch {
+            sharedDataRepository.clearCache()
+        }
         imagePreloader.stopPreloading()
     }
 }
