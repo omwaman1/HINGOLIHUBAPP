@@ -75,7 +75,8 @@ fun ProductDetailScreen(
     
     Scaffold(
         topBar = {
-            val isOldProduct = uiState.product?.condition == "old"
+            // Check if this is an old product using the isOldProduct flag
+                    val isOldProduct = uiState.product?.isOldProduct == true
             TopAppBar(
                 title = { Text("Product Details") },
                 navigationIcon = {
@@ -140,7 +141,7 @@ fun ProductDetailScreen(
         },
         bottomBar = {
             if (uiState.product != null) {
-                val isOldProduct = uiState.product!!.condition == "old"
+                val isOldProduct = uiState.product!!.isOldProduct
                 if (isOldProduct && onCallClick != null && onChatClick != null) {
                     // Check if current user is the owner
                     val isOwner = uiState.product!!.userId != null && 
@@ -166,8 +167,8 @@ fun ProductDetailScreen(
                             }
                         }
                     )
-                } else {
-                    // Show cart/buy buttons for new products
+                } else if (uiState.product!!.sellOnline) {
+                    // Show cart/buy buttons for new products ONLY if sellOnline is true
                     BottomActionBar(
                         price = uiState.product!!.price,
                         discountedPrice = uiState.product!!.discountedPrice,
@@ -175,6 +176,10 @@ fun ProductDetailScreen(
                         onAddToCart = viewModel::addToCart,
                         onBuyNow = viewModel::buyNow
                     )
+                }
+                // If sellOnline is false and not old product, show "Contact for Purchase" bar
+                else {
+                    NotForSaleBar()
                 }
             }
         }
@@ -201,7 +206,7 @@ fun ProductDetailScreen(
                         quantity = uiState.quantity,
                         onIncrement = viewModel::incrementQuantity,
                         onDecrement = viewModel::decrementQuantity,
-                        isOldProduct = uiState.product!!.condition == "old",
+                        isOldProduct = uiState.product!!.isOldProduct,
                         reviews = uiState.reviews,
                         isLoadingReviews = uiState.isLoadingReviews,
                         reviewCount = uiState.reviewCount,
@@ -632,6 +637,42 @@ private fun BottomActionBar(
             ) {
                 Text("Buy Now", fontWeight = FontWeight.Bold)
             }
+        }
+    }
+}
+
+/**
+ * "Not For Sale" bar - shown when sellOnline is false
+ * Indicates product is display only, contact seller directly
+ */
+@Composable
+private fun NotForSaleBar() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shadowElevation = 8.dp,
+        color = Color(0xFFFEF3C7)  // Light amber/warning color
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = Color(0xFFB45309),  // Amber color
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Display Only - Contact Seller for Purchase",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFFB45309)
+            )
         }
     }
 }
