@@ -326,10 +326,11 @@ fun ListingFormScreen(
                                 OutlinedTextField(
                                     value = uiState.price,
                                     onValueChange = { viewModel.onPriceChange(it) },
-                                    label = { Text("Price (?)") },
+                                    label = { Text("Price (₹)") },
                                     placeholder = { Text("e.g. 500") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
+                                    leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                 )
                             }
                         }
