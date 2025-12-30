@@ -95,7 +95,7 @@ fun HomeScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = if (isMarathi) "??????? ??" else "HINGOLI HUB",
+                        text = if (isMarathi) "हिंगोली हब" else "HINGOLI HUB",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = Primary
@@ -171,7 +171,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
                                 Text(
-                                    text = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "???????" else "Hingoli",
+                                    text = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "हिंगोली" else "Hingoli",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                     color = OnSurface,
@@ -210,7 +210,7 @@ fun HomeScreen(
                                 },
                             placeholder = {
                                 Text(
-                                    text = if (isMarathi) "????, ???????, ????? ????..." else "Search services, business, jobs...",
+                                    text = if (isMarathi) "सेवा, व्यवसाय, नोकरी शोधा..." else "Search services, business, jobs...",
                                     color = OnSurfaceVariant,
                                     style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 1,
@@ -284,7 +284,7 @@ fun HomeScreen(
                 if (uiState.servicesListings.isNotEmpty()) {
                     item(key = "services_header") {
                         CategorySectionHeader(
-                            title = if (isMarathi) "??????? ????" else "Services in Hingoli",
+                            title = if (isMarathi) "हिंगोली सेवा" else "Services in Hingoli",
                             onViewAllClick = { onViewAllClick("services") },
                             accentColor = ColorServices,
                             isMarathi = isMarathi
@@ -303,7 +303,7 @@ fun HomeScreen(
                 if (uiState.shopProducts.isNotEmpty()) {
                     item(key = "shop_header") {
                         CategorySectionHeader(
-                            title = if (isMarathi) "??????" else "Shop Local Products",
+                            title = if (isMarathi) "खरेदी" else "Shop Local Products",
                             onViewAllClick = { onViewAllClick("shop") },
                             accentColor = ColorShop,
                             isMarathi = isMarathi
@@ -322,7 +322,7 @@ fun HomeScreen(
                 if (uiState.oldProducts.isNotEmpty()) {
                     item(key = "old_header") {
                         CategorySectionHeader(
-                            title = if (isMarathi) "?????? ????? ????? ??????" else "Buy Sell Old Things",
+                            title = if (isMarathi) "जुन्या वस्तू खरेदी विक्री" else "Buy Sell Old Things",
                             onViewAllClick = { onViewAllClick("old") },
                             accentColor = ColorRealEstate,
                             isMarathi = isMarathi
@@ -341,7 +341,7 @@ fun HomeScreen(
                 if (uiState.jobsListings.isNotEmpty()) {
                     item(key = "jobs_header") {
                         CategorySectionHeader(
-                            title = if (isMarathi) "????? ????" else "Find Jobs",
+                            title = if (isMarathi) "नोकरी शोधा" else "Find Jobs",
                             onViewAllClick = { onViewAllClick("jobs") },
                             accentColor = ColorJobs,
                             isMarathi = isMarathi
@@ -360,7 +360,7 @@ fun HomeScreen(
                 if (uiState.businessListings.isNotEmpty()) {
                     item(key = "business_header") {
                         CategorySectionHeader(
-                            title = if (isMarathi) "??????? ???????" else "Local Businesses",
+                            title = if (isMarathi) "स्थानिक व्यवसाय" else "Local Businesses",
                             onViewAllClick = { onViewAllClick("business") },
                             accentColor = ColorBusiness,
                             isMarathi = isMarathi
@@ -396,7 +396,7 @@ fun HomeScreen(
                 if (!hasListings) {
                     item(key = "empty") {
                         EmptyView(
-                            message = if (isMarathi) "??????? ???? ????? ????" else "No listings found"
+                            message = if (isMarathi) "सध्या कोणतीही जाहिरात नाही" else "No listings found"
                         )
                     }
                 }
@@ -433,7 +433,7 @@ private fun CategorySectionHeader(
             border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight)
         ) {
             Text(
-                text = if (isMarathi) "???? ???" else "View All",
+                text = if (isMarathi) "सर्व पहा" else "View All",
                 style = MaterialTheme.typography.bodySmall,
                 color = OnSurface,
                 fontWeight = FontWeight.Medium,

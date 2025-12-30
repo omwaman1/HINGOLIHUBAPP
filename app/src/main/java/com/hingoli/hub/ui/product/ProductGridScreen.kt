@@ -112,9 +112,9 @@ fun ProductGridScreen(
         topBar = {
             HingoliHubTopAppBar(
                 title = if (condition == "old") {
-                    if (isMarathi) "???? ????? ????? ??????" else "Buy Sell Old Things"
+                    if (isMarathi) "जुन्या वस्तू खरेदी विक्री" else "Buy Sell Old Things"
                 } else {
-                    if (isMarathi) "?????" else "Shop"
+                    if (isMarathi) "खरेदी" else "Shop"
                 },
                 showCitySelector = false,
                 isMarathi = isMarathi,
@@ -311,7 +311,7 @@ private fun SearchBarWithFilter(
                         Box {
                             if (query.isEmpty()) {
                                 Text(
-                                    text = if (isMarathi) "????? ????" else "Search products",
+                                    text = if (isMarathi) "उत्पादने शोधा" else "Search products",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color(0xFF9CA3AF)
                                 )
@@ -387,7 +387,7 @@ private fun CategoryChips(
         // "All" chip first - with Apps/Grid icon
         item {
             AllCategoryChip(
-                name = if (isMarathi) "????" else "All",
+                name = if (isMarathi) "सर्व" else "All",
                 isSelected = selectedCategoryId == null,
                 onClick = { onCategorySelected(null) }
             )

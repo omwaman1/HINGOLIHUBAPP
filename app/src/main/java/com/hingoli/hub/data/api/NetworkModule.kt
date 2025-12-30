@@ -64,8 +64,12 @@ object NetworkModule {
                                  originalRequest.body?.contentType() != null
             
             if (!hasContentType) {
-                requestBuilder.addHeader("Content-Type", "application/json")
+                requestBuilder.addHeader("Content-Type", "application/json; charset=utf-8")
             }
+            
+            // Always request UTF-8 encoded responses for proper Marathi/Unicode support
+            requestBuilder.addHeader("Accept-Charset", "UTF-8")
+            requestBuilder.addHeader("Accept", "application/json; charset=utf-8")
             
             chain.proceed(requestBuilder.build())
         }

@@ -89,13 +89,13 @@ fun JobsScreen(
         topBar = {
             HingoliHubTopAppBar(
                 title = if (isMarathi) {
-                    "${cityUiState.selectedCity?.nameMr ?: "???????"} ????? ???????"
+                    "${cityUiState.selectedCity?.nameMr ?: "हिंगोली"} मधील नोकऱ्या"
                 } else {
                     "Jobs in ${cityUiState.selectedCity?.name ?: "Hingoli"}"
                 },
                 onMenuClick = onMenuClick,
                 onCityClick = { showCityPicker = true },
-                cityName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "???????" else "Hingoli",
+                cityName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "हिंगोली" else "Hingoli",
                 isMarathi = isMarathi
             )
         }
@@ -121,7 +121,7 @@ fun JobsScreen(
                     modifier = Modifier.weight(1f),
                     placeholder = {
                         Text(
-                            text = if (isMarathi) "????? ????..." else "Search jobs...",
+                            text = if (isMarathi) "नोकरी शोधा..." else "Search jobs...",
                             color = OnSurfaceVariant
                         )
                     },
@@ -248,7 +248,7 @@ private fun CategoryFilterChips(
             onClick = { onCategorySelected(null) },
             label = { 
                 Text(
-                    text = if (isMarathi) "????" else "All",
+                    text = if (isMarathi) "सर्व" else "All",
                     fontWeight = if (selectedCategoryId == null) FontWeight.Bold else FontWeight.Normal
                 ) 
             },

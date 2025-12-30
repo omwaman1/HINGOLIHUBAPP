@@ -221,19 +221,19 @@ fun ListingFormScreen(
                                     label = "Listing Type *",
                                     selectedValue = displayValue,
                                     options = listOf(
-                                        "services" to "?? Services",
-                                        "selling_new" to "?? Sell New Product",
-                                        "selling_old" to "?? Sell Old Product",
-                                        "business" to "?? Business",
-                                        "jobs" to "?? Jobs"
+                                        "services" to "🔧 Services",
+                                        "selling_new" to "🛒 Sell New Product",
+                                        "selling_old" to "♻️ Sell Old Product",
+                                        "business" to "🏪 Business",
+                                        "jobs" to "💼 Jobs"
                                     ),
                                     onValueSelected = { viewModel.onListingTypeChange(it) }
                                 )
                             } else {
                                 // Show read-only type badge in edit mode
                                 val badgeText = when {
-                                    uiState.listingType == "selling" && uiState.condition == "new" -> "?? New Product"
-                                    uiState.listingType == "selling" && uiState.condition == "old" -> "?? Old Product"
+                                    uiState.listingType == "selling" && uiState.condition == "new" -> "✨ New Product"
+                                    uiState.listingType == "selling" && uiState.condition == "old" -> "♻️ Old Product"
                                     else -> "Type: ${uiState.listingType.replaceFirstChar { it.uppercase() }}"
                                 }
                                 val badgeColor = when {
