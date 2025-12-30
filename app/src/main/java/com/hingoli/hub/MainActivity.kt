@@ -333,6 +333,25 @@ fun MainScreen(
         }
     }
     
+    // Navigation helper - closes drawer and navigates to route
+    val navigateTo: (String, Boolean) -> Unit = { route, popToStart ->
+        scope.launch { drawerState.close() }
+        navController.navigate(route) {
+            if (popToStart) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            }
+            launchSingleTop = true
+        }
+    }
+    
+    // Navigation helper with auth check - only navigates if logged in
+    val navigateWithAuth: (String) -> Unit = { route ->
+        if (requireLogin()) {
+            scope.launch { drawerState.close() }
+            navController.navigate(route) { launchSingleTop = true }
+        }
+    }
+    
     // Logout handler
     val handleLogout: () -> Unit = {
         scope.launch {
@@ -395,86 +414,17 @@ fun MainScreen(
                         userPhone = currentUserPhone,
                         selectedLanguage = selectedLanguage,
                         onCloseClick = { scope.launch { drawerState.close() } },
-                        onEditProfileClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.EditProfile.route) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onHomeClick = {
-                            scope.launch { drawerState.close() }
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                            }
-                        },
-                        onChatsClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.ChatList.route) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onMyOrdersClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.Orders.route) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onMyListingsClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.MyListings.route) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onJobsClick = {
-                            scope.launch { drawerState.close() }
-                            navController.navigate(Screen.Jobs.route) {
-                                launchSingleTop = true
-                            }
-                        },
+                        onEditProfileClick = { navigateWithAuth(Screen.EditProfile.route) },
+                        onHomeClick = { navigateTo(Screen.Home.route, true) },
+                        onChatsClick = { navigateWithAuth(Screen.ChatList.route) },
+                        onMyOrdersClick = { navigateWithAuth(Screen.Orders.route) },
+                        onMyListingsClick = { navigateWithAuth(Screen.MyListings.route) },
+                        onJobsClick = { navigateTo(Screen.Jobs.route, false) },
                         // Registration & Selling callbacks
-                        onServiceRegistrationClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.PostListing.createRoute("services")) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onBusinessRegistrationClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.PostListing.createRoute("business")) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onSellNewProductClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.PostListing.createRouteWithCondition("selling", "new")) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onSellOldProductClick = {
-                            if (requireLogin()) {
-                                scope.launch { drawerState.close() }
-                                navController.navigate(Screen.PostListing.createRouteWithCondition("selling", "old")) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
+                        onServiceRegistrationClick = { navigateWithAuth(Screen.PostListing.createRoute("services")) },
+                        onBusinessRegistrationClick = { navigateWithAuth(Screen.PostListing.createRoute("business")) },
+                        onSellNewProductClick = { navigateWithAuth(Screen.PostListing.createRouteWithCondition("selling", "new")) },
+                        onSellOldProductClick = { navigateWithAuth(Screen.PostListing.createRouteWithCondition("selling", "old")) },
                         onHelpClick = {
                             if (requireLogin()) {
                                 scope.launch { 

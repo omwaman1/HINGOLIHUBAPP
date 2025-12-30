@@ -290,81 +290,49 @@ class ListingFormViewModel @Inject constructor(
             }
         }
     }
-    
     /**
-     * Load subcategories for shop categories (NEW products)
+     * Unified subcategory loading based on condition type.
+     * - condition "new": loads from shop_categories
+     * - condition "old": loads from old_categories  
+     * - other types: loads from regular listing categories
      */
-    private fun loadShopSubcategories(categoryId: Int) {
+    private fun loadSubcategoriesForCondition(categoryId: Int, conditionType: String) {
         viewModelScope.launch {
             try {
-                val shopSubcategories = sharedDataRepository.getShopSubcategories(categoryId)
-                val subcategories = shopSubcategories.map { it.toCategory() }
-                
-                val pendingSubId = _uiState.value.pendingSubcategoryId
-                val matchingSubcategory = if (pendingSubId != null) {
-                    subcategories.find { it.categoryId == pendingSubId }
-                } else null
-                
-                _uiState.value = _uiState.value.copy(
-                    subcategories = subcategories,
-                    selectedSubcategory = matchingSubcategory
-                )
-            } catch (e: Exception) {
-                // Silent fail - subcategories not critical
-            }
-        }
-    }
-    
-    /**
-     * Load subcategories for old_categories (OLD/used products)
-     */
-    private fun loadOldSubcategories(categoryId: Int) {
-        viewModelScope.launch {
-            try {
-                val oldSubcategories = sharedDataRepository.getOldSubcategories(categoryId)
-                val subcategories = oldSubcategories.map { 
-                    Category(
-                        categoryId = it.id,
-                        parentId = it.parentId,
-                        name = it.name,
-                        nameMr = it.nameMr,
-                        slug = it.slug,
-                        listingType = "old",
-                        iconUrl = it.imageUrl,
-                        imageUrl = it.imageUrl,
-                        description = null,
-                        listingCount = 0,
-                        depth = 1
-                    )
+                val subcategories = when (conditionType) {
+                    "new" -> {
+                        // Load shop subcategories for NEW products
+                        sharedDataRepository.getShopSubcategories(categoryId).map { it.toCategory() }
+                    }
+                    "old" -> {
+                        // Load old_categories subcategories for OLD/used products
+                        sharedDataRepository.getOldSubcategories(categoryId).map { 
+                            Category(
+                                categoryId = it.id,
+                                parentId = it.parentId,
+                                name = it.name,
+                                nameMr = it.nameMr,
+                                slug = it.slug,
+                                listingType = "old",
+                                iconUrl = it.imageUrl,
+                                imageUrl = it.imageUrl,
+                                description = null,
+                                listingCount = 0,
+                                depth = 1
+                            )
+                        }
+                    }
+                    else -> {
+                        // Load regular listing subcategories
+                        sharedDataRepository.getSubcategoriesForParent(categoryId)
+                    }
                 }
                 
+                // Match pending subcategory if editing
                 val pendingSubId = _uiState.value.pendingSubcategoryId
-                val matchingSubcategory = if (pendingSubId != null) {
-                    subcategories.find { it.categoryId == pendingSubId }
-                } else null
-                
-                _uiState.value = _uiState.value.copy(
-                    subcategories = subcategories,
-                    selectedSubcategory = matchingSubcategory
-                )
-            } catch (e: Exception) {
-                // Silent fail - subcategories not critical
-            }
-        }
-    }
-    
-    /**
-     * Load subcategories from SharedDataRepository cache
-     */
-    private fun loadSubcategories(categoryId: Int) {
-        viewModelScope.launch {
-            try {
-                val subcategories = sharedDataRepository.getSubcategoriesForParent(categoryId)
-                
-                val pendingSubId = _uiState.value.pendingSubcategoryId
-                val matchingSubcategory = if (pendingSubId != null) {
-                    subcategories.find { it.categoryId == pendingSubId }
-                } else null
+                val matchingSubcategory = pendingSubId?.let { id ->
+                    subcategories.find { it.categoryId == id }
+                }
                 
                 _uiState.value = _uiState.value.copy(
                     subcategories = subcategories,
@@ -486,18 +454,10 @@ class ListingFormViewModel @Inject constructor(
             subcategories = emptyList(),
             error = null
         )
-        // Load subcategories based on listing type and condition
+        // Load subcategories based on condition type
         val condition = _uiState.value.condition
-        if (_uiState.value.listingType == "selling" && condition == "new") {
-            // NEW products use shop_categories subcategories
-            loadShopSubcategories(category.categoryId)
-        } else if (_uiState.value.listingType == "selling" && condition == "old") {
-            // OLD products use old_categories subcategories
-            loadOldSubcategories(category.categoryId)
-        } else {
-            // Other listing types use regular subcategories
-            loadSubcategories(category.categoryId)
-        }
+        val conditionType = if (_uiState.value.listingType == "selling") condition else "other"
+        loadSubcategoriesForCondition(category.categoryId, conditionType)
     }
     
     fun onSubcategorySelected(subcategory: Category) {
