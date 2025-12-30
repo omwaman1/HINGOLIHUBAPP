@@ -171,7 +171,7 @@ fun MyListingsScreen(
                                             onEditClick(listing.listingId)
                                         }
                                     },
-                                    onDeleteClick = { viewModel.deleteListing(listing.listingId, listing.listingType) }
+                                    onDeleteClick = { viewModel.deleteListing(listing.listingId, listing.listingType, listing.condition) }
                                 )
                             }
                             

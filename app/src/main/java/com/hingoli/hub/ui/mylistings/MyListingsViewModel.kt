@@ -98,23 +98,32 @@ class MyListingsViewModel @Inject constructor(
         }
     }
 
-    fun deleteListing(listingId: Long, listingType: String) {
+    fun deleteListing(listingId: Long, listingType: String, condition: String? = null) {
         viewModelScope.launch {
             try {
                 // DEBUG: Log delete request
                 android.util.Log.d("DebugDelete", "=== DELETE REQUEST ===")
                 android.util.Log.d("DebugDelete", "listingId: $listingId")
                 android.util.Log.d("DebugDelete", "listingType: $listingType")
+                android.util.Log.d("DebugDelete", "condition: $condition")
                 
-                // Route to correct endpoint based on listing type
-                val result = if (listingType == "selling") {
-                    // Products use DELETE /products/{id}
-                    android.util.Log.d("DebugDelete", "Using deleteProduct endpoint")
-                    sharedDataRepository.deleteProduct(listingId)
-                } else {
-                    // Regular listings use DELETE /listings/{id}
-                    android.util.Log.d("DebugDelete", "Using deleteListing endpoint")
-                    listingRepository.deleteListing(listingId)
+                // Route to correct endpoint based on listing type and condition
+                val result = when {
+                    listingType == "selling" && condition == "old" -> {
+                        // Old products use DELETE /old-products/{id}
+                        android.util.Log.d("DebugDelete", "Using deleteOldProduct endpoint")
+                        sharedDataRepository.deleteOldProduct(listingId)
+                    }
+                    listingType == "selling" -> {
+                        // New products use DELETE /products/{id}
+                        android.util.Log.d("DebugDelete", "Using deleteProduct endpoint (new)")
+                        sharedDataRepository.deleteProduct(listingId)
+                    }
+                    else -> {
+                        // Regular listings use DELETE /listings/{id}
+                        android.util.Log.d("DebugDelete", "Using deleteListing endpoint")
+                        listingRepository.deleteListing(listingId)
+                    }
                 }
                 
                 result.fold(
