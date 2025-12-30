@@ -491,7 +491,8 @@ fun ListingFormScreen(
                                         label = { Text("Min Price (₹)") },
                                         placeholder = { Text("e.g. 100") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = uiState.priceMax,
@@ -499,7 +500,8 @@ fun ListingFormScreen(
                                         label = { Text("Max Price (₹)") },
                                         placeholder = { Text("e.g. 5000") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
                             }
@@ -519,13 +521,15 @@ fun ListingFormScreen(
                                         value = uiState.salaryMin,
                                         onValueChange = { viewModel.onSalaryMinChange(it) },
                                         label = { Text("Min Salary") },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = uiState.salaryMax,
                                         onValueChange = { viewModel.onSalaryMaxChange(it) },
                                         label = { Text("Max Salary") },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
                             }
@@ -581,13 +585,15 @@ fun ListingFormScreen(
                                         value = uiState.vacancies,
                                         onValueChange = { viewModel.onVacanciesChange(it) },
                                         label = { Text("Vacancies") },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = uiState.experienceRequired,
                                         onValueChange = { viewModel.onExperienceRequiredChange(it) },
                                         label = { Text("Experience (Years)") },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
                             }
@@ -638,10 +644,11 @@ fun ListingFormScreen(
                                     OutlinedTextField(
                                         value = uiState.discountedPrice,
                                         onValueChange = { viewModel.onDiscountedPriceChange(it) },
-                                        label = { Text("MRP (?)") },
+                                        label = { Text("MRP (₹)") },
                                         placeholder = { Text("Original price") },
                                         modifier = Modifier.weight(1f),
-                                        singleLine = true
+                                        singleLine = true,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = uiState.stockQty,
@@ -649,7 +656,8 @@ fun ListingFormScreen(
                                         label = { Text("Stock Qty") },
                                         placeholder = { Text("Available") },
                                         modifier = Modifier.weight(1f),
-                                        singleLine = true
+                                        singleLine = true,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
                             }
