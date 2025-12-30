@@ -642,7 +642,7 @@ private fun ShopProductCard(
                 ) {
                     // Current Price (green)
                     Text(
-                        text = "?${String.format("%,.0f", product.price)}",
+                        text = "₹${String.format("%,.0f", product.price)}",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF22C55E) // Green color
@@ -652,7 +652,7 @@ private fun ShopProductCard(
                     product.discountedPrice?.let { originalPrice ->
                         if (originalPrice > product.price) {
                             Text(
-                                text = "?${String.format("%,.0f", originalPrice)}",
+                                text = "₹${String.format("%,.0f", originalPrice)}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF9CA3AF),
                                 textDecoration = TextDecoration.LineThrough

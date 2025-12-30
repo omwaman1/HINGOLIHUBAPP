@@ -567,9 +567,9 @@ private fun ExperienceSection(listing: Listing) {
                 Text(
                     text = when {
                         priceMin != null && priceMax != null -> 
-                            "?${String.format("%,.0f", priceMin)} - ?${String.format("%,.0f", priceMax)}"
-                        priceMin != null -> "From ?${String.format("%,.0f", priceMin)}"
-                        priceMax != null -> "Up to ?${String.format("%,.0f", priceMax)}"
+                            "₹${String.format("%,.0f", priceMin)} - ₹${String.format("%,.0f", priceMax)}"
+                        priceMin != null -> "From ₹${String.format("%,.0f", priceMin)}"
+                        priceMax != null -> "Up to ₹${String.format("%,.0f", priceMax)}"
                         else -> ""
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -622,9 +622,9 @@ private fun JobDetailsSection(listing: Listing) {
                     label = "Salary",
                     value = when {
                         salaryMin != null && salaryMax != null -> 
-                            "?${String.format("%,.0f", salaryMin)} - ?${String.format("%,.0f", salaryMax)} / $salaryPeriod"
-                        salaryMin != null -> "?${String.format("%,.0f", salaryMin)} / $salaryPeriod"
-                        salaryMax != null -> "Up to ?${String.format("%,.0f", salaryMax)} / $salaryPeriod"
+                            "₹${String.format("%,.0f", salaryMin)} - ₹${String.format("%,.0f", salaryMax)} / $salaryPeriod"
+                        salaryMin != null -> "₹${String.format("%,.0f", salaryMin)} / $salaryPeriod"
+                        salaryMax != null -> "Up to ₹${String.format("%,.0f", salaryMax)} / $salaryPeriod"
                         else -> ""
                     }
                 )
@@ -1326,7 +1326,7 @@ private fun ShopProductGridCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 
                 Text(
-                    text = "?${String.format("%,.0f", product.price)}",
+                    text = "₹${String.format("%,.0f", product.price)}",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = Primary
@@ -1444,7 +1444,7 @@ private fun PriceListItemCard(
             }
             
             Text(
-                text = "?${String.format("%,.0f", item.price)}",
+                text = "₹${String.format("%,.0f", item.price)}",
                 style = MaterialTheme.typography.titleMedium,
                 color = OnSurface,
                 fontWeight = FontWeight.Bold
