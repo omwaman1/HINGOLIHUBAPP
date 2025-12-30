@@ -1,5 +1,6 @@
 ﻿package com.hingoli.hub.ui.product
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
