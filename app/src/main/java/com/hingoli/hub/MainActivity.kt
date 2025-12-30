@@ -75,6 +75,9 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     @Inject
     lateinit var apiService: com.hingoli.hub.data.api.ApiService
     
+    @Inject
+    lateinit var sharedDataRepository: com.hingoli.hub.data.repository.SharedDataRepository
+    
     // Permission launcher for notifications (Android 13+)
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -345,6 +348,8 @@ fun MainScreen(
     val handleLogout: () -> Unit = {
         scope.launch {
             authRepository.logout()
+            // Clear all cached data to prevent data leakage between users
+            sharedDataRepository.clearCache()
             // Clear user state
             currentUserName = null
             currentUserPhone = null
