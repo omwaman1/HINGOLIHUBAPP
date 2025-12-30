@@ -601,43 +601,27 @@ fun ListingFormScreen(
                             item {
                                 FormSectionHeader("📦 Product Details")
                             }
-                            // Hide condition dropdown when:
-                            // 1. Condition is pre-set from navigation (Sell Old/New tabs)
-                            // 2. Editing an existing product (listingId != null)
-                            val isConditionLocked = condition != null || (listingId != null && listingId > 0)
-                            
-                            if (!isConditionLocked) {
-                                // Show dropdown when creating a new product without pre-set condition
-                                item {
-                                    FormDropdownField(
-                                        label = "Condition *",
-                                        selectedValue = uiState.condition,
-                                        options = listOf(
-                                            "new" to "✨ New (Brand New / Unused)",
-                                            "old" to "♻️ Old (Used / Second Hand)"
-                                        ),
-                                        onValueSelected = { viewModel.onConditionChange(it) }
+                            // Condition is ALWAYS locked for selling type because:
+                            // 1. User selects "Sell New Product" or "Sell Old Product" from listing type dropdown
+                            // 2. This automatically sets the condition, no need for separate dropdown
+                            // 3. For edit mode, condition cannot be changed
+                            // Show read-only condition badge
+                            item {
+                                Card(
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (uiState.condition == "new") 
+                                            Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(
+                                        text = if (uiState.condition == "new") 
+                                            "✨ New Product" else "♻️ Old / Used Product",
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (uiState.condition == "new") 
+                                            Color(0xFF166534) else Color(0xFFB45309)
                                     )
-                                }
-                            } else {
-                                // Show read-only condition badge when pre-set or editing
-                                item {
-                                    Card(
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = if (uiState.condition == "new") 
-                                                Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            text = if (uiState.condition == "new") 
-                                                "✨ New Product" else "♻️ Old / Used Product",
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                            fontWeight = FontWeight.Medium,
-                                            color = if (uiState.condition == "new") 
-                                                Color(0xFF166534) else Color(0xFFB45309)
-                                        )
-                                    }
                                 }
                             }
                             // MRP and Stock Quantity row
