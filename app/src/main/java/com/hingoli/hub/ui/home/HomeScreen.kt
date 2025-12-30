@@ -1,4 +1,4 @@
-package com.hingoli.hub.ui.home
+﻿package com.hingoli.hub.ui.home
 
 import android.content.Intent
 import android.net.Uri
@@ -596,13 +596,13 @@ private fun HomeListingCard(
                             val min = listing.salaryMin
                             val max = listing.salaryMax
                             when {
-                                min != null && max != null -> "? ${String.format("%,.0f", min)} - ${String.format("%,.0f", max)}"
-                                min != null -> "? ${String.format("%,.0f", min)}+"
-                                max != null -> "Up to ? ${String.format("%,.0f", max)}"
+                                min != null && max != null -> "₹ ${String.format("%,.0f", min)} - ${String.format("%,.0f", max)}"
+                                min != null -> "₹ ${String.format("%,.0f", min)}+"
+                                max != null -> "Up to ₹ ${String.format("%,.0f", max)}"
                                 else -> "Contact"
                             }
                         }
-                        listing.price != null -> "? ${String.format("%,.0f", listing.price)}"
+                        listing.price != null -> "₹ ${String.format("%,.0f", listing.price)}"
                         else -> "Contact"
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -685,14 +685,14 @@ private fun HomeShopProductCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "?${String.format("%,.0f", product.discountedPrice)}",
+                            text = "₹${String.format("%,.0f", product.discountedPrice)}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = accentColor
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "?${String.format("%,.0f", product.price)}",
+                            text = "₹${String.format("%,.0f", product.price)}",
                             style = MaterialTheme.typography.labelSmall,
                             color = OnSurfaceVariant,
                             textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
@@ -700,7 +700,7 @@ private fun HomeShopProductCard(
                     }
                 } else {
                     Text(
-                        text = "?${String.format("%,.0f", product.price)}",
+                        text = "₹${String.format("%,.0f", product.price)}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = accentColor
@@ -839,13 +839,13 @@ private fun GridListingCard(
                         val min = listing.salaryMin
                         val max = listing.salaryMax
                         when {
-                            min != null && max != null -> "?${String.format("%,.0f", min)} - ${String.format("%,.0f", max)}"
-                            min != null -> "?${String.format("%,.0f", min)}+"
-                            max != null -> "Up to ?${String.format("%,.0f", max)}"
+                            min != null && max != null -> "₹${String.format("%,.0f", min)} - ${String.format("%,.0f", max)}"
+                            min != null -> "₹${String.format("%,.0f", min)}+"
+                            max != null -> "Up to ₹${String.format("%,.0f", max)}"
                             else -> "Contact"
                         }
                     }
-                    else -> if (listing.price != null) "?${String.format("%,.0f", listing.price)}" else "Contact"
+                    else -> if (listing.price != null) "₹${String.format("%,.0f", listing.price)}" else "Contact"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
@@ -993,9 +993,9 @@ private fun GridShopProductCard(
             // Price
             Text(
                 text = if (product.discountedPrice != null && product.discountedPrice < product.price) {
-                    "?${String.format("%,.0f", product.discountedPrice)}"
+                    "\u20b9${String.format("%,.0f", product.discountedPrice)}"
                 } else {
-                    "?${String.format("%,.0f", product.price)}"
+                    "\u20b9${String.format("%,.0f", product.price)}"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
