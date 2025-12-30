@@ -55,8 +55,6 @@ fun AppNavigation(
     authRepository: AuthRepository? = null,
     sellingCondition: String = "old"
 ) {
-    android.util.Log.d("DrawerDebug", "🧭 AppNavigation composing - startDest=$startDestination")
-    
     NavHost(
         navController = navController,
         startDestination = startDestination

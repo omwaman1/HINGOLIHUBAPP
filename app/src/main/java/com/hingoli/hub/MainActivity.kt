@@ -279,16 +279,6 @@ fun MainScreen(
         )
     }
     
-    // DEBUG: Log drawer state changes
-    LaunchedEffect(drawerState.currentValue) {
-        Log.d("DrawerDebug", "🔄 Drawer state changed to: ${drawerState.currentValue}")
-    }
-    
-    // DEBUG: Log current destination changes
-    LaunchedEffect(currentDestination?.route) {
-        Log.d("DrawerDebug", "📍 Current destination: ${currentDestination?.route}")
-    }
-    
     // User state - refreshes when navigation changes
     var currentUserName by remember { mutableStateOf(userName) }
     var currentUserPhone by remember { mutableStateOf(userPhone) }
@@ -323,9 +313,6 @@ fun MainScreen(
     
     // Drawer enabled except on login screen
     val showDrawer = currentDestination?.route != Screen.Login.route
-    
-    // DEBUG: Log key values
-    Log.d("DrawerDebug", "📊 showBottomBar=$showBottomBar, showDrawer=$showDrawer, route=${currentDestination?.route}")
     
     // Track login state
     var isLoggedIn by remember { mutableStateOf(currentUserName != null) }
@@ -385,10 +372,8 @@ fun MainScreen(
         scope.launch { drawerState.close() }
     }
     
-    Log.d("DrawerDebug", "🎨 MainScreen recomposing - showDrawer=$showDrawer")
     
     if (showDrawer) {
-        Log.d("DrawerDebug", "✅ Rendering ModalNavigationDrawer")
         
         // Handle back button press - close drawer if open (must be inside the drawer scope)
         BackHandler(enabled = drawerState.isOpen) {
@@ -399,7 +384,6 @@ fun MainScreen(
             drawerState = drawerState,
             gesturesEnabled = showBottomBar,
             drawerContent = {
-                Log.d("DrawerDebug", "📦 Drawer content composing")
                 ModalDrawerSheet(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -420,7 +404,6 @@ fun MainScreen(
                             }
                         },
                         onHomeClick = {
-                            Log.d("DrawerDebug", "🏠 Home clicked")
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -430,7 +413,6 @@ fun MainScreen(
                             }
                         },
                         onChatsClick = {
-                            Log.d("DrawerDebug", "💬 Chats clicked")
                             if (requireLogin()) {
                                 scope.launch { drawerState.close() }
                                 navController.navigate(Screen.ChatList.route) {
@@ -455,7 +437,6 @@ fun MainScreen(
                             }
                         },
                         onJobsClick = {
-                            Log.d("DrawerDebug", "💼 Jobs clicked")
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Jobs.route) {
                                 launchSingleTop = true
@@ -576,7 +557,6 @@ fun MainScreen(
                 showBottomBar = showBottomBar,
                 currentDestination = currentDestination,
                 onMenuClick = { 
-                    Log.d("DrawerDebug", "☰ Menu icon clicked - opening drawer")
                     scope.launch { drawerState.open() } 
                 },
                 selectedLanguage = selectedLanguage,
@@ -608,9 +588,6 @@ private fun MainScaffold(
     settingsManager: SettingsManager? = null,
     authRepository: AuthRepository? = null
 ) {
-    // DEBUG: Log MainScaffold composition
-    Log.d("DrawerDebug", "🏗️ MainScaffold composing - showBottomBar=$showBottomBar, startDest=$startDestination, currentDest=${currentDestination?.route}")
-    
     // State for selling condition toggle (old/new)
     var sellingCondition by remember { mutableStateOf("old") }
     
