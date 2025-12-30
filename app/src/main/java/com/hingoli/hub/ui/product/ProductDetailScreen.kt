@@ -144,8 +144,11 @@ fun ProductDetailScreen(
                 val isOldProduct = uiState.product!!.isOldProduct
                 if (isOldProduct && onCallClick != null && onChatClick != null) {
                     // Check if current user is the owner
-                    val isOwner = uiState.product!!.userId != null && 
-                                  uiState.product!!.userId == uiState.currentUserId
+                    val productUserId = uiState.product!!.userId
+                    val currentUserId = uiState.currentUserId
+                    val isOwner = productUserId != null && productUserId == currentUserId
+                    
+                    Log.d("OldProductDebug", "🔍 Owner check - productUserId: $productUserId, currentUserId: $currentUserId, isOwner: $isOwner")
                     
                     // Show Call and Chat buttons for old products
                     ContactSellerBar(

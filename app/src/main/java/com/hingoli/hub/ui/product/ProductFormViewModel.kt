@@ -144,15 +144,20 @@ private fun loadCategoriesForCondition() {
     val uiState: StateFlow<ProductFormUiState> = _uiState.asStateFlow()
     
     fun loadProduct(productId: Long) {
+        Log.d("OldProductDebug", "📥 Loading product for edit: $productId")
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
                 val response = apiService.getShopProduct(productId)
+                Log.d("OldProductDebug", "📥 API response success: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body()?.success == true) {
                     val product = response.body()?.data
                     if (product != null) {
                         // Use isOldProduct flag to determine product type
                         val isOldProduct = product.isOldProduct
+                        Log.d("OldProductDebug", "📦 Product loaded - isOldProduct: $isOldProduct")
+                        Log.d("OldProductDebug", "📦 API returned - categoryId: ${product.categoryId}, shopCategoryId: ${product.shopCategoryId}, subcategoryId: ${product.subcategoryId}")
+                        
                         // Map the condition - for old products use "old", for new use actual condition
                         val productCondition = if (isOldProduct) "old" else (product.condition ?: "new")
                         
@@ -163,6 +168,7 @@ private fun loadCategoriesForCondition() {
                         } else {
                             product.categoryId
                         }
+                        Log.d("OldProductDebug", "📦 Selected categoryId for form: $selectedCategoryId")
                         
                         // First, update condition and basic product info
                         _uiState.value = _uiState.value.copy(
@@ -220,12 +226,15 @@ private fun loadCategoriesForCondition() {
                         
                         // Load subcategories for selected category
                         if (validCategoryId != null) {
+                            Log.d("OldProductDebug", "🔍 Loading subcategories for validCategoryId: $validCategoryId, isOldProduct: $isOldProduct")
                             val subcats = if (!isOldProduct) {
                                 val shopSubcats = sharedDataRepository.getShopSubcategories(validCategoryId)
+                                Log.d("OldProductDebug", "📦 Loaded ${shopSubcats.size} shop subcategories")
                                 shopSubcats.map { it.toCategory() }
                             } else {
                                 // Load old_categories subcategories
                                 val oldSubcats = sharedDataRepository.getOldSubcategories(validCategoryId)
+                                Log.d("OldProductDebug", "📦 Loaded ${oldSubcats.size} old subcategories: ${oldSubcats.map { "${it.id}:${it.name}" }}")
                                 oldSubcats.map { 
                                     Category(
                                         categoryId = it.id,
@@ -242,6 +251,7 @@ private fun loadCategoriesForCondition() {
                                     )
                                 }
                             }
+                            Log.d("OldProductDebug", "📦 Setting subcategoryId in state: ${product.subcategoryId}")
                             _uiState.value = _uiState.value.copy(subcategories = subcats)
                         }
                     } else {
