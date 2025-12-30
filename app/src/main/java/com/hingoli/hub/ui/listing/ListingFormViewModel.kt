@@ -319,9 +319,11 @@ class ListingFormViewModel @Inject constructor(
      * Load subcategories for old_categories (OLD/used products)
      */
     private fun loadOldSubcategories(categoryId: Int) {
+        Log.d("OldProductDebug", "🔍 Loading old subcategories for category: $categoryId")
         viewModelScope.launch {
             try {
                 val oldSubcategories = sharedDataRepository.getOldSubcategories(categoryId)
+                Log.d("OldProductDebug", "📦 Loaded ${oldSubcategories.size} old subcategories")
                 val subcategories = oldSubcategories.map { 
                     Category(
                         categoryId = it.id,
@@ -670,6 +672,10 @@ class ListingFormViewModel @Inject constructor(
                 }
                 
                 // Common fields
+                Log.d("OldProductDebug", "📤 Submitting listing - type: ${state.listingType}, condition: ${state.condition}")
+                Log.d("OldProductDebug", "📤 Category: ${state.selectedCategory?.categoryId} (${state.selectedCategory?.name})")
+                Log.d("OldProductDebug", "📤 Subcategory: ${state.selectedSubcategory?.categoryId} (${state.selectedSubcategory?.name})")
+                
                 addField("listing_type", state.listingType)
                 addField("title", state.title)
                 addField("description", state.description)
@@ -742,8 +748,12 @@ class ListingFormViewModel @Inject constructor(
                     apiService.createListing(requestMap, imagePart)
                 }
                 
+                Log.d("OldProductDebug", "📥 API Response - success: ${response.isSuccessful}, code: ${response.code()}")
+                Log.d("OldProductDebug", "📥 Response body: ${response.body()}")
+                
                 if (response.isSuccessful && response.body()?.success == true) {
                     val successMsg = response.body()?.message ?: "Success"
+                    Log.d("OldProductDebug", "✅ Listing created successfully: $successMsg")
                     _uiState.value = _uiState.value.copy(
                         isSubmitting = false,
                         isSuccess = true,
