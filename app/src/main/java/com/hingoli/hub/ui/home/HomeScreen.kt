@@ -1034,15 +1034,15 @@ private fun SocialMediaFooter(
             modifier = Modifier.padding(bottom = 12.dp)
         )
         
-        // Social Media Buttons Row
-        Row(
+        // Social Media Buttons - Vertical Stack
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // YouTube Button
             SocialMediaButton(
-                iconResName = "youtube",
+                iconSymbol = "▶",
                 label = "YouTube",
                 backgroundColor = Color(0xFFFF0000),
                 onClick = {
@@ -1051,11 +1051,9 @@ private fun SocialMediaFooter(
                 }
             )
             
-            Spacer(modifier = Modifier.width(16.dp))
-            
             // Instagram Button
             SocialMediaButton(
-                iconResName = "instagram",
+                iconSymbol = "📷",
                 label = "Instagram",
                 backgroundColor = Color(0xFFE4405F),
                 onClick = {
@@ -1064,11 +1062,9 @@ private fun SocialMediaFooter(
                 }
             )
             
-            Spacer(modifier = Modifier.width(16.dp))
-            
             // Facebook Button
             SocialMediaButton(
-                iconResName = "facebook",
+                iconSymbol = "f",
                 label = "Facebook",
                 backgroundColor = Color(0xFF1877F2),
                 onClick = {
@@ -1083,49 +1079,49 @@ private fun SocialMediaFooter(
     }
 }
 
+/**
+ * Rectangular social media button with icon and name
+ */
 @Composable
 private fun SocialMediaButton(
-    iconResName: String,
+    iconSymbol: String,
     label: String,
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth(0.7f)
+            .height(48.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        color = backgroundColor,
+        shadowElevation = 4.dp
     ) {
-        Surface(
+        Row(
             modifier = Modifier
-                .size(56.dp)
-                .clickable { onClick() },
-            shape = RoundedCornerShape(12.dp),
-            color = backgroundColor,
-            shadowElevation = 4.dp
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Use text icon since we don't have drawable resources
-                Text(
-                    text = when (iconResName) {
-                        "youtube" -> "▶"
-                        "instagram" -> "◎"
-                        "facebook" -> "f"
-                        else -> "•"
-                    },
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            // Icon
+            Text(
+                text = iconSymbol,
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Label
+            Text(
+                text = label,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = OnSurfaceVariant
-        )
     }
 }
