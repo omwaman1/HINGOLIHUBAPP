@@ -232,7 +232,7 @@ class ListingFormViewModel @Inject constructor(
                     )
                     
                     if (matchingCategory != null) {
-                        loadShopSubcategories(matchingCategory.categoryId)
+                        loadSubcategoriesForCondition(matchingCategory.categoryId, "new")
                     }
                 } else if (listingType == "selling" && condition == "old") {
                     // For OLD products (selling), use old_categories table
@@ -264,7 +264,7 @@ class ListingFormViewModel @Inject constructor(
                     )
                     
                     if (matchingCategory != null) {
-                        loadOldSubcategories(matchingCategory.categoryId)
+                        loadSubcategoriesForCondition(matchingCategory.categoryId, "old")
                     }
                 } else {
                     // For other listing types (services, business, jobs), use regular categories
@@ -282,7 +282,7 @@ class ListingFormViewModel @Inject constructor(
                     )
                     
                     if (matchingCategory != null) {
-                        loadSubcategories(matchingCategory.categoryId)
+                        loadSubcategoriesForCondition(matchingCategory.categoryId, "other")
                     }
                 }
             } catch (e: Exception) {
