@@ -137,8 +137,9 @@ fun ListingFormScreen(
         }
     }
     
-    // Initialize based on mode
-    LaunchedEffect(listingId, listingType, condition) {
+    // Initialize based on mode - Use Unit key to ensure this runs on every composition
+    // This is necessary because the ViewModel persists for the navigation destination
+    LaunchedEffect(Unit) {
         if (listingId != null && listingId > 0) {
             viewModel.initializeForEdit(listingId)
         } else if (listingType != null) {
