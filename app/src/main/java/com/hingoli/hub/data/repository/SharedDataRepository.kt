@@ -665,9 +665,9 @@ class SharedDataRepository @Inject constructor(
     }
     
     /**
-     * Clear all cache
+     * Clear all cache (including DataStore persistence)
      */
-    fun clearCache() {
+    suspend fun clearCache() {
         prefetchStarted.set(false)
         prefetchCompleted.set(false)
         lastFetchTime = 0L
@@ -677,6 +677,8 @@ class SharedDataRepository @Inject constructor(
         _servicesCategories.value = emptyList()
         _businessCategories.value = emptyList()
         _jobsCategories.value = emptyList()
+        _oldCategories.value = emptyList()
+        _oldSubcategoriesByParent.value = emptyMap()
         _subcategoriesByParent.value = emptyMap()
         _servicesListings.value = emptyList()
         _businessListings.value = emptyList()
@@ -685,7 +687,16 @@ class SharedDataRepository @Inject constructor(
         _oldProducts.value = emptyList()
         _cities.value = emptyList()
         
-        Log.d(TAG, "🗑️ Cache cleared")
+        // Clear DataStore persistence as well
+        try {
+            dataStore.edit { prefs ->
+                prefs.remove(LAST_PREFETCH_TIME)
+                prefs.remove(PREFETCH_DATA_JSON)
+            }
+            Log.d(TAG, "🗑️ Cache cleared (including DataStore)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing DataStore: ${e.message}")
+        }
     }
     
     /**
