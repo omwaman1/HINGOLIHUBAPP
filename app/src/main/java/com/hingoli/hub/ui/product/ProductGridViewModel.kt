@@ -53,10 +53,19 @@ class ProductGridViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProductGridUiState())
     val uiState: StateFlow<ProductGridUiState> = _uiState.asStateFlow()
     
-    // Set condition for filtering (always triggers load)
+    // Prevent duplicate API calls
+    private var categoriesLoaded = false
+    private var cartLoaded = false
+    private var productsLoaded = false
+    private var lastCondition: String? = null
+    
+    // Set condition for filtering (only triggers load if condition changed)
     fun setCondition(condition: String) {
+        if (condition == lastCondition && productsLoaded) return // Skip if same condition
+        lastCondition = condition
         _uiState.value = _uiState.value.copy(condition = condition)
-        refresh()
+        productsLoaded = false
+        loadProducts()
     }
     
     init {
@@ -74,30 +83,37 @@ class ProductGridViewModel @Inject constructor(
     }
     
     private fun loadCategories() {
+        if (categoriesLoaded) return // Already loaded
+        categoriesLoaded = true
+        
         viewModelScope.launch {
             try {
-                // Load selling categories for shop products
-                val cached = sharedDataRepository.getCategories("selling")
-                if (cached.isNotEmpty()) {
-                    val mainCategories = cached.filter { it.parentId == null }
-                    _uiState.value = _uiState.value.copy(categories = mainCategories)
+                // Load shop_categories for new products (Groceries, Electronics, etc.)
+                val shopCategories = sharedDataRepository.getShopCategories()
+                if (shopCategories.isNotEmpty()) {
+                    // Convert ShopCategory to Category for UI compatibility
+                    val categories = shopCategories.map { it.toCategory() }
+                    _uiState.value = _uiState.value.copy(categories = categories)
                     return@launch
                 }
                 
-                // Fallback to API
-                val response = apiService.getCategories("selling", null)
+                // Fallback to API directly if shared data is empty
+                val response = apiService.getShopCategories(level = 1)
                 if (response.isSuccessful && response.body()?.data != null) {
-                    // Filter only main categories (parentId == null)
-                    val mainCategories = response.body()!!.data!!.filter { it.parentId == null }
-                    _uiState.value = _uiState.value.copy(categories = mainCategories)
+                    val categories = response.body()!!.data!!.map { it.toCategory() }
+                    _uiState.value = _uiState.value.copy(categories = categories)
                 }
             } catch (e: Exception) {
-                // Silently fail
+                // Silently fail - categories are loaded in tabs anyway
+                categoriesLoaded = false // Allow retry on error
             }
         }
     }
     
     fun loadCartCount() {
+        if (cartLoaded) return // Already loaded
+        cartLoaded = true
+        
         viewModelScope.launch {
             try {
                 val response = apiService.getCart()
@@ -114,6 +130,7 @@ class ProductGridViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 // Silent fail - cart count is not critical
+                cartLoaded = false // Allow retry on error
             }
         }
     }
@@ -191,7 +208,11 @@ class ProductGridViewModel @Inject constructor(
     }
     
     fun loadProducts(refresh: Boolean = false) {
+        // Prevent duplicate calls unless refresh is requested
         if (_uiState.value.isLoading) return
+        if (productsLoaded && !refresh && _uiState.value.currentPage == 1) return
+        
+        productsLoaded = true
         
         val page = if (refresh) 1 else _uiState.value.currentPage
         val condition = _uiState.value.condition
@@ -230,71 +251,38 @@ class ProductGridViewModel @Inject constructor(
             )
             
             try {
-                // For Shop tab (condition=new): Only fetch shop_products, NOT listings
-                // For Old tab: This screen shouldn't be used (uses CategoryScreen instead)
+                // Shop tab - ONLY new products from shop_products table
+                // Note: Old/used products use the Old Tab which uses OldCategoryScreen -> OldProductListScreen
+                // and calls the old-products API which reads from old_products table
                 
-                if (condition == "new") {
-                    // Shop tab - ONLY shop_products from businesses
-                    val searchQuery = _uiState.value.searchQuery.takeIf { it.isNotBlank() }
-                    val shopResponse = apiService.getShopProducts(
-                        condition = "new",
-                        categoryId = _uiState.value.selectedCategoryId,
-                        search = searchQuery,
-                        page = page,
-                        perPage = 30
-                    )
+                val searchQuery = _uiState.value.searchQuery.takeIf { it.isNotBlank() }
+                val shopResponse = apiService.getShopProducts(
+                    // Note: condition param removed - shop_products is always new products
+                    shopCategoryId = _uiState.value.selectedCategoryId, // Use shop_category_id
+                    search = searchQuery,
+                    page = page,
+                    perPage = 30
+                )
+                
+                if (shopResponse.isSuccessful && shopResponse.body()?.data != null) {
+                    val shopProducts = shopResponse.body()!!.data!!.products
+                    val pagination = shopResponse.body()!!.data!!.pagination
                     
-                    if (shopResponse.isSuccessful && shopResponse.body()?.data != null) {
-                        val shopProducts = shopResponse.body()!!.data!!.products
-                        val pagination = shopResponse.body()!!.data!!.pagination
-                        
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            products = emptyList(), // No listings for Shop tab
-                            shopProducts = if (refresh || page == 1) shopProducts else _uiState.value.shopProducts + shopProducts,
-                            currentPage = page,
-                            hasMorePages = pagination?.let { it.page < it.totalPages } ?: false,
-                            error = null
-                        )
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            error = "Failed to load products"
-                        )
-                    }
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        products = emptyList(), // No listings for Shop tab
+                        shopProducts = if (refresh || page == 1) shopProducts else _uiState.value.shopProducts + shopProducts,
+                        currentPage = page,
+                        hasMorePages = pagination?.let { it.page < it.totalPages } ?: false,
+                        error = null
+                    )
                 } else {
-                    // Old tab (condition=old) - fetch old shop_products
-                    val searchQuery = _uiState.value.searchQuery.takeIf { it.isNotBlank() }
-                    val shopResponse = apiService.getShopProducts(
-                        condition = "old",
-                        categoryId = _uiState.value.selectedCategoryId,
-                        search = searchQuery,
-                        page = page,
-                        perPage = 30
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = "Failed to load products"
                     )
-                    
-                    if (shopResponse.isSuccessful && shopResponse.body()?.data != null) {
-                        val shopProducts = shopResponse.body()!!.data!!.products
-                        val pagination = shopResponse.body()!!.data!!.pagination
-                        
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            products = emptyList(),
-                            shopProducts = if (refresh || page == 1) shopProducts else _uiState.value.shopProducts + shopProducts,
-                            currentPage = page,
-                            hasMorePages = pagination?.let { it.page < it.totalPages } ?: false,
-                            error = null
-                        )
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            isLoadingMore = false,
-                            error = "Failed to load products"
-                        )
-                    }
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -330,6 +318,7 @@ class ProductGridViewModel @Inject constructor(
     }
     
     fun refresh() {
+        productsLoaded = false
         loadProducts(refresh = true)
     }
     

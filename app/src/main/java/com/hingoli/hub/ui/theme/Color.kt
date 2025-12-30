@@ -53,7 +53,7 @@ val ColorJobs = Primary
 val ColorRealEstate = Primary
 val ColorBusiness = Primary
 
-// Legacy aliases (for backward compatibility)
+// Semantic color aliases (for cleaner code)
 val PrimaryBlue = Primary
 val AccentOrange = WarningOrange
 val AccentGreen = SuccessGreen

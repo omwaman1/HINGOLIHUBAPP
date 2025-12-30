@@ -447,16 +447,37 @@ class LoginViewModel @Inject constructor(
             
             result.fold(
                 onSuccess = {
-                    // Password reset successful - go back to phone and send OTP for login
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        newPassword = "",
-                        confirmPassword = "",
-                        resetToken = null,
-                        error = null
-                    )
-                    // Send OTP for login with new password
-                    sendOtpForLogin()
+                    // Password reset successful - now auto-login with the new password
+                    val loginResult = authRepository.login(currentState.phone, currentState.newPassword)
+                    
+                    when (loginResult) {
+                        is AuthResult.Success -> {
+                            // Auto-login successful
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                newPassword = "",
+                                confirmPassword = "",
+                                resetToken = null,
+                                otp = "",
+                                password = "",
+                                error = null
+                            )
+                        }
+                        is AuthResult.Error -> {
+                            // Login failed - fallback to password input screen
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                currentStep = AuthStep.PASSWORD_INPUT,
+                                newPassword = "",
+                                confirmPassword = "",
+                                resetToken = null,
+                                otp = "",
+                                password = "",
+                                error = "Password reset successful. Please login with your new password."
+                            )
+                        }
+                    }
                 },
                 onFailure = { e ->
                     _uiState.value = _uiState.value.copy(

@@ -131,8 +131,8 @@ object Strings {
     fun applyNow(isMarathi: Boolean) = get("Apply Now", "आता अर्ज करा", isMarathi)
     
     // ===== BOTTOM BAR =====  
-    fun callNow(isMarathi: Boolean) = get("कॉल करा", "कॉल करा", isMarathi) // Already in Marathi
-    fun bookNow(isMarathi: Boolean) = get("बुक करा", "बुक करा", isMarathi) // Already in Marathi
-    fun chatNow(isMarathi: Boolean) = get("चॅट करा", "चॅट करा", isMarathi) // Already in Marathi
+    fun callNow(isMarathi: Boolean) = get("Call Now", "कॉल करा", isMarathi)
+    fun bookNow(isMarathi: Boolean) = get("Book Now", "बुक करा", isMarathi)
+    fun chatNow(isMarathi: Boolean) = get("Chat Now", "चॅट करा", isMarathi)
     fun yourListing(isMarathi: Boolean) = get("Your Listing", "तुमची जाहिरात", isMarathi)
 }

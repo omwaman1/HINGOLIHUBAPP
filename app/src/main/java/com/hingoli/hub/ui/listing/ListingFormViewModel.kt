@@ -2,6 +2,7 @@
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hingoli.hub.data.api.ApiService
@@ -114,16 +115,23 @@ class ListingFormViewModel @Inject constructor(
     private val tokenManager: TokenManager
 ) : ViewModel() {
     
+    companion object {
+        private const val TAG = "ListingFormViewModel"
+    }
+    
     private val _uiState = MutableStateFlow(ListingFormUiState())
     val uiState: StateFlow<ListingFormUiState> = _uiState.asStateFlow()
     
     /**
      * Initialize for creating a new listing
+     * @param listingType The type of listing (services, selling, business, jobs)
+     * @param condition For selling type: "old" for used items, "new" for new products
      */
-    fun initializeForCreate(listingType: String) {
+    fun initializeForCreate(listingType: String, condition: String = "old") {
         _uiState.value = ListingFormUiState(
             mode = ListingFormMode.CREATE,
-            listingType = listingType
+            listingType = listingType,
+            condition = condition  // Pre-set condition based on which tab user clicked
         )
         loadCategories(listingType)
         loadCities()
@@ -199,28 +207,148 @@ class ListingFormViewModel @Inject constructor(
     
     /**
      * Load categories from SharedDataRepository cache
+     * For selling type with condition="new", use shop_categories
+     * For selling type with condition="old", use old_categories
+     * For other types, use regular listing categories
      */
     private fun loadCategories(listingType: String) {
         viewModelScope.launch {
             try {
-                val allCategories = sharedDataRepository.getCategories(listingType)
-                val mainCategories = allCategories.filter { it.parentId == null }
+                val condition = _uiState.value.condition
                 
-                val pendingCatId = _uiState.value.pendingCategoryId
-                val matchingCategory = if (pendingCatId != null) {
-                    mainCategories.find { it.categoryId == pendingCatId }
-                } else null
-                
-                _uiState.value = _uiState.value.copy(
-                    categories = mainCategories,
-                    selectedCategory = matchingCategory
-                )
-                
-                if (matchingCategory != null) {
-                    loadSubcategories(matchingCategory.categoryId)
+                // For NEW products (selling), use shop_categories
+                if (listingType == "selling" && condition == "new") {
+                    val shopCategories = sharedDataRepository.getShopCategories()
+                    val mainCategories = shopCategories.map { it.toCategory() }
+                    
+                    val pendingCatId = _uiState.value.pendingCategoryId
+                    val matchingCategory = if (pendingCatId != null) {
+                        mainCategories.find { it.categoryId == pendingCatId }
+                    } else null
+                    
+                    _uiState.value = _uiState.value.copy(
+                        categories = mainCategories,
+                        selectedCategory = matchingCategory
+                    )
+                    
+                    if (matchingCategory != null) {
+                        loadShopSubcategories(matchingCategory.categoryId)
+                    }
+                } else if (listingType == "selling" && condition == "old") {
+                    // For OLD products (selling), use old_categories table
+                    val oldCategories = sharedDataRepository.getOldCategories()
+                    val mainCategories = oldCategories.map { 
+                        Category(
+                            categoryId = it.id,
+                            parentId = it.parentId,
+                            name = it.name,
+                            nameMr = it.nameMr,
+                            slug = it.slug,
+                            listingType = "old",
+                            iconUrl = it.imageUrl,
+                            imageUrl = it.imageUrl,
+                            description = null,
+                            listingCount = 0,
+                            depth = 0
+                        )
+                    }
+                    
+                    val pendingCatId = _uiState.value.pendingCategoryId
+                    val matchingCategory = if (pendingCatId != null) {
+                        mainCategories.find { it.categoryId == pendingCatId }
+                    } else null
+                    
+                    _uiState.value = _uiState.value.copy(
+                        categories = mainCategories,
+                        selectedCategory = matchingCategory
+                    )
+                    
+                    if (matchingCategory != null) {
+                        loadOldSubcategories(matchingCategory.categoryId)
+                    }
+                } else {
+                    // For other listing types (services, business, jobs), use regular categories
+                    val allCategories = sharedDataRepository.getCategories(listingType)
+                    val mainCategories = allCategories.filter { it.parentId == null }
+                    
+                    val pendingCatId = _uiState.value.pendingCategoryId
+                    val matchingCategory = if (pendingCatId != null) {
+                        mainCategories.find { it.categoryId == pendingCatId }
+                    } else null
+                    
+                    _uiState.value = _uiState.value.copy(
+                        categories = mainCategories,
+                        selectedCategory = matchingCategory
+                    )
+                    
+                    if (matchingCategory != null) {
+                        loadSubcategories(matchingCategory.categoryId)
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = "Failed to load categories")
+            }
+        }
+    }
+    
+    /**
+     * Load subcategories for shop categories (NEW products)
+     */
+    private fun loadShopSubcategories(categoryId: Int) {
+        viewModelScope.launch {
+            try {
+                val shopSubcategories = sharedDataRepository.getShopSubcategories(categoryId)
+                val subcategories = shopSubcategories.map { it.toCategory() }
+                
+                val pendingSubId = _uiState.value.pendingSubcategoryId
+                val matchingSubcategory = if (pendingSubId != null) {
+                    subcategories.find { it.categoryId == pendingSubId }
+                } else null
+                
+                _uiState.value = _uiState.value.copy(
+                    subcategories = subcategories,
+                    selectedSubcategory = matchingSubcategory
+                )
+            } catch (e: Exception) {
+                // Silent fail - subcategories not critical
+            }
+        }
+    }
+    
+    /**
+     * Load subcategories for old_categories (OLD/used products)
+     */
+    private fun loadOldSubcategories(categoryId: Int) {
+        viewModelScope.launch {
+            try {
+                val oldSubcategories = sharedDataRepository.getOldSubcategories(categoryId)
+                val subcategories = oldSubcategories.map { 
+                    Category(
+                        categoryId = it.id,
+                        parentId = it.parentId,
+                        name = it.name,
+                        nameMr = it.nameMr,
+                        slug = it.slug,
+                        listingType = "old",
+                        iconUrl = it.imageUrl,
+                        imageUrl = it.imageUrl,
+                        description = null,
+                        listingCount = 0,
+                        depth = 1
+                    )
+                }
+                
+                val pendingSubId = _uiState.value.pendingSubcategoryId
+                val matchingSubcategory = if (pendingSubId != null) {
+                    subcategories.find { it.categoryId == pendingSubId }
+                } else null
+                
+                _uiState.value = _uiState.value.copy(
+                    subcategories = subcategories,
+                    selectedSubcategory = matchingSubcategory
+                )
+            } catch (e: Exception) {
+                // Silent fail - subcategories not critical
             }
         }
     }
@@ -269,14 +397,70 @@ class ListingFormViewModel @Inject constructor(
     // Field update functions
     fun onListingTypeChange(value: String) {
         if (!_uiState.value.canChangeListingType) return
+        
+        // Handle compound selling types (selling_new, selling_old)
+        val (actualListingType, condition) = when (value) {
+            "selling_new" -> "selling" to "new"
+            "selling_old" -> "selling" to "old"
+            else -> value to _uiState.value.condition
+        }
+        
         _uiState.value = _uiState.value.copy(
-            listingType = value,
+            listingType = actualListingType,
+            condition = condition,
             selectedCategory = null,
             selectedSubcategory = null,
             subcategories = emptyList(),
             error = null
         )
-        loadCategories(value)
+        
+        // Load appropriate categories based on listing type and condition
+        loadCategoriesForListingType(actualListingType, condition)
+    }
+    
+    /**
+     * Load categories based on listing type and condition.
+     * For selling: new uses shop_categories, old uses old_categories
+     */
+    private fun loadCategoriesForListingType(listingType: String, condition: String) {
+        viewModelScope.launch {
+            try {
+                val categories: List<Category> = when {
+                    listingType == "selling" && condition == "new" -> {
+                        // New products use shop_categories
+                        val shopCats = sharedDataRepository.getShopCategories()
+                        shopCats.map { it.toCategory() }
+                    }
+                    listingType == "selling" && condition == "old" -> {
+                        // Old products use old_categories
+                        val oldCats = sharedDataRepository.getOldCategories()
+                        oldCats.map { 
+                            Category(
+                                categoryId = it.id,
+                                parentId = it.parentId,
+                                name = it.name,
+                                nameMr = it.nameMr,
+                                slug = it.slug,
+                                listingType = "old",
+                                iconUrl = it.imageUrl,
+                                imageUrl = it.imageUrl,
+                                description = null,
+                                listingCount = 0,
+                                depth = 0
+                            )
+                        }
+                    }
+                    else -> {
+                        // Services, business, jobs use regular categories
+                        sharedDataRepository.getCategories(listingType)
+                            .filter { it.parentId == null }
+                    }
+                }
+                _uiState.value = _uiState.value.copy(categories = categories)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading categories: ${e.message}", e)
+            }
+        }
     }
     
     fun onTitleChange(value: String) {
@@ -302,7 +486,18 @@ class ListingFormViewModel @Inject constructor(
             subcategories = emptyList(),
             error = null
         )
-        loadSubcategories(category.categoryId)
+        // Load subcategories based on listing type and condition
+        val condition = _uiState.value.condition
+        if (_uiState.value.listingType == "selling" && condition == "new") {
+            // NEW products use shop_categories subcategories
+            loadShopSubcategories(category.categoryId)
+        } else if (_uiState.value.listingType == "selling" && condition == "old") {
+            // OLD products use old_categories subcategories
+            loadOldSubcategories(category.categoryId)
+        } else {
+            // Other listing types use regular subcategories
+            loadSubcategories(category.categoryId)
+        }
     }
     
     fun onSubcategorySelected(subcategory: Category) {

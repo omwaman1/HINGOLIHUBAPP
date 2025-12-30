@@ -26,7 +26,7 @@ android {
         targetSdk = 35
         versionCode = 4
         versionName = "1.0.4"
-
+        
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -42,13 +42,13 @@ android {
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/dev/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv4/\"")
         }
         release {
             isMinifyEnabled = true      // Enable code shrinking
             isShrinkResources = true    // Enable resource shrinking
             signingConfig = signingConfigs.getByName("release")
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/api/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv4/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

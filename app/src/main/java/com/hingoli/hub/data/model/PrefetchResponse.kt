@@ -24,8 +24,9 @@ data class PrefetchData(
 data class PrefetchCategories(
     @SerializedName("services") val services: List<CategoryWithSubcategories>,
     @SerializedName("business") val business: List<CategoryWithSubcategories>,
-    @SerializedName("selling") val selling: List<CategoryWithSubcategories>,
-    @SerializedName("jobs") val jobs: List<CategoryWithSubcategories>
+    @SerializedName("selling") val selling: List<CategoryWithSubcategories> = emptyList(),
+    @SerializedName("jobs") val jobs: List<CategoryWithSubcategories>,
+    @SerializedName("old") val old: List<OldCategory>? = emptyList()
 )
 
 data class CategoryWithSubcategories(
@@ -63,7 +64,7 @@ data class CategoryWithSubcategories(
 data class PrefetchListings(
     @SerializedName("services") val services: List<Listing>,
     @SerializedName("business") val business: List<Listing>,
-    @SerializedName("selling") val selling: List<Listing>,
+    @SerializedName("selling") val selling: List<Listing> = emptyList(),
     @SerializedName("jobs") val jobs: List<Listing>
 )
 

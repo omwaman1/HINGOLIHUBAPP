@@ -16,14 +16,12 @@ import javax.inject.Inject
 enum class CategoryFilter(val displayName: String, val displayNameMr: String, val listingType: String?) {
     ALL("All", "सर्व", null),
     SERVICES("Services", "सेवा", "services"),
-    SELLING("Buy", "खरेदी", "selling"),
     BUSINESS("Business", "व्यवसाय", "business"),
     JOBS("Jobs", "नोकरी", "jobs")
 }
 
 data class HomeUiState(
     val servicesListings: List<Listing> = emptyList(),
-    val sellingListings: List<Listing> = emptyList(),
     val businessListings: List<Listing> = emptyList(),
     val jobsListings: List<Listing> = emptyList(),
     val shopProducts: List<ShopProduct> = emptyList(),
@@ -87,7 +85,6 @@ class HomeViewModel @Inject constructor(
         // SharedDataRepository.getListings() will return cached data or fetch if empty
         _uiState.value = _uiState.value.copy(
             servicesListings = sharedDataRepository.getListings("services").take(10),
-            sellingListings = sharedDataRepository.getListings("selling").take(10),
             businessListings = sharedDataRepository.getListings("business").take(10),
             jobsListings = sharedDataRepository.getListings("jobs").take(10),
             shopProducts = sharedDataRepository.getShopProducts().take(10),
@@ -136,7 +133,6 @@ class HomeViewModel @Inject constructor(
             val filter = _uiState.value.selectedFilter
             val allListings = listOf(
                 sharedDataRepository.getListings("services"),
-                sharedDataRepository.getListings("selling"),
                 sharedDataRepository.getListings("business"),
                 sharedDataRepository.getListings("jobs")
             ).flatten()
@@ -159,8 +155,6 @@ class HomeViewModel @Inject constructor(
                 isLoading = false,
                 servicesListings = if (filter.listingType == null || filter.listingType == "services") 
                     typeFiltered.filter { it.listingType == "services" } else emptyList(),
-                sellingListings = if (filter.listingType == null || filter.listingType == "selling") 
-                    typeFiltered.filter { it.listingType == "selling" } else emptyList(),
                 businessListings = if (filter.listingType == null || filter.listingType == "business") 
                     typeFiltered.filter { it.listingType == "business" } else emptyList(),
                 jobsListings = if (filter.listingType == null || filter.listingType == "jobs") 

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -70,6 +71,9 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     
     @Inject
     lateinit var chatRepository: com.hingoli.hub.data.repository.ChatRepository
+    
+    @Inject
+    lateinit var apiService: com.hingoli.hub.data.api.ApiService
     
     // Permission launcher for notifications (Android 13+)
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -123,6 +127,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                     authRepository = authRepository,
                     settingsManager = settingsManager,
                     chatRepository = chatRepository,
+                    apiService = apiService,
                     initialListingId = listingId,
                     initialConversationId = conversationId,
                     initialDeepLink = deepLink,
@@ -218,6 +223,7 @@ fun MainScreen(
     authRepository: AuthRepository,
     settingsManager: SettingsManager,
     chatRepository: com.hingoli.hub.data.repository.ChatRepository,
+    apiService: com.hingoli.hub.data.api.ApiService,
     initialListingId: Long? = null,
     initialConversationId: String? = null,
     initialDeepLink: String? = null,
@@ -230,6 +236,43 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val selectedLanguage by settingsManager.languageFlow.collectAsState(initial = AppLanguage.MARATHI)
+    val isMarathi = selectedLanguage == AppLanguage.MARATHI
+    
+    // Force update state
+    var showForceUpdateDialog by remember { mutableStateOf(false) }
+    var forceUpdateMessage by remember { mutableStateOf("") }
+    var forceUpdateUrl by remember { mutableStateOf("") }
+    
+    // Check for force update on app start
+    LaunchedEffect(Unit) {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val currentVersion = packageInfo.versionName ?: "1.0.0"
+            
+            val response = apiService.getAppConfig(currentVersion)
+            if (response.isSuccessful) {
+                response.body()?.data?.let { config ->
+                    if (config.forceUpdate || config.updateRequired) {
+                        forceUpdateMessage = if (isMarathi) config.updateMessageMr else config.updateMessage
+                        forceUpdateUrl = config.playStoreUrl
+                        showForceUpdateDialog = true
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ForceUpdate", "Failed to check for update: ${e.message}")
+            // Don't block app if version check fails
+        }
+    }
+    
+    // Show Force Update Dialog if required
+    if (showForceUpdateDialog) {
+        com.hingoli.hub.ui.components.ForceUpdateDialog(
+            message = forceUpdateMessage,
+            playStoreUrl = forceUpdateUrl,
+            isMarathi = isMarathi
+        )
+    }
     
     // DEBUG: Log drawer state changes
     LaunchedEffect(drawerState.currentValue) {
@@ -411,10 +454,35 @@ fun MainScreen(
                                 launchSingleTop = true
                             }
                         },
-                        onAdvertiseClick = {
+                        // Registration & Selling callbacks
+                        onServiceRegistrationClick = {
                             if (requireLogin()) {
                                 scope.launch { drawerState.close() }
-                                navController.navigate(Screen.MyListings.route) {
+                                navController.navigate(Screen.PostListing.createRoute("services")) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        onBusinessRegistrationClick = {
+                            if (requireLogin()) {
+                                scope.launch { drawerState.close() }
+                                navController.navigate(Screen.PostListing.createRoute("business")) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        onSellNewProductClick = {
+                            if (requireLogin()) {
+                                scope.launch { drawerState.close() }
+                                navController.navigate(Screen.PostListing.createRouteWithCondition("selling", "new")) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        onSellOldProductClick = {
+                            if (requireLogin()) {
+                                scope.launch { drawerState.close() }
+                                navController.navigate(Screen.PostListing.createRouteWithCondition("selling", "old")) {
                                     launchSingleTop = true
                                 }
                             }

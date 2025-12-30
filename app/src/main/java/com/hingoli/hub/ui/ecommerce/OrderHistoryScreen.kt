@@ -220,9 +220,11 @@ private fun OrderCard(
 private fun getDeliveryText(status: String): String {
     return when (status.lowercase()) {
         "delivered" -> "Delivered"
-        "out_for_delivery" -> "Arriving today by 5 PM"
-        "dispatched", "shipped" -> "Arriving tomorrow by 5 PM"
-        "waiting_to_dispatch" -> "Preparing for dispatch"
+        "out_for_delivery" -> "Arriving today"
+        "shipped", "dispatched", "accepted" -> "Arriving in 1-2 days"
+        "processing", "waiting_to_dispatch" -> "Being prepared for shipping"
+        "confirmed" -> "Order confirmed, preparing soon"
+        "pending" -> "Waiting for confirmation"
         "cancelled" -> "Order Cancelled"
         else -> "Arriving in 2-4 days"
     }
@@ -233,9 +235,11 @@ private fun OrderStatusChip(status: String) {
     val (backgroundColor, textColor, label) = when (status.lowercase()) {
         "delivered" -> Triple(Color(0xFFE8F5E9), Color(0xFF2E7D32), "Delivered")
         "out_for_delivery" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Out for Delivery")
-        "dispatched", "shipped" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Dispatched")
-        "waiting_to_dispatch" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Waiting to Dispatch")
-        "confirmed", "processing" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Confirmed")
+        "shipped", "dispatched" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Shipped")
+        "accepted" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Delivery Partner Assigned")
+        "processing", "waiting_to_dispatch" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Processing")
+        "confirmed" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Confirmed")
+        "pending" -> Triple(Color(0xFFFCE4EC), Color(0xFFAD1457), "Pending")
         "cancelled" -> Triple(Color(0xFFFFEBEE), Color(0xFFC62828), "Cancelled")
         else -> Triple(Color(0xFFF5F5F5), Color.Gray, status.replaceFirstChar { it.uppercase() })
     }

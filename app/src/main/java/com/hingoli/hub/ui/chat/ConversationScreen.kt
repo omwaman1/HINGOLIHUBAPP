@@ -49,68 +49,64 @@ fun ConversationScreen(
         }
     }
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = listingTitle.ifEmpty { "Chat" },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                actions = {
-                    // Voice Call Button
-                    IconButton(
-                        onClick = {
-                            val callId = "chat_${uiState.currentUserId}_${uiState.otherUserId}_${System.currentTimeMillis()}"
-                            VoiceCallActivity.start(
-                                context = context,
-                                callId = callId,
-                                userId = uiState.currentUserId.toString(),
-                                userName = uiState.currentUserName.ifEmpty { "User" },
-                                conversationId = uiState.conversationId,
-                                targetUserId = uiState.otherUserId
-                            )
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Call,
-                            contentDescription = "Voice Call",
-                            tint = Primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+    // Use Column with imePadding to keep TopBar fixed when keyboard opens
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding() // Handle status bar
+    ) {
+        // Fixed Top Bar - won't move when keyboard opens
+        TopAppBar(
+            title = {
+                Text(
+                    text = listingTitle.ifEmpty { "Chat" },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
                 )
+            },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            actions = {
+                // Voice Call Button
+                IconButton(
+                    onClick = {
+                        val callId = "chat_${uiState.currentUserId}_${uiState.otherUserId}_${System.currentTimeMillis()}"
+                        VoiceCallActivity.start(
+                            context = context,
+                            callId = callId,
+                            userId = uiState.currentUserId.toString(),
+                            userName = uiState.currentUserName.ifEmpty { "User" },
+                            conversationId = uiState.conversationId,
+                            targetUserId = uiState.otherUserId
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = "Voice Call",
+                        tint = Primary
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface
             )
-        },
-        bottomBar = {
-            MessageInputBar(
-                text = uiState.messageText,
-                onTextChange = viewModel::updateMessageText,
-                onSendClick = viewModel::sendMessage,
-                isSending = uiState.isSending
-            )
-        }
-    ) { paddingValues ->
+        )
+        
+        // Messages area - takes remaining space and adjusts with keyboard
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.surfaceVariant) // Theme-aware chat background
+                .weight(1f)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             if (uiState.isLoading && uiState.messages.isEmpty()) {
                 LoadingView()
@@ -133,6 +129,15 @@ fun ConversationScreen(
                 }
             }
         }
+        
+        // Message input bar - moves up with keyboard
+        MessageInputBar(
+            text = uiState.messageText,
+            onTextChange = viewModel::updateMessageText,
+            onSendClick = viewModel::sendMessage,
+            isSending = uiState.isSending,
+            modifier = Modifier.imePadding() // Keyboard padding here
+        )
     }
 }
 
@@ -264,10 +269,11 @@ private fun MessageInputBar(
     text: String,
     onTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    isSending: Boolean
+    isSending: Boolean,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shadowElevation = 8.dp,
         color = Color.White
     ) {

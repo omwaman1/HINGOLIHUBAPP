@@ -36,6 +36,7 @@ data class ProductFormUiState(
     val selectedImageUri: Uri? = null,
     val categoryId: Int? = null,
     val subcategoryId: Int? = null,
+    val shopCategoryId: Int? = null, // For new products using shop_categories
     val categories: List<Category> = emptyList(),
     val subcategories: List<Category> = emptyList(),
     val isLoading: Boolean = false,
@@ -56,20 +57,49 @@ class ProductFormViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProductFormUiState())
     
     init {
-        loadCategories()
+        loadCategoriesForCondition()
     }
     
-    private fun loadCategories() {
-        viewModelScope.launch {
-            val categories = sharedDataRepository.getCategories("selling")
-            val mainCategories = categories.filter { it.parentId == null }
-            _uiState.value = _uiState.value.copy(categories = mainCategories)
+    /**
+ * Load categories based on current condition:
+ * - NEW products: use shop_categories (Groceries, Electronics, etc.)
+ * - OLD products: use old_categories (Mobile Phones, Vehicles, etc.)
+ */
+private fun loadCategoriesForCondition() {
+    viewModelScope.launch {
+        val condition = _uiState.value.condition
+        if (condition == "new") {
+            // Load shop categories for NEW products
+            val shopCategories = sharedDataRepository.getShopCategories()
+            val categories = shopCategories.map { it.toCategory() }
+            _uiState.value = _uiState.value.copy(categories = categories)
+        } else {
+            // Load old_categories for OLD/used products
+            val oldCategories = sharedDataRepository.getOldCategories()
+            val categories = oldCategories.map { 
+                Category(
+                    categoryId = it.id,
+                    parentId = it.parentId,
+                    name = it.name,
+                    nameMr = it.nameMr,
+                    slug = it.slug,
+                    listingType = "old",
+                    iconUrl = it.imageUrl,
+                    imageUrl = it.imageUrl,
+                    description = null,
+                    listingCount = 0,
+                    depth = 0
+                )
+            }
+            _uiState.value = _uiState.value.copy(categories = categories)
         }
     }
+}
     
     fun onCategoryChange(categoryId: Int?) {
         _uiState.value = _uiState.value.copy(
             categoryId = categoryId,
+            shopCategoryId = if (_uiState.value.condition == "new") categoryId else null,
             subcategoryId = null,
             subcategories = emptyList(),
             error = null
@@ -80,7 +110,30 @@ class ProductFormViewModel @Inject constructor(
     
     private fun loadSubcategories(categoryId: Int) {
         viewModelScope.launch {
-            val subcats = sharedDataRepository.getSubcategoriesForParent(categoryId)
+            val condition = _uiState.value.condition
+            val subcats = if (condition == "new") {
+                // Load shop subcategories for NEW products
+                val shopSubcats = sharedDataRepository.getShopSubcategories(categoryId)
+                shopSubcats.map { it.toCategory() }
+            } else {
+                // Load old_categories subcategories for OLD products
+                val oldSubcats = sharedDataRepository.getOldSubcategories(categoryId)
+                oldSubcats.map { 
+                    Category(
+                        categoryId = it.id,
+                        parentId = it.parentId,
+                        name = it.name,
+                        nameMr = it.nameMr,
+                        slug = it.slug,
+                        listingType = "old",
+                        iconUrl = it.imageUrl,
+                        imageUrl = it.imageUrl,
+                        description = null,
+                        listingCount = 0,
+                        depth = 1
+                    )
+                }
+            }
             _uiState.value = _uiState.value.copy(subcategories = subcats)
         }
     }
@@ -98,22 +151,96 @@ class ProductFormViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true) {
                     val product = response.body()?.data
                     if (product != null) {
+                        val productCondition = product.condition ?: "new"
+                        
+                        // Determine which category ID to use based on condition
+                        // NEW products use shop_category_id, OLD products use category_id
+                        val selectedCategoryId = if (productCondition == "new") {
+                            product.shopCategoryId ?: product.categoryId
+                        } else {
+                            product.categoryId
+                        }
+                        
+                        // First, update condition and basic product info
                         _uiState.value = _uiState.value.copy(
                             productId = product.productId,
                             productName = product.productName,
                             description = product.description ?: "",
                             price = product.price.toLong().toString(),
                             discountedPrice = product.discountedPrice?.toLong()?.toString() ?: "",
-                            condition = product.condition ?: "new",
+                            condition = productCondition,
                             sellOnline = product.sellOnline,
                             stockQty = product.stockQty?.toString() ?: "",
                             imageUrl = product.imageUrl ?: "",
-                            categoryId = product.categoryId,
-                            subcategoryId = product.subcategoryId,
                             isLoading = false
                         )
-                        // Load subcategories if product has a category
-                        product.categoryId?.let { loadSubcategories(it) }
+                        
+                        // Load correct categories based on product's condition
+                        val categories = if (productCondition == "new") {
+                            val shopCategories = sharedDataRepository.getShopCategories()
+                            shopCategories.map { it.toCategory() }
+                        } else {
+                            // Load old_categories for OLD products
+                            val oldCategories = sharedDataRepository.getOldCategories()
+                            oldCategories.map { 
+                                Category(
+                                    categoryId = it.id,
+                                    parentId = it.parentId,
+                                    name = it.name,
+                                    nameMr = it.nameMr,
+                                    slug = it.slug,
+                                    listingType = "old",
+                                    iconUrl = it.imageUrl,
+                                    imageUrl = it.imageUrl,
+                                    description = null,
+                                    listingCount = 0,
+                                    depth = 0
+                                )
+                            }
+                        }
+                        
+                        // Update state with categories and selected category/subcategory
+                        // Note: For OLD products, we don't pre-select category if it's from old selling categories
+                        val validCategoryId = if (productCondition == "old") {
+                            // Only keep category if it exists in old_categories (IDs 1-70)
+                            if (selectedCategoryId in 1..100) selectedCategoryId else null
+                        } else {
+                            selectedCategoryId
+                        }
+                        
+                        _uiState.value = _uiState.value.copy(
+                            categories = categories,
+                            categoryId = validCategoryId,
+                            shopCategoryId = if (productCondition == "new") selectedCategoryId else null,
+                            subcategoryId = if (validCategoryId != null) product.subcategoryId else null
+                        )
+                        
+                        // Load subcategories for selected category
+                        if (validCategoryId != null) {
+                            val subcats = if (productCondition == "new") {
+                                val shopSubcats = sharedDataRepository.getShopSubcategories(validCategoryId)
+                                shopSubcats.map { it.toCategory() }
+                            } else {
+                                // Load old_categories subcategories
+                                val oldSubcats = sharedDataRepository.getOldSubcategories(validCategoryId)
+                                oldSubcats.map { 
+                                    Category(
+                                        categoryId = it.id,
+                                        parentId = it.parentId,
+                                        name = it.name,
+                                        nameMr = it.nameMr,
+                                        slug = it.slug,
+                                        listingType = "old",
+                                        iconUrl = it.imageUrl,
+                                        imageUrl = it.imageUrl,
+                                        description = null,
+                                        listingCount = 0,
+                                        depth = 1
+                                    )
+                                }
+                            }
+                            _uiState.value = _uiState.value.copy(subcategories = subcats)
+                        }
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
@@ -153,7 +280,20 @@ class ProductFormViewModel @Inject constructor(
     }
     
     fun onConditionChange(value: String) {
-        _uiState.value = _uiState.value.copy(condition = value, error = null)
+        val currentCondition = _uiState.value.condition
+        _uiState.value = _uiState.value.copy(
+            condition = value, 
+            error = null,
+            // Clear category selection when switching between NEW and OLD
+            categoryId = null,
+            subcategoryId = null,
+            shopCategoryId = null,
+            subcategories = emptyList()
+        )
+        // Reload categories if condition changed
+        if (value != currentCondition) {
+            loadCategoriesForCondition()
+        }
     }
     
     fun onSellOnlineChange(value: Boolean) {
@@ -215,7 +355,12 @@ class ProductFormViewModel @Inject constructor(
                 if (state.stockQty.isNotBlank()) {
                     addField("stock_qty", state.stockQty)
                 }
-                state.categoryId?.let { addField("category_id", it.toString()) }
+                // For NEW products, send shop_category_id; for OLD, send category_id
+                if (state.condition == "new") {
+                    state.shopCategoryId?.let { addField("shop_category_id", it.toString()) }
+                } else {
+                    state.categoryId?.let { addField("category_id", it.toString()) }
+                }
                 state.subcategoryId?.let { addField("subcategory_id", it.toString()) }
                 
                 val response = apiService.updateProduct(state.productId, requestMap, imagePart)

@@ -42,6 +42,7 @@ fun MyListingsScreen(
     onEditClick: (Long) -> Unit,
     onEditProductClick: (Long) -> Unit = {}, // For editing products (separate from listings)
     onPostClick: (String) -> Unit,
+    onPostProductClick: (String, String) -> Unit = { type, condition -> onPostClick(type) },  // (listingType, condition) for products
     viewModel: MyListingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -60,19 +61,19 @@ fun MyListingsScreen(
         }
     }
     
-    // Filter options - now localized
+    // Filter options - now localized (removed sell_old and sell_new as they are in side menu)
     val filterOptions = listOf(
         "all" to Strings.get("All", "सर्व", uiState.isMarathi),
         "services" to Strings.get("Services", "सेवा", uiState.isMarathi),
         "business" to Strings.get("Business", "व्यवसाय", uiState.isMarathi),
         "jobs" to Strings.get("Jobs", "नोकरी", uiState.isMarathi),
-        "selling" to Strings.get("Products", "वस्तू", uiState.isMarathi)
+        "selling" to Strings.get("Products", "प्रोडक्ट्स", uiState.isMarathi)
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(Strings.advertiseAndGrow(uiState.isMarathi), fontWeight = FontWeight.Bold) },
+                title = { Text(Strings.get("My Listings", "माझ्या जाहिराती", uiState.isMarathi), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -87,7 +88,13 @@ fun MyListingsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onPostClick("services") },
+                onClick = { 
+                    // Navigate based on current filter
+                    when (uiState.selectedFilter) {
+                        "selling" -> onPostProductClick("selling", "old")  // Default to old for selling
+                        else -> onPostClick(uiState.selectedFilter.takeIf { it != "all" } ?: "services")
+                    }
+                },
                 containerColor = PrimaryBlue
             ) {
                 Icon(Icons.Default.Add, "Post Listing", tint = Color.White)
@@ -147,6 +154,7 @@ fun MyListingsScreen(
                                 MyListingsItemCard(
                                     listing = listing,
                                     isMarathi = uiState.isMarathi,
+                                    selectedFilter = uiState.selectedFilter,
                                     onClick = { 
                                         // Route selling items to shop product detail, others to listing detail
                                         if (listing.listingType == "selling") {
@@ -180,6 +188,7 @@ fun MyListingsScreen(
 private fun MyListingsItemCard(
     listing: Listing,
     isMarathi: Boolean,
+    selectedFilter: String = "all",
     onClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -254,19 +263,27 @@ private fun MyListingsItemCard(
                         shape = RoundedCornerShape(4.dp),
                         color = when(listing.listingType) {
                             "services" -> Color(0xFFE0E7FF)
-                            "selling" -> Color(0xFFFCE7F3)
+                            "selling" -> if (listing.condition == "old") Color(0xFFFEF3C7) else Color(0xFFDCFCE7)
                             "business" -> Color(0xFFCCFBF1)
                             "jobs" -> Color(0xFFFEF3C7)
                             else -> Color.LightGray
                         }
                     ) {
                         Text(
-                            text = if (listing.listingType == "selling") "Product" else listing.listingType.replaceFirstChar { it.uppercase() },
+                            text = when {
+                                listing.listingType == "selling" && listing.condition == "old" -> 
+                                    Strings.get("OLD", "जुने", isMarathi)
+                                listing.listingType == "selling" && listing.condition == "new" -> 
+                                    Strings.get("NEW", "नवीन", isMarathi)
+                                listing.listingType == "selling" -> 
+                                    Strings.get("Product", "प्रोडक्ट", isMarathi)
+                                else -> listing.listingType.replaceFirstChar { it.uppercase() }
+                            },
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             color = when(listing.listingType) {
                                 "services" -> Color(0xFF3730A3)
-                                "selling" -> Color(0xFF9D174D)
+                                "selling" -> if (listing.condition == "old") Color(0xFFB45309) else Color(0xFF166534)
                                 "business" -> Color(0xFF0F766E)
                                 "jobs" -> Color(0xFFB45309)
                                 else -> Color.DarkGray

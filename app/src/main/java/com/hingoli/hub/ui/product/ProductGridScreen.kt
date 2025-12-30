@@ -1,4 +1,4 @@
-﻿package com.hingoli.hub.ui.product
+package com.hingoli.hub.ui.product
 
 import android.content.Intent
 import androidx.compose.foundation.background
@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -111,9 +112,9 @@ fun ProductGridScreen(
         topBar = {
             HingoliHubTopAppBar(
                 title = if (condition == "old") {
-                    if (isMarathi) "जुने वस्तू खरेदी विक्री" else "Buy Sell Old Things"
+                    if (isMarathi) "???? ????? ????? ??????" else "Buy Sell Old Things"
                 } else {
-                    if (isMarathi) "दुकान" else "Shop"
+                    if (isMarathi) "?????" else "Shop"
                 },
                 showCitySelector = false,
                 isMarathi = isMarathi,
@@ -310,7 +311,7 @@ private fun SearchBarWithFilter(
                         Box {
                             if (query.isEmpty()) {
                                 Text(
-                                    text = if (isMarathi) "वस्तू शोधा" else "Search products",
+                                    text = if (isMarathi) "????? ????" else "Search products",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color(0xFF9CA3AF)
                                 )
@@ -355,7 +356,7 @@ private fun SearchBarWithFilter(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 if (sortOption == currentSortOrder) {
-                                    Text("✓", color = Primary)
+                                    Text("?", color = Primary)
                                 }
                                 Text(
                                     text = sortOption.displayName,
@@ -380,22 +381,24 @@ private fun CategoryChips(
     isMarathi: Boolean = false
 ) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(vertical = 4.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
-        // "All" chip first
+        // "All" chip first - with Apps/Grid icon
         item {
-            CategoryChip(
-                name = if (isMarathi) "सर्व" else "All",
+            AllCategoryChip(
+                name = if (isMarathi) "????" else "All",
                 isSelected = selectedCategoryId == null,
                 onClick = { onCategorySelected(null) }
             )
         }
         
-        // Category chips from API
+        // Category chips from API with images
         items(categories) { category ->
-            CategoryChip(
+            CategoryChipWithIcon(
                 name = category.getLocalizedName(isMarathi),
+                imageUrl = category.imageUrl ?: category.iconUrl,
+                icon = category.name,
                 isSelected = selectedCategoryId == category.categoryId,
                 onClick = { onCategorySelected(category.categoryId) }
             )
@@ -403,6 +406,159 @@ private fun CategoryChips(
     }
 }
 
+@Composable
+private fun CategoryChipWithIcon(
+    name: String,
+    imageUrl: String?,
+    icon: String? = null,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(72.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Icon/Image container with rounded background
+        Surface(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            shape = RoundedCornerShape(12.dp),
+            color = if (isSelected) Primary.copy(alpha = 0.1f) else Color(0xFFF5F5F5),
+            border = if (isSelected) {
+                androidx.compose.foundation.BorderStroke(2.dp, Primary)
+            } else {
+                null
+            }
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (!imageUrl.isNullOrEmpty()) {
+                    // Show category image from API
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = name,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    // Show default icon based on category name
+                    Text(
+                        text = getCategoryEmoji(icon ?: name),
+                        fontSize = 28.sp
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // Category name
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) Primary else Color(0xFF6B7280),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+// Special "All" category chip with Material Icon
+@Composable
+private fun AllCategoryChip(
+    name: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(72.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Icon container with rounded background
+        Surface(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            shape = RoundedCornerShape(12.dp),
+            color = if (isSelected) Primary.copy(alpha = 0.1f) else Color(0xFFF5F5F5),
+            border = if (isSelected) {
+                androidx.compose.foundation.BorderStroke(2.dp, Primary)
+            } else {
+                null
+            }
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Apps/Grid icon for "All"
+                Icon(
+                    imageVector = Icons.Default.Apps,
+                    contentDescription = name,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (isSelected) Primary else Color(0xFF6B7280)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // Category name
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) Primary else Color(0xFF6B7280),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+// Helper function to get emoji/icon for categories
+private fun getCategoryEmoji(name: String): String {
+    return when (name.lowercase()) {
+        "all", "????" -> "??"
+        "electronics", "??????????????" -> "??"
+        "fashion", "????" -> "??"
+        "home", "???", "furniture", "???????" -> "??"
+        "groceries", "??????" -> "??"
+        "fruits", "???" -> "??"
+        "vegetables", "??????" -> "??"
+        "dairy", "?????" -> "??"
+        "bakery", "?????" -> "??"
+        "snacks", "???????" -> "??"
+        "beverages", "????" -> "??"
+        "beauty", "???????" -> "??"
+        "sports", "???" -> "?"
+        "books", "???????" -> "??"
+        "toys", "?????" -> "??"
+        "vehicles", "?????" -> "??"
+        "mobile", "??????" -> "??"
+        "laptop", "??????" -> "??"
+        "clothes", "????" -> "??"
+        "shoes", "???", "footwear" -> "??"
+        "watches", "???????" -> "?"
+        "jewelry", "??????" -> "??"
+        else -> "??"
+    }
+}
+
+// Keep old CategoryChip for backward compatibility (can be removed later)
 @Composable
 private fun CategoryChip(
     name: String,
@@ -486,7 +642,7 @@ private fun ShopProductCard(
                 ) {
                     // Current Price (green)
                     Text(
-                        text = "₹${String.format("%,.0f", product.price)}",
+                        text = "?${String.format("%,.0f", product.price)}",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF22C55E) // Green color
@@ -496,7 +652,7 @@ private fun ShopProductCard(
                     product.discountedPrice?.let { originalPrice ->
                         if (originalPrice > product.price) {
                             Text(
-                                text = "₹${String.format("%,.0f", originalPrice)}",
+                                text = "?${String.format("%,.0f", originalPrice)}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF9CA3AF),
                                 textDecoration = TextDecoration.LineThrough

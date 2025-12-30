@@ -1,4 +1,4 @@
-package com.hingoli.hub.ui.category
+package com.hingoli.hub.ui.old
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,10 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.hingoli.hub.data.model.Banner
-import com.hingoli.hub.data.model.Category
+import com.hingoli.hub.data.model.OldCategory
 import com.hingoli.hub.data.settings.AppLanguage
 import com.hingoli.hub.data.settings.SettingsManager
 import com.hingoli.hub.ui.components.*
@@ -34,32 +30,31 @@ import com.hingoli.hub.ui.city.CitySelectionViewModel
 import com.hingoli.hub.ui.theme.*
 
 /**
- * Unified Category Screen for all listing types
- * Replaces: ServicesScreen, SellingScreen, JobsScreen, BusinessesScreen
+ * Old Category Screen for browsing used/second-hand products.
+ * Shows categories from old_categories table.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen(
-    listingType: String,
+fun OldCategoryScreen(
     onCategoryClick: (categoryId: Int, categoryName: String) -> Unit,
+    onSubcategoryClick: (categoryId: Int, subcategoryId: Int, subcategoryName: String) -> Unit = { _, _, _ -> },
     onMenuClick: () -> Unit = {},
     onPostClick: () -> Unit = {},
-    viewModel: CategoryViewModel = hiltViewModel(),
+    viewModel: OldCategoryViewModel = hiltViewModel(),
     cityViewModel: CitySelectionViewModel = hiltViewModel(),
     settingsManager: SettingsManager? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val cityUiState by cityViewModel.uiState.collectAsState()
     var showCityPicker by remember { mutableStateOf(false) }
+    
     val selectedLanguage by settingsManager?.languageFlow?.collectAsState(initial = AppLanguage.MARATHI) ?: remember { mutableStateOf(AppLanguage.MARATHI) }
     val isMarathi = selectedLanguage == AppLanguage.MARATHI
     
-    // Load categories for this specific listingType
-    LaunchedEffect(listingType) {
-        viewModel.loadCategories(listingType)
+    LaunchedEffect(Unit) {
+        viewModel.loadCategories()
     }
     
-    // City selection bottom sheet
     if (showCityPicker) {
         CitySelectionBottomSheet(
             onDismiss = { showCityPicker = false },
@@ -71,17 +66,9 @@ fun CategoryScreen(
     
     Scaffold(
         topBar = {
-            // Dynamic title based on listing type
-            val cityDisplayName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "???????" else "Hingoli"
-            val screenTitle = when (listingType) {
-                "services" -> if (isMarathi) "???? - $cityDisplayName" else "Services in $cityDisplayName"
-                "business" -> if (isMarathi) "??????? ???????" else "Local Businesses"
-                "selling" -> if (isMarathi) "?????? ????? ????? ??????" else "Buy Sell Old Things"
-                "jobs" -> if (isMarathi) "??????? - $cityDisplayName" else "Jobs in $cityDisplayName"
-                else -> if (isMarathi) "??????? ??" else "HINGOLI HUB"
-            }
+            val cityDisplayName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "हिंगोली" else "Hingoli"
+            val screenTitle = if (isMarathi) "जुने सामान" else "Used Items"
             
-            // Using shared TopAppBar component
             HingoliHubTopAppBar(
                 title = screenTitle,
                 onMenuClick = onMenuClick,
@@ -98,23 +85,33 @@ fun CategoryScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             when {
-                uiState.isLoading -> ShimmerListScreen()
-                uiState.error != null -> ErrorView(
-                    message = uiState.error!!,
-                    onRetry = { viewModel.loadCategories(listingType) }
-                )
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Primary)
+                    }
+                }
+                uiState.error != null -> {
+                    ErrorView(
+                        message = uiState.error ?: "Something went wrong",
+                        onRetry = { viewModel.loadCategories() }
+                    )
+                }
                 else -> {
-                    CategoryContent(
+                    OldCategoryContent(
                         sections = uiState.categorySections,
                         isMarathi = isMarathi,
                         topBanners = uiState.topBanners,
                         bottomBanners = uiState.bottomBanners,
-                        onSubcategoryClick = { subcategory ->
-                            onCategoryClick(subcategory.categoryId, subcategory.getLocalizedName(isMarathi))
+                        onCategoryClick = { category ->
+                            onCategoryClick(category.id, category.getLocalizedName(isMarathi))
                         },
-                        onBannerClick = { banner ->
-                            // Handle banner click if needed
-                        }
+                        onSubcategoryClick = { category, subcategory ->
+                            onSubcategoryClick(category.id, subcategory.id, subcategory.getLocalizedName(isMarathi))
+                        },
+                        onBannerClick = { /* Handle banner click */ }
                     )
                 }
             }
@@ -123,16 +120,17 @@ fun CategoryScreen(
 }
 
 @Composable
-private fun CategoryContent(
-    sections: List<CategorySection>,
+private fun OldCategoryContent(
+    sections: List<OldCategorySection>,
     isMarathi: Boolean,
     topBanners: List<Banner>,
     bottomBanners: List<Banner>,
-    onSubcategoryClick: (Category) -> Unit,
+    onCategoryClick: (OldCategory) -> Unit,
+    onSubcategoryClick: (OldCategory, OldCategory) -> Unit,
     onBannerClick: (Banner) -> Unit
 ) {
     if (sections.isEmpty()) {
-        EmptyView(message = "No categories found")
+        EmptyView(message = if (isMarathi) "कोणत्याही श्रेणी नाहीत" else "No categories found")
         return
     }
     
@@ -140,7 +138,7 @@ private fun CategoryContent(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        // Top banners - full width at the top
+        // Top banners
         if (topBanners.isNotEmpty()) {
             item(key = "top_banners") {
                 BannerCarousel(
@@ -151,16 +149,17 @@ private fun CategoryContent(
             }
         }
         
-        // Category sections with subcategories in cards
-        items(sections, key = { it.category.categoryId }) { section ->
-            CategorySectionCard(
+        // Category sections with subcategories
+        items(sections, key = { it.category.id }) { section ->
+            OldCategorySectionCard(
                 section = section,
                 isMarathi = isMarathi,
-                onSubcategoryClick = onSubcategoryClick
+                onCategoryClick = { onCategoryClick(section.category) },
+                onSubcategoryClick = { subcategory -> onSubcategoryClick(section.category, subcategory) }
             )
         }
         
-        // Bottom banners - full width at the bottom
+        // Bottom banners
         if (bottomBanners.isNotEmpty()) {
             item(key = "bottom_banners") {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -171,16 +170,17 @@ private fun CategoryContent(
             }
         }
         
-        // Bottom spacing
+        // Bottom spacing for navigation bar
         item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }
 
 @Composable
-private fun CategorySectionCard(
-    section: CategorySection,
+private fun OldCategorySectionCard(
+    section: OldCategorySection,
     isMarathi: Boolean,
-    onSubcategoryClick: (Category) -> Unit
+    onCategoryClick: () -> Unit,
+    onSubcategoryClick: (OldCategory) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -191,31 +191,32 @@ private fun CategorySectionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // Category header
+            // Category header - clickable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { onCategoryClick() }
                     .padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Main category name
+                // Main category - just show text, no image
                 Text(
                     text = section.category.getLocalizedName(isMarathi),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = OnSurface
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
                 
-                // Listing count badge
-                if (section.category.listingCount > 0) {
+                // Product count badge
+                if (section.category.productCount > 0) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = Primary.copy(alpha = 0.1f)
                     ) {
                         Text(
-                            text = "${section.category.listingCount}",
+                            text = "${section.category.productCount}",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = Primary
@@ -238,22 +239,25 @@ private fun CategorySectionCard(
 
 @Composable
 private fun SubcategoryGrid(
-    subcategories: List<Category>,
+    subcategories: List<OldCategory>,
     isMarathi: Boolean,
-    onSubcategoryClick: (Category) -> Unit
+    onSubcategoryClick: (OldCategory) -> Unit
 ) {
     val chunkedSubcategories = subcategories.chunked(4)
     
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+            .padding(top = 4.dp)
     ) {
         chunkedSubcategories.forEach { rowItems ->
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 rowItems.forEach { subcategory ->
                     SubcategoryCard(
-                        category = subcategory,
+                        subcategory = subcategory,
                         isMarathi = isMarathi,
                         onClick = { onSubcategoryClick(subcategory) },
                         modifier = Modifier.weight(1f)
@@ -270,41 +274,38 @@ private fun SubcategoryGrid(
 
 @Composable
 private fun SubcategoryCard(
-    category: Category,
+    subcategory: OldCategory,
     isMarathi: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
-            .padding(4.dp)  // Reduced from 8dp
+            .padding(4.dp)
             .clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Image card - smaller
+        // Image card
         Card(
-            modifier = Modifier
-                .size(64.dp),  // Fixed smaller size instead of aspectRatio
+            modifier = Modifier.size(64.dp),
             shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            colors = CardDefaults.cardColors(containerColor = SurfaceVariant)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (category.imageUrl != null || category.iconUrl != null) {
+                if (subcategory.imageUrl != null) {
                     AsyncImage(
-                        model = category.imageUrl ?: category.iconUrl,
-                        contentDescription = category.getLocalizedName(isMarathi),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(10.dp)),
+                        model = subcategory.imageUrl,
+                        contentDescription = subcategory.name,
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 } else {
+                    // Fallback icon - first letter
                     Text(
-                        text = category.getLocalizedName(isMarathi).take(2).uppercase(),
+                        text = subcategory.name.take(1).uppercase(),
                         style = MaterialTheme.typography.titleMedium,
                         color = Primary.copy(alpha = 0.6f),
                         fontWeight = FontWeight.Bold
@@ -315,11 +316,11 @@ private fun SubcategoryCard(
         
         Spacer(modifier = Modifier.height(4.dp))
         
-        // Category name - smaller text
+        // Subcategory name
         Text(
-            text = category.getLocalizedName(isMarathi),
+            text = subcategory.getLocalizedName(isMarathi),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = OnSurfaceVariant,
             fontWeight = FontWeight.Medium,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

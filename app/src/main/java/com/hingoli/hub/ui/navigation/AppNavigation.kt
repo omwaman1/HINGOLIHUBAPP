@@ -140,20 +140,82 @@ fun AppNavigation(
             )
         }
         
-        // Old Screen - Used/Old items with category browsing
+        // Old Screen - Used/Old items with category browsing from old_categories
         composable(Screen.Old.route) {
-            CategoryScreen(
-                listingType = "selling",
+            com.hingoli.hub.ui.old.OldCategoryScreen(
                 onCategoryClick = { categoryId, categoryName ->
                     navController.navigate(
-                        Screen.Listings.createRoute("selling", categoryId, categoryName)
+                        Screen.OldProducts.createRoute(categoryId, categoryName)
+                    )
+                },
+                onSubcategoryClick = { categoryId, subcategoryId, subcategoryName ->
+                    navController.navigate(
+                        Screen.OldProducts.createRoute(subcategoryId, subcategoryName)
                     )
                 },
                 onMenuClick = onMenuClick,
                 onPostClick = {
-                    navController.navigate(Screen.PostListing.createRoute("selling"))
+                    navController.navigate(Screen.PostListing.createRouteWithCondition("selling", "old"))
                 },
                 settingsManager = settingsManager
+            )
+        }
+        
+        // Old Products List Screen
+        composable(
+            route = Screen.OldProducts.route,
+            arguments = listOf(
+                navArgument("categoryId") { type = NavType.IntType },
+                navArgument("categoryName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
+            val categoryName = java.net.URLDecoder.decode(
+                backStackEntry.arguments?.getString("categoryName") ?: "",
+                "UTF-8"
+            )
+            com.hingoli.hub.ui.old.OldProductListScreen(
+                categoryId = categoryId,
+                categoryName = categoryName,
+                onBackClick = { navController.popBackStack() },
+                onProductClick = { productId ->
+                    navController.navigate(Screen.OldProductDetail.createRoute(productId))
+                },
+                settingsManager = settingsManager
+            )
+        }
+        
+        // Old Product Detail Screen - uses ProductDetailScreen for consistent UX
+        composable(
+            route = Screen.OldProductDetail.route,
+            arguments = listOf(
+                navArgument("productId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getLong("productId") ?: 0L
+            val context = androidx.compose.ui.platform.LocalContext.current
+            
+            ProductDetailScreen(
+                onBack = { navController.popBackStack() },
+                onGoToCart = { navController.navigate(Screen.Cart.route) },
+                onBuyNow = { _ ->
+                    navController.navigate(Screen.Checkout.route)
+                },
+                onChatClick = { conversationId, sellerName ->
+                    navController.navigate(Screen.Conversation.createRoute(conversationId, sellerName))
+                },
+                onCallClick = { currentUserId, currentUserName, sellerId, sellerName ->
+                    val callId = "call_${System.currentTimeMillis()}"
+                    com.hingoli.hub.ui.call.VoiceCallActivity.start(
+                        context = context,
+                        callId = callId,
+                        userId = currentUserId.toString(),
+                        userName = currentUserName,
+                        conversationId = "product_call_$sellerId",
+                        targetUserId = sellerId,
+                        isIncoming = false
+                    )
+                }
             )
         }
 
@@ -331,24 +393,60 @@ fun AppNavigation(
                 },
                 onPostClick = { listingType ->
                     navController.navigate(Screen.PostListing.createRoute(listingType))
+                },
+                onPostProductClick = { listingType, condition ->
+                    navController.navigate(Screen.PostProduct.createRoute(listingType, condition))
                 }
             )
         }
         
         // Post Listing Screen (Unified Form - Create Mode)
         composable(
-            route = Screen.PostListing.route,
+            route = "${Screen.PostListing.route}?condition={condition}",
             arguments = listOf(
                 navArgument("listingType") { 
                     type = NavType.StringType
                     defaultValue = "services"
+                },
+                navArgument("condition") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
                 }
             )
         ) { backStackEntry ->
             val listingType = backStackEntry.arguments?.getString("listingType") ?: "services"
+            val condition = backStackEntry.arguments?.getString("condition")
             com.hingoli.hub.ui.listing.ListingFormScreen(
                 listingType = listingType,
                 listingId = null,
+                condition = condition,
+                onBackClick = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() },
+                settingsManager = settingsManager
+            )
+        }
+        
+        // Post Product Screen (with condition - for Sell Old / Sell New tabs)
+        composable(
+            route = Screen.PostProduct.route,
+            arguments = listOf(
+                navArgument("listingType") { 
+                    type = NavType.StringType
+                    defaultValue = "selling"
+                },
+                navArgument("condition") { 
+                    type = NavType.StringType
+                    defaultValue = "old"
+                }
+            )
+        ) { backStackEntry ->
+            val listingType = backStackEntry.arguments?.getString("listingType") ?: "selling"
+            val condition = backStackEntry.arguments?.getString("condition") ?: "old"
+            com.hingoli.hub.ui.listing.ListingFormScreen(
+                listingType = listingType,
+                listingId = null,
+                condition = condition,
                 onBackClick = { navController.popBackStack() },
                 onSuccess = { navController.popBackStack() },
                 settingsManager = settingsManager

@@ -47,7 +47,11 @@ fun FullScreenDrawerContent(
     onMyOrdersClick: () -> Unit,
     onMyListingsClick: () -> Unit,
     onJobsClick: () -> Unit = {},
-    onAdvertiseClick: () -> Unit,
+    // Registration & Selling callbacks
+    onServiceRegistrationClick: () -> Unit = {},
+    onBusinessRegistrationClick: () -> Unit = {},
+    onSellNewProductClick: () -> Unit = {},
+    onSellOldProductClick: () -> Unit = {},
     onHelpClick: () -> Unit,
     onRateUsClick: () -> Unit,
     onShareClick: () -> Unit,
@@ -210,11 +214,63 @@ fun FullScreenDrawerContent(
         
         Spacer(modifier = Modifier.height(20.dp))
         
-        // Advertise & Grow your Business Button (was My Listings)
+        // Registration & Selling Section Header
+        Text(
+            text = if (selectedLanguage == AppLanguage.MARATHI) "नोंदणी आणि विक्री" else "Register & Sell",
+            style = MaterialTheme.typography.labelMedium,
+            color = subtitleColor,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        // Service Registration
         DrawerMenuRow(
-            icon = Icons.Default.Business,
-            title = if (selectedLanguage == AppLanguage.MARATHI) "जाहिरात करा आणि व्यवसाय वाढवा" else "Advertise & Grow your Business",
+            icon = Icons.Default.Build,
+            title = if (selectedLanguage == AppLanguage.MARATHI) "सेवा नोंदणी" else "Service Registration",
             badge = if (selectedLanguage == AppLanguage.MARATHI) "मोफत" else "Free",
+            onClick = onServiceRegistrationClick,
+            textColor = textColor,
+            subtitleColor = subtitleColor
+        )
+        
+        // Business Registration
+        DrawerMenuRow(
+            icon = Icons.Default.Storefront,
+            title = if (selectedLanguage == AppLanguage.MARATHI) "व्यवसाय नोंदणी" else "Business Registration",
+            badge = if (selectedLanguage == AppLanguage.MARATHI) "मोफत" else "Free",
+            onClick = onBusinessRegistrationClick,
+            textColor = textColor,
+            subtitleColor = subtitleColor
+        )
+        
+        // Sell New Product
+        DrawerMenuRow(
+            icon = Icons.Default.ShoppingCart,
+            title = if (selectedLanguage == AppLanguage.MARATHI) "नवीन प्रोडक्ट विका" else "Sell New Product",
+            badge = if (selectedLanguage == AppLanguage.MARATHI) "मोफत" else "Free",
+            onClick = onSellNewProductClick,
+            textColor = textColor,
+            subtitleColor = subtitleColor
+        )
+        
+        // Sell Old Product
+        DrawerMenuRow(
+            icon = Icons.Default.Recycling,
+            title = if (selectedLanguage == AppLanguage.MARATHI) "जुने प्रोडक्ट विका" else "Sell Old Product",
+            badge = if (selectedLanguage == AppLanguage.MARATHI) "मोफत" else "Free",
+            onClick = onSellOldProductClick,
+            textColor = textColor,
+            subtitleColor = subtitleColor
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(color = dividerColor)
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // My Listings (to see existing listings) - styled differently
+        DrawerMenuRow(
+            icon = Icons.Default.Inventory2,
+            title = if (selectedLanguage == AppLanguage.MARATHI) "माझ्या जाहिराती पहा" else "View My Listings",
             onClick = onMyListingsClick,
             textColor = textColor,
             subtitleColor = subtitleColor
@@ -324,6 +380,35 @@ fun FullScreenDrawerContent(
                 style = MaterialTheme.typography.bodyLarge,
                 color = AccentRed,
                 fontWeight = FontWeight.Medium
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // App Version Info
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val packageInfo = try {
+            context.packageManager.getPackageInfo(context.packageName, 0)
+        } catch (e: Exception) {
+            null
+        }
+        val appName = context.applicationInfo.loadLabel(context.packageManager).toString()
+        val versionName = packageInfo?.versionName ?: "1.0.0"
+        
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = appName,
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = "Version $versionName",
+                style = MaterialTheme.typography.labelSmall,
+                color = OnSurfaceVariant.copy(alpha = 0.7f)
             )
         }
         

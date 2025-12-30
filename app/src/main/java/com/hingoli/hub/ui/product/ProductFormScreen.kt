@@ -167,6 +167,24 @@ fun ProductFormScreen(
                             }
                         }
                         
+                        // Read-only condition badge (condition cannot be changed when editing)
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (uiState.condition == "new") 
+                                    Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = if (uiState.condition == "new") 
+                                    "🆕 New Product" else "📦 Old / Used Product",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                fontWeight = FontWeight.Medium,
+                                color = if (uiState.condition == "new") 
+                                    Color(0xFF166534) else Color(0xFFB45309)
+                            )
+                        }
+                        
                         // Product Name
                         OutlinedTextField(
                             value = uiState.productName,
@@ -290,31 +308,8 @@ fun ProductFormScreen(
                             }
                         }
                         
-                        // Condition
-                        Text("Condition", style = MaterialTheme.typography.labelLarge)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            FilterChip(
-                                selected = uiState.condition == "new",
-                                onClick = { viewModel.onConditionChange("new") },
-                                label = { Text("New") },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = PrimaryBlue,
-                                    selectedLabelColor = Color.White
-                                )
-                            )
-                            FilterChip(
-                                selected = uiState.condition == "old",
-                                onClick = { viewModel.onConditionChange("old") },
-                                label = { Text("Used") },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = PrimaryBlue,
-                                    selectedLabelColor = Color.White
-                                )
-                            )
-                        }
+                        // Note: Condition is displayed as a read-only badge at the top of the form
+                        // and cannot be changed when editing
                         
                         // Sell Online Toggle - Fixed colors
                         Card(

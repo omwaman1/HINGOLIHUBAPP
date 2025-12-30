@@ -13,6 +13,7 @@ data class ShopProduct(
     @SerializedName("product_name") val productName: String,
     @SerializedName("description") val description: String?,
     @SerializedName("category_id") val categoryId: Int,
+    @SerializedName("shop_category_id") val shopCategoryId: Int? = null,  // For new products using shop_categories
     @SerializedName("category_name") val categoryName: String?,
     @SerializedName("subcategory_id") val subcategoryId: Int?,
     @SerializedName("subcategory_name") val subcategoryName: String?,

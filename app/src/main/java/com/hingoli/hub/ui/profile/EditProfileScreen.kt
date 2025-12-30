@@ -377,19 +377,17 @@ fun EditProfileScreen(
                             )
                         }
                         // Validation for pending action
+                        // Password is optional - only validate if user enters one
+                        val passwordValid = password.isEmpty() || (password.length >= 6 && password == confirmPassword)
+                        
                         val isFormValid = if (isPendingAction) {
                             username.isNotBlank() && 
                             email.isNotBlank() && 
                             gender.isNotBlank() && 
                             dateOfBirth.isNotBlank() && 
-                            password.isNotBlank() && 
-                            password == confirmPassword &&
-                            password.length >= 6
+                            passwordValid
                         } else {
-                            username.isNotBlank() &&
-                            password.isNotBlank() && 
-                            password == confirmPassword &&
-                            password.length >= 6
+                            username.isNotBlank() && passwordValid
                         }
                         
                         // Save button

@@ -1,4 +1,4 @@
-﻿package com.hingoli.hub.ui.listing
+package com.hingoli.hub.ui.listing
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -43,6 +43,7 @@ import com.hingoli.hub.ui.theme.*
 fun ListingFormScreen(
     listingType: String? = null,
     listingId: Long? = null,
+    condition: String? = null,  // For selling type: "old" or "new" - passed from navigation
     onBackClick: () -> Unit,
     onSuccess: () -> Unit,
     viewModel: ListingFormViewModel = hiltViewModel(),
@@ -137,11 +138,12 @@ fun ListingFormScreen(
     }
     
     // Initialize based on mode
-    LaunchedEffect(listingId, listingType) {
+    LaunchedEffect(listingId, listingType, condition) {
         if (listingId != null && listingId > 0) {
             viewModel.initializeForEdit(listingId)
         } else if (listingType != null) {
-            viewModel.initializeForCreate(listingType)
+            // Pass condition for selling type (defaults to "old" if not specified)
+            viewModel.initializeForCreate(listingType, condition ?: "old")
         }
     }
     
@@ -207,33 +209,48 @@ fun ListingFormScreen(
                         // ========== LISTING TYPE ==========
                         item {
                             if (uiState.canChangeListingType) {
+                                // Compute the display value for the dropdown
+                                // For selling type, show the compound value based on condition
+                                val displayValue = when {
+                                    uiState.listingType == "selling" && uiState.condition == "new" -> "selling_new"
+                                    uiState.listingType == "selling" && uiState.condition == "old" -> "selling_old"
+                                    else -> uiState.listingType
+                                }
+                                
                                 FormDropdownField(
                                     label = "Listing Type *",
-                                    selectedValue = uiState.listingType,
+                                    selectedValue = displayValue,
                                     options = listOf(
-                                        "services" to "🔧 Services",
-                                        "selling" to "🛒 Product",
-                                        "business" to "🏢 Business",
-                                        "jobs" to "💼 Jobs"
+                                        "services" to "?? Services",
+                                        "selling_new" to "?? Sell New Product",
+                                        "selling_old" to "?? Sell Old Product",
+                                        "business" to "?? Business",
+                                        "jobs" to "?? Jobs"
                                     ),
                                     onValueSelected = { viewModel.onListingTypeChange(it) }
                                 )
                             } else {
                                 // Show read-only type badge in edit mode
+                                val badgeText = when {
+                                    uiState.listingType == "selling" && uiState.condition == "new" -> "?? New Product"
+                                    uiState.listingType == "selling" && uiState.condition == "old" -> "?? Old Product"
+                                    else -> "Type: ${uiState.listingType.replaceFirstChar { it.uppercase() }}"
+                                }
+                                val badgeColor = when {
+                                    uiState.listingType == "services" -> Color(0xFFE0E7FF)
+                                    uiState.listingType == "selling" && uiState.condition == "new" -> Color(0xFFDCFCE7)
+                                    uiState.listingType == "selling" && uiState.condition == "old" -> Color(0xFFFEF3C7)
+                                    uiState.listingType == "business" -> Color(0xFFCCFBF1)
+                                    uiState.listingType == "jobs" -> Color(0xFFFEF3C7)
+                                    else -> Color.LightGray
+                                }
+                                
                                 Card(
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = when(uiState.listingType) {
-                                            "services" -> Color(0xFFE0E7FF)
-                                            "selling" -> Color(0xFFFCE7F3)
-                                            "business" -> Color(0xFFCCFBF1)
-                                            "jobs" -> Color(0xFFFEF3C7)
-                                            else -> Color.LightGray
-                                        }
-                                    ),
+                                    colors = CardDefaults.cardColors(containerColor = badgeColor),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
                                     Text(
-                                        text = "Type: ${uiState.listingType.replaceFirstChar { it.uppercase() }}",
+                                        text = badgeText,
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                         fontWeight = FontWeight.Medium
                                     )
@@ -306,10 +323,10 @@ fun ListingFormScreen(
                                 OutlinedTextField(
                                     value = uiState.price,
                                     onValueChange = { viewModel.onPriceChange(it) },
-                                    label = { Text("Price (₹)") },
+                                    label = { Text("Price (?)") },
                                     placeholder = { Text("e.g. 500") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
+                                    leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
                                 )
                             }
                         }
@@ -367,7 +384,7 @@ fun ListingFormScreen(
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    "📍 Location captured",
+                                                    "?? Location captured",
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     fontWeight = FontWeight.Medium,
                                                     color = Color(0xFF2E7D32)
@@ -447,7 +464,7 @@ fun ListingFormScreen(
                         // Services fields
                         if (uiState.listingType == "services") {
                             item {
-                                FormSectionHeader("🔧 Service Details")
+                                FormSectionHeader("?? Service Details")
                             }
                             item {
                                 OutlinedTextField(
@@ -466,18 +483,18 @@ fun ListingFormScreen(
                                     OutlinedTextField(
                                         value = uiState.priceMin,
                                         onValueChange = { viewModel.onPriceMinChange(it) },
-                                        label = { Text("Min Price (₹)") },
+                                        label = { Text("Min Price (?)") },
                                         placeholder = { Text("e.g. 100") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
                                     )
                                     OutlinedTextField(
                                         value = uiState.priceMax,
                                         onValueChange = { viewModel.onPriceMaxChange(it) },
-                                        label = { Text("Max Price (₹)") },
+                                        label = { Text("Max Price (?)") },
                                         placeholder = { Text("e.g. 5000") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
                                     )
                                 }
                             }
@@ -486,7 +503,7 @@ fun ListingFormScreen(
                         // Jobs fields
                         if (uiState.listingType == "jobs") {
                             item {
-                                FormSectionHeader("💼 Job Details")
+                                FormSectionHeader("?? Job Details")
                             }
                             item {
                                 Row(
@@ -582,18 +599,46 @@ fun ListingFormScreen(
                         // Selling fields
                         if (uiState.listingType == "selling") {
                             item {
-                                FormSectionHeader("🛒 Product Details")
+                                FormSectionHeader("?? Product Details")
                             }
-                            item {
-                                FormDropdownField(
-                                    label = "Condition *",
-                                    selectedValue = uiState.condition,
-                                    options = listOf(
-                                        "new" to "🆕 New (Brand New / Unused)",
-                                        "old" to "📦 Old (Used / Second Hand)"
-                                    ),
-                                    onValueSelected = { viewModel.onConditionChange(it) }
-                                )
+                            // Hide condition dropdown when:
+                            // 1. Condition is pre-set from navigation (Sell Old/New tabs)
+                            // 2. Editing an existing product (listingId != null)
+                            val isConditionLocked = condition != null || (listingId != null && listingId > 0)
+                            
+                            if (!isConditionLocked) {
+                                // Show dropdown when creating a new product without pre-set condition
+                                item {
+                                    FormDropdownField(
+                                        label = "Condition *",
+                                        selectedValue = uiState.condition,
+                                        options = listOf(
+                                            "new" to "?? New (Brand New / Unused)",
+                                            "old" to "?? Old (Used / Second Hand)"
+                                        ),
+                                        onValueSelected = { viewModel.onConditionChange(it) }
+                                    )
+                                }
+                            } else {
+                                // Show read-only condition badge when pre-set or editing
+                                item {
+                                    Card(
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = if (uiState.condition == "new") 
+                                                Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = if (uiState.condition == "new") 
+                                                "?? New Product" else "?? Old / Used Product",
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                            fontWeight = FontWeight.Medium,
+                                            color = if (uiState.condition == "new") 
+                                                Color(0xFF166534) else Color(0xFFB45309)
+                                        )
+                                    }
+                                }
                             }
                             // MRP and Stock Quantity row
                             item {
@@ -604,7 +649,7 @@ fun ListingFormScreen(
                                     OutlinedTextField(
                                         value = uiState.discountedPrice,
                                         onValueChange = { viewModel.onDiscountedPriceChange(it) },
-                                        label = { Text("MRP (₹)") },
+                                        label = { Text("MRP (?)") },
                                         placeholder = { Text("Original price") },
                                         modifier = Modifier.weight(1f),
                                         singleLine = true
@@ -667,7 +712,7 @@ fun ListingFormScreen(
                         // Business fields
                         if (uiState.listingType == "business") {
                             item {
-                                FormSectionHeader("🏢 Business Details")
+                                FormSectionHeader("?? Business Details")
                             }
                             // Note: Business Name is now the Title field above, no separate field needed
                             item {
@@ -708,7 +753,7 @@ fun ListingFormScreen(
                         // Status dropdown (edit mode only)
                         if (uiState.isEditMode) {
                             item {
-                                FormSectionHeader("📊 Status")
+                                FormSectionHeader("?? Status")
                             }
                             item {
                                 FormDropdownField(
@@ -921,10 +966,10 @@ private fun FormCityDropdown(
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
-            value = selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "शहर निवडा..." else "Select City...",
+            value = selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "??? ?????..." else "Select City...",
             onValueChange = {},
             readOnly = true,
-            label = { Text(if (isMarathi) "शहर *" else "City *") },
+            label = { Text(if (isMarathi) "??? *" else "City *") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier
                 .fillMaxWidth()

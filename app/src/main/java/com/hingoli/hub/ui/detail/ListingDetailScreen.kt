@@ -58,6 +58,9 @@ fun ListingDetailScreen(
     settingsManager: SettingsManager? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    // Call timing dialog state - managed at screen level
+    var showCallTimingDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val selectedLanguage by settingsManager?.languageFlow?.collectAsState(initial = AppLanguage.MARATHI) 
@@ -94,7 +97,15 @@ fun ListingDetailScreen(
         uiState.listing != null -> {
             val listing = uiState.listing!!
             
-            Scaffold(
+            // Call Timing Dialog - shown when user tries to call outside allowed hours
+    if (showCallTimingDialog) {
+        CallTimingDialog(
+            message = viewModel.getCallTimingMessage(isMarathi = isMarathi),
+            onDismiss = { showCallTimingDialog = false }
+        )
+    }
+    
+    Scaffold(
                 bottomBar = {
                     // Bottom Call and Chat Bar - Only show if NOT a job
                     if (listing.listingType != "jobs") {
@@ -103,11 +114,17 @@ fun ListingDetailScreen(
                             isOwnListing = uiState.isOwnListing,
                             isCreatingChat = uiState.isCreatingChat,
                             isServiceListing = listing.listingType == "services",
+                            isMarathi = isMarathi,
                             onCallClick = {
                                 if (!uiState.isOwnListing) {
                                     // Require profile completion before calling
                                     if (!uiState.isProfileComplete) {
                                         onProfileIncomplete("call")
+                                        return@BottomActionBar
+                                    }
+                                    // Check call timing restriction
+                                    if (!viewModel.isCallAllowed()) {
+                                        showCallTimingDialog = true
                                         return@BottomActionBar
                                     }
                                     viewModel.logEnquiry("call")
@@ -249,6 +266,7 @@ fun ListingDetailScreen(
                             productCategories = uiState.productCategories,
                             productSubcategories = uiState.productSubcategories,
                             onCategorySelected = { viewModel.loadProductSubcategories(it) },
+                            onConditionChange = { condition -> viewModel.loadProductCategoriesForCondition(condition) },
                             onDeleteProduct = { viewModel.deleteBusinessProduct(it) }
                         )
                     }
@@ -343,10 +361,10 @@ private fun MainImageSection(
                     onClick = {
                         val shareText = buildString {
                             append("Check out \"${listing.title}\" on HINGOLI HUB!\n\n")
-                            listing.price?.let { append("💰 Price: ₹${String.format("%,.0f", it)}\n") }
-                            listing.location?.let { append("📍 Location: $it\n") }
-                            ?: listing.city?.let { append("📍 Location: $it\n") }
-                            append("\n🔗 Download HINGOLI HUB to view more:\n")
+                            listing.price?.let { append("?? Price: ?${String.format("%,.0f", it)}\n") }
+                            listing.location?.let { append("?? Location: $it\n") }
+                            ?: listing.city?.let { append("?? Location: $it\n") }
+                            append("\n?? Download HINGOLI HUB to view more:\n")
                             append("https://play.google.com/store/apps/details?id=com.hingoli.hub")
                         }
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -549,9 +567,9 @@ private fun ExperienceSection(listing: Listing) {
                 Text(
                     text = when {
                         priceMin != null && priceMax != null -> 
-                            "₹${String.format("%,.0f", priceMin)} - ₹${String.format("%,.0f", priceMax)}"
-                        priceMin != null -> "From ₹${String.format("%,.0f", priceMin)}"
-                        priceMax != null -> "Up to ₹${String.format("%,.0f", priceMax)}"
+                            "?${String.format("%,.0f", priceMin)} - ?${String.format("%,.0f", priceMax)}"
+                        priceMin != null -> "From ?${String.format("%,.0f", priceMin)}"
+                        priceMax != null -> "Up to ?${String.format("%,.0f", priceMax)}"
                         else -> ""
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -604,9 +622,9 @@ private fun JobDetailsSection(listing: Listing) {
                     label = "Salary",
                     value = when {
                         salaryMin != null && salaryMax != null -> 
-                            "₹${String.format("%,.0f", salaryMin)} - ₹${String.format("%,.0f", salaryMax)} / $salaryPeriod"
-                        salaryMin != null -> "₹${String.format("%,.0f", salaryMin)} / $salaryPeriod"
-                        salaryMax != null -> "Up to ₹${String.format("%,.0f", salaryMax)} / $salaryPeriod"
+                            "?${String.format("%,.0f", salaryMin)} - ?${String.format("%,.0f", salaryMax)} / $salaryPeriod"
+                        salaryMin != null -> "?${String.format("%,.0f", salaryMin)} / $salaryPeriod"
+                        salaryMax != null -> "Up to ?${String.format("%,.0f", salaryMax)} / $salaryPeriod"
                         else -> ""
                     }
                 )
@@ -728,6 +746,7 @@ private fun BottomActionBar(
     isOwnListing: Boolean = false,
     isCreatingChat: Boolean = false,
     isServiceListing: Boolean = false,
+    isMarathi: Boolean = false,
     onCallClick: () -> Unit,
     onChatClick: () -> Unit
 ) {
@@ -735,11 +754,11 @@ private fun BottomActionBar(
     val callButtonColor = if (isOwnListing) disabledColor else PrimaryBlue
     val chatButtonColor = if (isOwnListing) disabledColor else PrimaryBlue
     
-    // Dynamic button text based on listing type
+    // Dynamic button text based on listing type - use Strings helper for localization
     val callButtonText = when {
-        isOwnListing -> "Your Listing"
-        isServiceListing -> "बुक करा" // Book Now for services
-        else -> "कॉल करा" // Call Now for others
+        isOwnListing -> Strings.yourListing(isMarathi)
+        isServiceListing -> Strings.bookNow(isMarathi)
+        else -> Strings.callNow(isMarathi)
     }
     
     Surface(
@@ -810,7 +829,7 @@ private fun BottomActionBar(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isOwnListing) "Your Listing" else "चॅट करा",
+                    text = if (isOwnListing) Strings.yourListing(isMarathi) else Strings.chatNow(isMarathi),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -845,7 +864,8 @@ private fun TabSection(
     onDeleteProduct: (Long) -> Unit = {},
     productCategories: List<com.hingoli.hub.data.model.Category> = emptyList(),
     productSubcategories: List<com.hingoli.hub.data.model.Category> = emptyList(),
-    onCategorySelected: (Int) -> Unit = {}
+    onCategorySelected: (Int) -> Unit = {},
+    onConditionChange: (String) -> Unit = {} // Callback when condition changes in AddProductDialog
 ) {
     // Show Shop/Services tab for business and services listings
     val isBusiness = listing.listingType == "business"
@@ -970,7 +990,8 @@ private fun TabSection(
     }
     
     // Add Product/Service Dialog (for business/service owners)
-    if (showAddProductDialog) {
+    
+if (showAddProductDialog) {
         AddProductDialog(
             onDismiss = { showAddProductDialog = false },
             onConfirm = { name, description, price, imageUri, condition, sellOnline, categoryId, subcategoryId ->
@@ -980,6 +1001,7 @@ private fun TabSection(
             categories = productCategories,
             subcategories = productSubcategories,
             onCategorySelected = onCategorySelected,
+            onConditionChange = onConditionChange,
             isServiceListing = isService,
             isMarathi = isMarathi
         )
@@ -1095,7 +1117,7 @@ private fun ReviewCard(review: Review) {
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "${review.rating} ★",
+                        text = "${review.rating} ?",
                         style = MaterialTheme.typography.bodySmall,
                         color = AccentGreen
                     )
@@ -1156,7 +1178,7 @@ private fun ShopTab(
     // Use service-appropriate labels
     val itemLabel = if (isServiceListing) "Service" else "Product"
     val itemLabelPlural = if (isServiceListing) "services" else "products"
-    val emptyEmoji = if (isServiceListing) "🔧" else "🛒"
+    val emptyEmoji = if (isServiceListing) "??" else "??"
     
     // Snackbar for non-sellOnline products
     val snackbarHostState = remember { SnackbarHostState() }
@@ -1304,7 +1326,7 @@ private fun ShopProductGridCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 
                 Text(
-                    text = "₹${String.format("%,.0f", product.price)}",
+                    text = "?${String.format("%,.0f", product.price)}",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = Primary
@@ -1422,7 +1444,7 @@ private fun PriceListItemCard(
             }
             
             Text(
-                text = "₹${String.format("%,.0f", item.price)}",
+                text = "?${String.format("%,.0f", item.price)}",
                 style = MaterialTheme.typography.titleMedium,
                 color = OnSurface,
                 fontWeight = FontWeight.Bold
@@ -2039,7 +2061,7 @@ private fun AddPriceItemDialog(
                 OutlinedTextField(
                     value = priceText,
                     onValueChange = { priceText = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Price (₹) *") },
+                    label = { Text("Price (?) *") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -2282,7 +2304,7 @@ private fun AddProductDialog(
                         OutlinedTextField(
                             value = priceText,
                             onValueChange = { priceText = it.filter { c -> c.isDigit() || c == '.' } },
-                            label = { Text("Price (₹) *") },
+                            label = { Text("Price (?) *") },
                             singleLine = true,
                             shape = RoundedCornerShape(4.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -2448,7 +2470,7 @@ private fun AddProductDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (selectedImageUri != null) "Image Selected ✓" else "Add Image",
+                                text = if (selectedImageUri != null) "Image Selected ?" else "Add Image",
                                 color = if (selectedImageUri != null) AccentGreen else Color.Gray
                             )
                         }
@@ -2494,3 +2516,4 @@ private fun AddProductDialog(
         shape = RoundedCornerShape(4.dp) // Rectangle dialog shape
     )
 }
+

@@ -353,6 +353,7 @@ fun AddProductDialog(
     categories: List<Category> = emptyList(),
     subcategories: List<Category> = emptyList(),
     onCategorySelected: (Int) -> Unit = {},
+    onConditionChange: (String) -> Unit = {}, // Callback when condition changes (new/old)
     isServiceListing: Boolean = false,
     isMarathi: Boolean = false
 ) {
@@ -474,7 +475,14 @@ fun AddProductDialog(
                             ) {
                                 FilterChip(
                                     selected = condition == "new",
-                                    onClick = { condition = "new" },
+                                    onClick = { 
+                                        if (condition != "new") {
+                                            condition = "new"
+                                            selectedCategoryId = null
+                                            selectedSubcategoryId = null
+                                            onConditionChange("new")
+                                        }
+                                    },
                                     label = { Text(Strings.new(isMarathi)) },
                                     shape = RoundedCornerShape(4.dp),
                                     colors = FilterChipDefaults.filterChipColors(
@@ -484,7 +492,14 @@ fun AddProductDialog(
                                 )
                                 FilterChip(
                                     selected = condition == "old",
-                                    onClick = { condition = "old" },
+                                    onClick = { 
+                                        if (condition != "old") {
+                                            condition = "old"
+                                            selectedCategoryId = null
+                                            selectedSubcategoryId = null
+                                            onConditionChange("old")
+                                        }
+                                    },
                                     label = { Text(Strings.used(isMarathi)) },
                                     shape = RoundedCornerShape(4.dp),
                                     colors = FilterChipDefaults.filterChipColors(

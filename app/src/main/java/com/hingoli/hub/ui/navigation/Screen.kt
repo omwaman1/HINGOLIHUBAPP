@@ -21,6 +21,17 @@ sealed class Screen(val route: String) {
     object Services : Screen("services")
     object Shop : Screen("shop")           // New items (condition=new)
     object Old : Screen("old")             // Old items (condition=old)
+    object OldProducts : Screen("old_products/{categoryId}/{categoryName}") {
+        fun createRoute(categoryId: Int, categoryName: String): String {
+            val encodedName = java.net.URLEncoder.encode(categoryName, "UTF-8")
+            return "old_products/$categoryId/$encodedName"
+        }
+    }
+    object OldProductDetail : Screen("old_product/{productId}") {
+        fun createRoute(productId: Long): String {
+            return "old_product/$productId"
+        }
+    }
     object Selling : Screen("selling")     // Legacy - redirects based on condition
     object Businesses : Screen("businesses")
     object Jobs : Screen("jobs")           // Now in drawer menu
@@ -44,6 +55,14 @@ sealed class Screen(val route: String) {
     object PostListing : Screen("post_listing/{listingType}") {
         fun createRoute(listingType: String = "services"): String {
             return "post_listing/$listingType"
+        }
+        fun createRouteWithCondition(listingType: String, condition: String): String {
+            return "post_listing/$listingType?condition=$condition"
+        }
+    }
+    object PostProduct : Screen("post_product/{listingType}/{condition}") {
+        fun createRoute(listingType: String = "selling", condition: String = "old"): String {
+            return "post_product/$listingType/$condition"
         }
     }
     object EditListing : Screen("edit_listing/{listingId}") {

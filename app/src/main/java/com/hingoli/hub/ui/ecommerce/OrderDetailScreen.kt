@@ -193,19 +193,23 @@ private fun OrderStatusCard(orderDetail: OrderDetail) {
 
 @Composable
 private fun OrderProgressTracker(status: String) {
+    // Updated to match admin panel statuses
     val steps = listOf(
-        "Confirmed" to "confirmed",
-        "Waiting to Dispatch" to "waiting_to_dispatch",
-        "Dispatched" to "dispatched",
+        "Pending" to "pending",
+        "Confirmed" to "confirmed", 
+        "Processing" to "processing",
+        "Shipped" to "shipped",
         "Out for Delivery" to "out_for_delivery",
         "Delivered" to "delivered"
     )
     
     val currentStepIndex = steps.indexOfFirst { it.second == status.lowercase() }
         .takeIf { it >= 0 } ?: when (status.lowercase()) {
-            "processing" -> 0
-            "shipped" -> 2
-            else -> -1
+            "dispatched" -> 3  // dispatched = shipped
+            "accepted" -> 3    // delivery boy accepted = shipped
+            "waiting_to_dispatch" -> 2  // waiting = processing
+            "cancelled" -> -1
+            else -> 0
         }
     
     Row(
@@ -303,8 +307,11 @@ private fun getDeliverySubtext(status: String): String {
     return when (status.lowercase()) {
         "delivered" -> "Your order has been delivered"
         "out_for_delivery" -> "Your order is out for delivery"
-        "dispatched", "shipped" -> "Your order has been dispatched"
-        "waiting_to_dispatch" -> "Seller is preparing your order"
+        "shipped", "dispatched" -> "Your order has been shipped"
+        "accepted" -> "A delivery partner has been assigned"
+        "processing", "waiting_to_dispatch" -> "Your order is being prepared"
+        "confirmed" -> "Your order has been confirmed"
+        "pending" -> "Waiting for order confirmation"
         "cancelled" -> "This order has been cancelled"
         else -> "Your order is being processed"
     }
@@ -313,9 +320,12 @@ private fun getDeliverySubtext(status: String): String {
 private fun getEstimatedDeliveryText(status: String): Pair<String, String> {
     return when (status.lowercase()) {
         "delivered" -> "Delivered" to "Your order has been delivered"
-        "out_for_delivery" -> "Arriving today by 5 PM" to "Your order is out for delivery"
-        "dispatched", "shipped" -> "Arriving tomorrow by 5 PM" to "Your order has been dispatched"
-        "waiting_to_dispatch" -> "Arriving in 2-3 days" to "Seller is preparing your order"
+        "out_for_delivery" -> "Arriving today" to "Your order is out for delivery"
+        "shipped", "dispatched" -> "Arriving in 1-2 days" to "Your order has been shipped"
+        "accepted" -> "Arriving today" to "Delivery partner has been assigned"
+        "processing", "waiting_to_dispatch" -> "Arriving in 2-3 days" to "Your order is being prepared"
+        "confirmed" -> "Arriving in 3-4 days" to "Your order has been confirmed"
+        "pending" -> "Arriving in 4-5 days" to "Waiting for order confirmation"
         "cancelled" -> "Order Cancelled" to "This order has been cancelled"
         else -> "Arriving in 2-4 days" to "Your order is being processed"
     }
@@ -565,9 +575,11 @@ fun EnhancedOrderStatusChip(status: String) {
     val (backgroundColor, textColor, label) = when (status.lowercase()) {
         "delivered" -> Triple(Color(0xFFE8F5E9), Color(0xFF2E7D32), "Delivered")
         "out_for_delivery" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Out for Delivery")
-        "dispatched", "shipped" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Dispatched")
-        "waiting_to_dispatch" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Waiting to Dispatch")
-        "confirmed", "processing" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Confirmed")
+        "shipped", "dispatched" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Shipped")
+        "accepted" -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "Delivery Partner Assigned")
+        "processing", "waiting_to_dispatch" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Processing")
+        "confirmed" -> Triple(Color(0xFFFFF3E0), Color(0xFFEF6C00), "Confirmed")
+        "pending" -> Triple(Color(0xFFFCE4EC), Color(0xFFAD1457), "Pending")
         "cancelled" -> Triple(Color(0xFFFFEBEE), Color(0xFFC62828), "Cancelled")
         else -> Triple(Color(0xFFF5F5F5), Color.Gray, status.replaceFirstChar { it.uppercase() })
     }

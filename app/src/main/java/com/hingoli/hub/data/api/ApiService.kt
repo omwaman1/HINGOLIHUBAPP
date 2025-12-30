@@ -13,6 +13,13 @@ interface ApiService {
         @Query("city") city: String? = null
     ): Response<PrefetchResponse>
     
+    // ==================== APP CONFIG / FORCE UPDATE ====================
+    
+    @GET("app-config")
+    suspend fun getAppConfig(
+        @Header("X-App-Version") appVersion: String = ""
+    ): Response<AppConfigResponse>
+    
     // ==================== AUTH ====================
     
     @POST("auth/login")
@@ -67,6 +74,84 @@ interface ApiService {
     suspend fun getSubcategories(
         @Path("id") categoryId: Int
     ): Response<ApiResponse<List<Category>>>
+    
+    // ==================== SHOP CATEGORIES (for new products) ====================
+    
+    @GET("shop-categories")
+    suspend fun getShopCategories(
+        @Query("level") level: Int? = null,
+        @Query("parent_id") parentId: Int? = null,
+        @Query("with_subcategories") withSubcategories: Int? = null
+    ): Response<ApiResponse<List<ShopCategory>>>
+    
+    @GET("shop-categories/{id}")
+    suspend fun getShopCategoryById(
+        @Path("id") categoryId: Int
+    ): Response<ApiResponse<ShopCategory>>
+    
+    @GET("shop-categories/{id}/subcategories")
+    suspend fun getShopSubcategories(
+        @Path("id") categoryId: Int
+    ): Response<ApiResponse<List<ShopCategory>>>
+    
+    // ==================== OLD CATEGORIES (for used/second-hand items) ====================
+    
+    @GET("old-categories")
+    suspend fun getOldCategories(
+        @Query("level") level: Int? = null,
+        @Query("parent_id") parentId: Int? = null,
+        @Query("with_subcategories") withSubcategories: Int? = null
+    ): Response<ApiResponse<List<OldCategory>>>
+    
+    @GET("old-categories/{id}")
+    suspend fun getOldCategoryById(
+        @Path("id") categoryId: Int
+    ): Response<ApiResponse<OldCategory>>
+    
+    @GET("old-categories/{id}/subcategories")
+    suspend fun getOldSubcategories(
+        @Path("id") categoryId: Int
+    ): Response<ApiResponse<List<OldCategory>>>
+    
+    // ==================== OLD PRODUCTS (used items C2C marketplace) ====================
+    
+    @GET("old-products")
+    suspend fun getOldProducts(
+        @Query("category_id") categoryId: Int? = null,
+        @Query("city") city: String? = null,
+        @Query("condition") condition: String? = null,
+        @Query("search") search: String? = null,
+        @Query("user_id") userId: Long? = null,
+        @Query("min_price") minPrice: Double? = null,
+        @Query("max_price") maxPrice: Double? = null,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ApiResponse<OldProductsResponse>>
+    
+    @GET("old-products/{id}")
+    suspend fun getOldProductById(
+        @Path("id") productId: Long
+    ): Response<ApiResponse<OldProduct>>
+    
+    @Multipart
+    @POST("old-products")
+    suspend fun createOldProduct(
+        @PartMap fields: Map<String, @JvmSuppressWildcards okhttp3.RequestBody>,
+        @Part image: okhttp3.MultipartBody.Part? = null
+    ): Response<ApiResponse<Any>>
+    
+    @Multipart
+    @PUT("old-products/{id}")
+    suspend fun updateOldProduct(
+        @Path("id") productId: Long,
+        @PartMap fields: Map<String, @JvmSuppressWildcards okhttp3.RequestBody>,
+        @Part image: okhttp3.MultipartBody.Part? = null
+    ): Response<ApiResponse<Any>>
+    
+    @DELETE("old-products/{id}")
+    suspend fun deleteOldProduct(
+        @Path("id") productId: Long
+    ): Response<ApiResponse<Any>>
     
     // ==================== LISTINGS ====================
     
@@ -303,12 +388,12 @@ interface ApiService {
     
     @GET("products")
     suspend fun getShopProducts(
-        @Query("listing_id") listingId: Long? = null, // Get all products for specific listing
-        @Query("condition") condition: String? = null, // 'new' or 'old'
-        @Query("category_id") categoryId: Int? = null,
-        @Query("subcategory_id") subcategoryId: Int? = null,
+        @Query("listing_id") listingId: Long? = null,
+        // Note: condition param removed - shop_products is ALWAYS for new products
+        // Old/used products use the old-products API which reads from old_products table
+        @Query("shop_category_id") shopCategoryId: Int? = null, // Uses shop_categories table
         @Query("city") city: String? = null,
-        @Query("search") search: String? = null, // Search by product name
+        @Query("search") search: String? = null,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 20
     ): Response<ApiResponse<ShopProductsResponse>>
@@ -367,6 +452,21 @@ interface ApiService {
     // Simple JSON version without images
     @POST("products/{id}/reviews")
     suspend fun addProductReviewSimple(
+        @Path("id") productId: Long,
+        @Body request: AddReviewRequest
+    ): Response<ApiResponse<Review>>
+    
+    // ==================== OLD PRODUCT REVIEWS (used items) ====================
+    
+    @GET("old-products/{id}/reviews")
+    suspend fun getOldProductReviews(
+        @Path("id") productId: Long,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 10
+    ): Response<ApiResponse<List<Review>>>
+    
+    @POST("old-products/{id}/reviews")
+    suspend fun addOldProductReviewSimple(
         @Path("id") productId: Long,
         @Body request: AddReviewRequest
     ): Response<ApiResponse<Review>>

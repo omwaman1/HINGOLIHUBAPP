@@ -14,7 +14,10 @@ import com.hingoli.hub.data.model.Banner
 import com.hingoli.hub.data.model.Category
 import com.hingoli.hub.data.model.City
 import com.hingoli.hub.data.model.Listing
+import com.hingoli.hub.data.model.OldCategory
+import com.hingoli.hub.data.model.OldProduct
 import com.hingoli.hub.data.model.PrefetchBanners
+import com.hingoli.hub.data.model.ShopCategory
 import com.hingoli.hub.data.model.ShopProduct
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +53,11 @@ class SharedDataRepository @Inject constructor(
         private val LAST_BANNERS_FETCH = longPreferencesKey("last_banners_fetch")
         private val CACHED_BANNERS_JSON = stringPreferencesKey("cached_banners_json")
         private const val BANNER_CACHE_DURATION_MS = 0L // No caching - always fetch fresh banners
+        
+        // Offline mode: persist full prefetch data
+        private val LAST_PREFETCH_TIME = longPreferencesKey("last_prefetch_time")
+        private val PREFETCH_DATA_JSON = stringPreferencesKey("prefetch_data_json")
+        private const val OFFLINE_CACHE_DURATION_MS = 24 * 60 * 60 * 1000L // 24 hours for offline
     }
     
     private val dataStore = context.prefetchDataStore
@@ -75,11 +83,16 @@ class SharedDataRepository @Inject constructor(
     private val _businessCategories = MutableStateFlow<List<Category>>(emptyList())
     val businessCategories: StateFlow<List<Category>> = _businessCategories
     
-    private val _sellingCategories = MutableStateFlow<List<Category>>(emptyList())
-    val sellingCategories: StateFlow<List<Category>> = _sellingCategories
-    
     private val _jobsCategories = MutableStateFlow<List<Category>>(emptyList())
     val jobsCategories: StateFlow<List<Category>> = _jobsCategories
+    
+    // Old categories cache (for used/second-hand items)
+    private val _oldCategories = MutableStateFlow<List<OldCategory>>(emptyList())
+    val oldCategories: StateFlow<List<OldCategory>> = _oldCategories
+    
+    // Old subcategories indexed by parent ID for quick lookup
+    private val _oldSubcategoriesByParent = MutableStateFlow<Map<Int, List<OldCategory>>>(emptyMap())
+    val oldSubcategoriesByParent: StateFlow<Map<Int, List<OldCategory>>> = _oldSubcategoriesByParent
     
     // Subcategories indexed by parent ID for quick lookup
     private val _subcategoriesByParent = MutableStateFlow<Map<Int, List<Category>>>(emptyMap())
@@ -88,9 +101,6 @@ class SharedDataRepository @Inject constructor(
     // Listings cache by type
     private val _servicesListings = MutableStateFlow<List<Listing>>(emptyList())
     val servicesListings: StateFlow<List<Listing>> = _servicesListings
-    
-    private val _sellingListings = MutableStateFlow<List<Listing>>(emptyList())
-    val sellingListings: StateFlow<List<Listing>> = _sellingListings
     
     private val _businessListings = MutableStateFlow<List<Listing>>(emptyList())
     val businessListings: StateFlow<List<Listing>> = _businessListings
@@ -115,7 +125,7 @@ class SharedDataRepository @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading
     
     private var lastFetchTime = 0L
-    private val CACHE_VALIDITY_MS = 5 * 60 * 1000L // 5 minutes
+    private val CACHE_VALIDITY_MS = 15 * 60 * 1000L // 15 minutes
     
     /**
      * Check if cache is valid
@@ -155,13 +165,19 @@ class SharedDataRepository @Inject constructor(
                     // Process categories with embedded subcategories
                     processCategoriesWithSubcats(data.categories.services, "services") { _servicesCategories.value = it }
                     processCategoriesWithSubcats(data.categories.business, "business") { _businessCategories.value = it }
-                    processCategoriesWithSubcats(data.categories.selling, "selling") { _sellingCategories.value = it }
                     processCategoriesWithSubcats(data.categories.jobs, "jobs") { _jobsCategories.value = it }
+                    
+                    // Process old_categories (for used/second-hand items)
+                    val oldCats = data.categories.old ?: emptyList()
+                    _oldCategories.value = oldCats.filter { it.parentId == null }
+                    val oldSubcatsMap = oldCats.filter { it.parentId != null }
+                        .groupBy { it.parentId!! }
+                    _oldSubcategoriesByParent.value = oldSubcatsMap
+                    Log.d(TAG, "📦 Cached ${_oldCategories.value.size} old categories, ${oldSubcatsMap.size} subcategory groups")
                     
                     // Store listings
                     _servicesListings.value = data.listings.services
                     _businessListings.value = data.listings.business
-                    _sellingListings.value = data.listings.selling
                     _jobsListings.value = data.listings.jobs
                     
                     // Store banners (use cached if within 24 hours)
@@ -206,6 +222,9 @@ class SharedDataRepository @Inject constructor(
                             "${_oldProducts.value.size} old products, " +
                             "${_servicesCategories.value.size} service cats, " +
                             "${_subcategoriesByParent.value.size} parents with subcats")
+                    
+                    // Save to offline cache for 24-hour offline access
+                    savePrefetchToCache()
                 }
             } else {
                 Log.e(TAG, "Prefetch failed: ${response.message()}")
@@ -213,6 +232,13 @@ class SharedDataRepository @Inject constructor(
             
         } catch (e: Exception) {
             Log.e(TAG, "Prefetch error: ${e.message}", e)
+            
+            // OFFLINE MODE: Try loading from 24-hour cache if network fails
+            if (loadPrefetchFromCache()) {
+                Log.d(TAG, "📶 Network failed, using offline cache")
+            } else {
+                Log.w(TAG, "⚠️ No offline cache available")
+            }
         } finally {
             _isLoading.value = false
             prefetchCompleted.set(true)
@@ -279,6 +305,77 @@ class SharedDataRepository @Inject constructor(
     
     private data class CachedBanners(val banners: Map<String, List<Banner>>)
     
+    // ==================== Offline Mode Cache ====================
+    
+    /**
+     * Data class for persisting prefetch data to DataStore for offline mode
+     */
+    private data class CachedPrefetchData(
+        val servicesListings: List<Listing>,
+        val businessListings: List<Listing>,
+        val jobsListings: List<Listing>,
+        val shopProducts: List<ShopProduct>,
+        val oldProducts: List<ShopProduct>,
+        val cities: List<City>
+    )
+    
+    /**
+     * Load prefetch data from offline cache (24-hour validity)
+     * Returns true if data was loaded successfully
+     */
+    private suspend fun loadPrefetchFromCache(): Boolean {
+        try {
+            val prefs = dataStore.data.first()
+            val lastPrefetch = prefs[LAST_PREFETCH_TIME] ?: 0L
+            val now = System.currentTimeMillis()
+            
+            // Check if offline cache is still valid (24 hours)
+            if (now - lastPrefetch < OFFLINE_CACHE_DURATION_MS) {
+                val json = prefs[PREFETCH_DATA_JSON] ?: return false
+                val cached = gson.fromJson(json, CachedPrefetchData::class.java)
+                
+                // Restore data to StateFlows
+                _servicesListings.value = cached.servicesListings
+                _businessListings.value = cached.businessListings
+                _jobsListings.value = cached.jobsListings
+                _shopProducts.value = cached.shopProducts
+                _oldProducts.value = cached.oldProducts
+                _cities.value = cached.cities
+                
+                lastFetchTime = lastPrefetch
+                Log.d(TAG, "📦 Loaded offline cache: ${cached.servicesListings.size} services, ${cached.shopProducts.size} products")
+                return true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading prefetch from cache: ${e.message}")
+        }
+        return false
+    }
+    
+    /**
+     * Save prefetch data to DataStore for offline mode (24-hour validity)
+     */
+    private suspend fun savePrefetchToCache() {
+        try {
+            val data = CachedPrefetchData(
+                servicesListings = _servicesListings.value,
+                businessListings = _businessListings.value,
+                jobsListings = _jobsListings.value,
+                shopProducts = _shopProducts.value,
+                oldProducts = _oldProducts.value,
+                cities = _cities.value
+            )
+            val json = gson.toJson(data)
+            dataStore.edit { prefs ->
+                prefs[LAST_PREFETCH_TIME] = System.currentTimeMillis()
+                prefs[PREFETCH_DATA_JSON] = json
+            }
+            Log.d(TAG, "💾 Saved prefetch data to offline cache")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving prefetch to cache: ${e.message}")
+        }
+    }
+
     // ==================== Force Refresh ====================
     
     suspend fun refreshAll(city: String? = null) {
@@ -310,7 +407,6 @@ class SharedDataRepository @Inject constructor(
         
         return when (type) {
             "services" -> _servicesListings.value
-            "selling" -> _sellingListings.value
             "business" -> _businessListings.value
             "jobs" -> _jobsListings.value
             else -> emptyList()
@@ -331,7 +427,6 @@ class SharedDataRepository @Inject constructor(
         return when (type) {
             "services" -> _servicesCategories.value
             "business" -> _businessCategories.value
-            "selling" -> _sellingCategories.value
             "jobs" -> _jobsCategories.value
             else -> emptyList()
         }
@@ -405,6 +500,171 @@ class SharedDataRepository @Inject constructor(
     }
     
     /**
+     * Get shop categories (for NEW products)
+     * These are fetched from API, not prefetched.
+     */
+    suspend fun getShopCategories(): List<ShopCategory> {
+        return try {
+            val response = apiService.getShopCategories(level = 1)
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data ?: emptyList()
+            } else {
+                Log.e(TAG, "Failed to fetch shop categories: ${response.message()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching shop categories: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get subcategories for a shop category (for NEW products)
+     */
+    suspend fun getShopSubcategories(parentId: Int): List<ShopCategory> {
+        return try {
+            val response = apiService.getShopSubcategories(parentId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data ?: emptyList()
+            } else {
+                Log.e(TAG, "Failed to fetch shop subcategories: ${response.message()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching shop subcategories: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    // ==================== OLD CATEGORIES (C2C marketplace) ====================
+    
+    /**
+     * Get old categories (for used/second-hand items)
+     * Uses prefetch cache if available, falls back to API call
+     */
+    suspend fun getOldCategories(): List<OldCategory> {
+        // Wait for prefetch to complete
+        if (!prefetchCompleted.get()) {
+            Log.d(TAG, "⏳ Waiting for prefetch to complete for old categories...")
+            while (!prefetchCompleted.get()) {
+                kotlinx.coroutines.delay(50)
+            }
+        }
+        
+        // Return cached categories if available
+        if (_oldCategories.value.isNotEmpty()) {
+            Log.d(TAG, "📦 Using cached old categories: ${_oldCategories.value.size}")
+            return _oldCategories.value
+        }
+        
+        // Fallback to API if cache is empty
+        Log.d(TAG, "🌐 Fetching old categories from API (cache empty)")
+        return try {
+            val response = apiService.getOldCategories(level = 1)
+            if (response.isSuccessful && response.body()?.success == true) {
+                val categories = response.body()?.data ?: emptyList()
+                _oldCategories.value = categories.filter { it.parentId == null }
+                categories.filter { it.parentId == null }
+            } else {
+                Log.e(TAG, "Failed to fetch old categories: ${response.message()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching old categories: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get old subcategories for a parent category
+     * Uses prefetch cache if available, falls back to API call
+     */
+    suspend fun getOldSubcategories(parentId: Int): List<OldCategory> {
+        // Wait for prefetch to complete
+        if (!prefetchCompleted.get()) {
+            Log.d(TAG, "⏳ Waiting for prefetch to complete for old subcategories...")
+            while (!prefetchCompleted.get()) {
+                kotlinx.coroutines.delay(50)
+            }
+        }
+        
+        // Return cached subcategories if available
+        val cached = _oldSubcategoriesByParent.value[parentId]
+        if (cached != null) {
+            Log.d(TAG, "📦 Using cached old subcategories for parent $parentId: ${cached.size}")
+            return cached
+        }
+        
+        // Fallback to API if not in cache
+        Log.d(TAG, "🌐 Fetching old subcategories from API for parent $parentId")
+        return try {
+            val response = apiService.getOldSubcategories(parentId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                val subcats = response.body()?.data ?: emptyList()
+                // Update cache
+                val updatedMap = _oldSubcategoriesByParent.value.toMutableMap()
+                updatedMap[parentId] = subcats
+                _oldSubcategoriesByParent.value = updatedMap
+                subcats
+            } else {
+                Log.e(TAG, "Failed to fetch old subcategories: ${response.message()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching old subcategories: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get old products with filters
+     */
+    suspend fun getOldProductsList(
+        categoryId: Int? = null,
+        city: String? = null,
+        condition: String? = null,
+        search: String? = null,
+        page: Int = 1
+    ): List<OldProduct> {
+        return try {
+            val response = apiService.getOldProducts(
+                categoryId = categoryId,
+                city = city,
+                condition = condition,
+                search = search,
+                page = page
+            )
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data?.products ?: emptyList()
+            } else {
+                Log.e(TAG, "Failed to fetch old products: ${response.message()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching old products: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get single old product by ID
+     */
+    suspend fun getOldProductById(productId: Long): OldProduct? {
+        return try {
+            val response = apiService.getOldProductById(productId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data
+            } else {
+                Log.e(TAG, "Failed to fetch old product: ${response.message()}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching old product: ${e.message}", e)
+            null
+        }
+    }
+    
+    /**
      * Clear all cache
      */
     fun clearCache() {
@@ -416,12 +676,10 @@ class SharedDataRepository @Inject constructor(
         _bannersByPlacement.value = emptyMap()
         _servicesCategories.value = emptyList()
         _businessCategories.value = emptyList()
-        _sellingCategories.value = emptyList()
         _jobsCategories.value = emptyList()
         _subcategoriesByParent.value = emptyMap()
         _servicesListings.value = emptyList()
         _businessListings.value = emptyList()
-        _sellingListings.value = emptyList()
         _jobsListings.value = emptyList()
         _shopProducts.value = emptyList()
         _oldProducts.value = emptyList()

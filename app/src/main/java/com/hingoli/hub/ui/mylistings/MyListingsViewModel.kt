@@ -30,6 +30,10 @@ class MyListingsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(MyListingsUiState())
     val uiState: StateFlow<MyListingsUiState> = _uiState.asStateFlow()
+    
+    // Prevent duplicate API calls
+    private var isLoaded = false
+    private var lastFilter: String? = null
 
     init {
         loadMyListings()
@@ -44,26 +48,40 @@ class MyListingsViewModel @Inject constructor(
     fun setFilter(filter: String) {
         if (_uiState.value.selectedFilter != filter) {
             _uiState.value = _uiState.value.copy(selectedFilter = filter)
+            isLoaded = false // Force reload on filter change
             loadMyListings()
         }
     }
 
     fun loadMyListings() {
+        // Prevent duplicate calls
+        val currentFilter = _uiState.value.selectedFilter
+        if (isLoaded && currentFilter == lastFilter && _uiState.value.listings.isNotEmpty()) return
+        
+        lastFilter = currentFilter
+        isLoaded = true
+        
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                val typeFilter = if (_uiState.value.selectedFilter == "all") null else _uiState.value.selectedFilter
+                val selectedFilter = _uiState.value.selectedFilter
+                val typeFilter = when (selectedFilter) {
+                    "all" -> null
+                    else -> selectedFilter
+                }
                 val result = listingRepository.getMyListings(typeFilter)
                 result.fold(
                     onSuccess = { listings ->
                         // Deduplicate by listingId to prevent LazyColumn key crash
                         val uniqueListings = listings.distinctBy { it.listingId }
+                        
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             listings = uniqueListings
                         )
                     },
                     onFailure = { e ->
+                        isLoaded = false // Allow retry on error
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             error = e.message ?: "Failed to load listings"
@@ -71,6 +89,7 @@ class MyListingsViewModel @Inject constructor(
                     }
                 )
             } catch (e: Exception) {
+                isLoaded = false // Allow retry on error
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = e.message ?: "Failed to load listings"

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.hingoli.hub.data.model.Banner
 import com.hingoli.hub.data.model.Category
 import com.hingoli.hub.data.model.Listing
+import com.hingoli.hub.data.model.OldProduct
 import com.hingoli.hub.data.model.ShopProduct
 import com.hingoli.hub.data.api.ApiService
 import com.hingoli.hub.data.settings.SettingsManager
@@ -129,22 +130,46 @@ class CategoryListingsViewModel @Inject constructor(
     }
     
     /**
-     * Load shop products for selling category (condition=old)
+     * Load old products for selling category (from old_products table)
      */
     private suspend fun loadProductsForCategory(categoryId: Int, city: String? = null) {
         try {
-            val response = apiService.getShopProducts(
-                listingId = null,
-                condition = "old",  // Only old/used products
-                categoryId = null,  // We filter by subcategory
-                subcategoryId = categoryId,
+            // Use old-products API which reads from old_products table
+            val response = apiService.getOldProducts(
+                categoryId = categoryId,
                 city = city,
                 page = 1,
-                perPage = 20
+                limit = 20
             )
             
             if (response.isSuccessful && response.body()?.success == true) {
-                val shopProducts = response.body()?.data?.products ?: emptyList()
+                val oldProducts = response.body()?.data?.products ?: emptyList()
+                
+                // Convert OldProduct to ShopProduct for UI compatibility
+                val shopProducts = oldProducts.map { oldProduct ->
+                    ShopProduct(
+                        productId = oldProduct.productId,
+                        listingId = 0L, // Old products don't have listing_id
+                        productName = oldProduct.productName,
+                        description = oldProduct.description,
+                        categoryId = 0, // Not applicable for old products
+                        shopCategoryId = null,
+                        categoryName = oldProduct.categoryName,
+                        subcategoryId = null,
+                        subcategoryName = null,
+                        price = oldProduct.price,
+                        discountedPrice = oldProduct.originalPrice,
+                        imageUrl = oldProduct.imageUrl,
+                        stockQty = 1,
+                        sellOnline = true,
+                        condition = oldProduct.condition,
+                        businessName = oldProduct.sellerName,
+                        businessPhone = if (oldProduct.showPhone) oldProduct.seller?.phone else null,
+                        city = oldProduct.city,
+                        userId = oldProduct.userId,
+                        createdAt = oldProduct.createdAt
+                    )
+                }
                 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,

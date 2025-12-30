@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import java.util.Calendar
 import javax.inject.Inject
 
 data class ListingDetailUiState(
@@ -39,7 +40,13 @@ data class ListingDetailUiState(
     // For Add Product dialog
     val productCategories: List<Category> = emptyList(),
     val productSubcategories: List<Category> = emptyList(),
-    val bottomBanners: List<Banner> = emptyList()
+    val bottomBanners: List<Banner> = emptyList(),
+    // Call timing configuration
+    val callTimingEnabled: Boolean = true,
+    val callStartHour: Int = 8,
+    val callEndHour: Int = 22,
+    val callTimingMessage: String = "Call service available from 8 AM to 10 PM",
+    val callTimingMessageMr: String = "कॉल सेवा सकाळी 8 ते रात्री 10 वाजेपर्यंत उपलब्ध"
 )
 
 @HiltViewModel
@@ -59,6 +66,7 @@ class ListingDetailViewModel @Inject constructor(
     init {
         loadCurrentUser()
         loadProductCategories()
+        loadCallTimingConfig()
     }
     
     private fun loadCurrentUser() {
@@ -73,6 +81,48 @@ class ListingDetailViewModel @Inject constructor(
                 isProfileComplete = isProfileComplete
             )
         }
+    }
+    
+    /**
+     * Load call timing configuration from app-config API
+     */
+    private fun loadCallTimingConfig() {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getAppConfig()
+                if (response.isSuccessful && response.body()?.data != null) {
+                    val config = response.body()!!.data!!
+                    _uiState.value = _uiState.value.copy(
+                        callTimingEnabled = config.callTimingEnabled,
+                        callStartHour = config.callStartHour,
+                        callEndHour = config.callEndHour,
+                        callTimingMessage = config.callTimingMessage,
+                        callTimingMessageMr = config.callTimingMessageMr
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CallTiming", "Error loading call timing: ${e.message}")
+            }
+        }
+    }
+    
+    /**
+     * Check if calls are allowed at current time
+     * Returns true if calls are allowed, false if outside allowed hours
+     */
+    fun isCallAllowed(): Boolean {
+        val state = _uiState.value
+        if (!state.callTimingEnabled) return true // Timing check disabled
+        
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        return currentHour >= state.callStartHour && currentHour < state.callEndHour
+    }
+    
+    /**
+     * Get appropriate call timing message based on language
+     */
+    fun getCallTimingMessage(isMarathi: Boolean): String {
+        return if (isMarathi) _uiState.value.callTimingMessageMr else _uiState.value.callTimingMessage
     }
     
     /**
@@ -122,6 +172,9 @@ class ListingDetailViewModel @Inject constructor(
                     // Load shop products for business and services listings
                     if (listing.listingType == "business" || listing.listingType == "services") {
                         loadShopProducts(listingId)
+                        // Reload categories based on listing type
+                        currentListingType = listing.listingType
+                        loadProductCategoriesForCondition("new")
                     }
                 }
                 is ListingDetailResult.Error -> {
@@ -562,13 +615,73 @@ class ListingDetailViewModel @Inject constructor(
     
     // ==================== CATEGORY LOADING (For Add Product Dialog) ====================
     
+    // Track current condition for subcategory loading
+    private var currentProductCondition: String = "new"
+    // Track current listing type for category loading
+    private var currentListingType: String = "business"
+    
     private fun loadProductCategories() {
+        // Will be called with correct parameters when listing loads
+        // Default to shop categories for NEW products
+        loadProductCategoriesForCondition("new")
+    }
+    
+    /**
+     * Load categories based on listing type and condition:
+     * - Services listing -> load services categories
+     * - Business/selling listing with condition "new" -> load shop_categories
+     * - Business/selling listing with condition "old" -> load old_categories
+     */
+    fun loadProductCategoriesForCondition(condition: String) {
+        currentProductCondition = condition
+        val listingType = _uiState.value.listing?.listingType ?: currentListingType
+        currentListingType = listingType
+        
         viewModelScope.launch {
             try {
-                // Load selling categories for shop products (main categories only)
-                val allCategories = sharedDataRepository.getCategories("selling")
-                val mainCategories = allCategories.filter { it.parentId == null }
-                _uiState.value = _uiState.value.copy(productCategories = mainCategories)
+                when {
+                    // For SERVICES listings, always use services categories
+                    listingType == "services" -> {
+                        val servicesCategories = sharedDataRepository.getCategories("services")
+                        val mainCategories = servicesCategories.filter { it.parentId == null }
+                        _uiState.value = _uiState.value.copy(
+                            productCategories = mainCategories,
+                            productSubcategories = emptyList()
+                        )
+                    }
+                    // For NEW products (business listings), use shop_categories
+                    condition == "new" -> {
+                        val shopCategories = sharedDataRepository.getShopCategories()
+                        val mainCategories = shopCategories.map { it.toCategory() }
+                        _uiState.value = _uiState.value.copy(
+                            productCategories = mainCategories,
+                            productSubcategories = emptyList()
+                        )
+                    }
+                    // For OLD/used products, use old_categories
+                    else -> {
+                        val oldCategories = sharedDataRepository.getOldCategories()
+                        val mainCategories = oldCategories.map { 
+                            Category(
+                                categoryId = it.id,
+                                parentId = it.parentId,
+                                name = it.name,
+                                nameMr = it.nameMr,
+                                slug = it.slug ?: "",
+                                listingType = "old",
+                                iconUrl = it.imageUrl,
+                                imageUrl = it.imageUrl,
+                                description = null,
+                                listingCount = 0,
+                                depth = 0
+                            )
+                        }
+                        _uiState.value = _uiState.value.copy(
+                            productCategories = mainCategories,
+                            productSubcategories = emptyList()
+                        )
+                    }
+                }
             } catch (e: Exception) {
                 android.util.Log.e("ListingDetail", "Failed to load product categories: ${e.message}")
             }
@@ -578,8 +691,39 @@ class ListingDetailViewModel @Inject constructor(
     fun loadProductSubcategories(categoryId: Int) {
         viewModelScope.launch {
             try {
-                val subcategories = sharedDataRepository.getSubcategoriesForParent(categoryId)
-                _uiState.value = _uiState.value.copy(productSubcategories = subcategories)
+                when {
+                    // For SERVICES listings, load from services categories
+                    currentListingType == "services" -> {
+                        val subcategories = sharedDataRepository.getSubcategoriesForParent(categoryId)
+                        _uiState.value = _uiState.value.copy(productSubcategories = subcategories)
+                    }
+                    // For NEW products (business), load from shop_categories
+                    currentProductCondition == "new" -> {
+                        val shopSubcategories = sharedDataRepository.getShopSubcategories(categoryId)
+                        val subcategories = shopSubcategories.map { it.toCategory() }
+                        _uiState.value = _uiState.value.copy(productSubcategories = subcategories)
+                    }
+                    // For OLD/used products, load from old_categories
+                    else -> {
+                        val oldSubcategories = sharedDataRepository.getOldSubcategories(categoryId)
+                        val subcategories = oldSubcategories.map { 
+                            Category(
+                                categoryId = it.id,
+                                parentId = it.parentId,
+                                name = it.name,
+                                nameMr = it.nameMr,
+                                slug = it.slug ?: "",
+                                listingType = "old",
+                                iconUrl = it.imageUrl,
+                                imageUrl = it.imageUrl,
+                                description = null,
+                                listingCount = 0,
+                                depth = 1
+                            )
+                        }
+                        _uiState.value = _uiState.value.copy(productSubcategories = subcategories)
+                    }
+                }
             } catch (e: Exception) {
                 android.util.Log.e("ListingDetail", "Failed to load product subcategories: ${e.message}")
             }

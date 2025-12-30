@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hingoli.hub.data.api.TokenManager
 import com.hingoli.hub.data.model.ChatMessage
 import com.hingoli.hub.data.repository.ChatRepository
+import com.hingoli.hub.service.ChatMessagingService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,7 +39,17 @@ class ConversationViewModel @Inject constructor(
     val uiState: StateFlow<ConversationUiState> = _uiState.asStateFlow()
     
     init {
+        // Set active conversation to suppress notifications while in this chat
+        ChatMessagingService.setActiveConversation(conversationId)
         loadMessages()
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        // Clear active conversation when leaving chat
+        ChatMessagingService.setActiveConversation(null)
+        // Clear pending messages for this conversation
+        ChatMessagingService.clearPendingMessages(conversationId)
     }
     
     private fun loadMessages() {

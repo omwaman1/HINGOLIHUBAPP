@@ -27,6 +27,21 @@ class ChatMessagingService : FirebaseMessagingService() {
         const val CHANNEL_NAME = "Chat Messages"
         const val LISTING_CHANNEL_ID = "listing_notifications"  // Must match admin.php channel_id
         const val LISTING_CHANNEL_NAME = "New Listings"
+        
+        // Track active conversation to suppress notifications
+        @Volatile
+        var activeConversationId: String? = null
+        
+        // Track message history for grouped notifications (sender -> list of messages)
+        private val pendingMessages = mutableMapOf<String, MutableList<String>>()
+        
+        fun setActiveConversation(conversationId: String?) {
+            activeConversationId = conversationId
+        }
+        
+        fun clearPendingMessages(senderId: String) {
+            pendingMessages.remove(senderId)
+        }
     }
     
     override fun onNewToken(token: String) {
@@ -64,6 +79,7 @@ class ChatMessagingService : FirebaseMessagingService() {
             ?: message.data["body"] 
             ?: "You have a new message"
         val conversationId = message.data["conversationId"]
+        val senderId = message.data["senderId"] ?: conversationId
         
         // Handle call invitation specifically
         val type = message.data["type"]
@@ -114,8 +130,93 @@ class ChatMessagingService : FirebaseMessagingService() {
             return
         }
         
-        // Show regular chat notification
-        showNotification(title, body, conversationId)
+        // CHAT MESSAGE HANDLING
+        // Check if user is currently viewing this conversation - suppress notification
+        if (conversationId != null && conversationId == activeConversationId) {
+            Log.d(TAG, "User is viewing this conversation - suppressing notification")
+            return
+        }
+        
+        // Show chat notification with grouping
+        showGroupedChatNotification(title, body, conversationId, senderId)
+    }
+    
+    private fun showGroupedChatNotification(
+        title: String,
+        body: String,
+        conversationId: String?,
+        senderId: String?
+    ) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        
+        // Use senderId or conversationId as the group key
+        val groupKey = "chat_$senderId"
+        val notificationId = (senderId ?: conversationId ?: System.currentTimeMillis().toString()).hashCode()
+        
+        // Add message to pending list for this sender
+        val senderKey = senderId ?: "unknown"
+        val messages = pendingMessages.getOrPut(senderKey) { mutableListOf() }
+        messages.add(body)
+        
+        // Create intent to open chat
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            conversationId?.let { putExtra("conversationId", it) }
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            notificationId,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        
+        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        
+        // Create notification channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val chatChannel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Chat message notifications"
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(chatChannel)
+        }
+        
+        // Build notification with inbox style for multiple messages
+        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setGroup(groupKey)
+        
+        if (messages.size > 1) {
+            // Multiple messages - use Inbox style
+            val inboxStyle = NotificationCompat.InboxStyle()
+                .setBigContentTitle(title)
+                .setSummaryText("${messages.size} messages")
+            
+            // Add last 5 messages
+            messages.takeLast(5).forEach { msg ->
+                inboxStyle.addLine(msg)
+            }
+            
+            notificationBuilder
+                .setStyle(inboxStyle)
+                .setContentText("${messages.size} messages")
+                .setNumber(messages.size)
+        } else {
+            // Single message
+            notificationBuilder.setContentText(body)
+        }
+        
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
     
     private fun showCallNotification(
@@ -302,11 +403,11 @@ class ChatMessagingService : FirebaseMessagingService() {
             }
             notificationManager.createNotificationChannel(chatChannel)
             
-            // Listing/broadcast channel
+            // Listing/broadcast channel - use HIGH importance for heads-up display
             val listingChannel = NotificationChannel(
                 LISTING_CHANNEL_ID,
                 LISTING_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH  // Changed to HIGH for heads-up display
             ).apply {
                 description = "New listings and announcements"
                 enableVibration(true)
