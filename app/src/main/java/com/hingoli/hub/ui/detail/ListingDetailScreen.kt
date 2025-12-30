@@ -361,10 +361,10 @@ private fun MainImageSection(
                     onClick = {
                         val shareText = buildString {
                             append("Check out \"${listing.title}\" on HINGOLI HUB!\n\n")
-                            listing.price?.let { append("?? Price: ?${String.format("%,.0f", it)}\n") }
-                            listing.location?.let { append("?? Location: $it\n") }
-                            ?: listing.city?.let { append("?? Location: $it\n") }
-                            append("\n?? Download HINGOLI HUB to view more:\n")
+                            listing.price?.let { append("💰 Price: ₹${String.format("%,.0f", it)}\n") }
+                            listing.location?.let { append("📍 Location: $it\n") }
+                            ?: listing.city?.let { append("📍 Location: $it\n") }
+                            append("\n📲 Download HINGOLI HUB to view more:\n")
                             append("https://play.google.com/store/apps/details?id=com.hingoli.hub")
                         }
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {

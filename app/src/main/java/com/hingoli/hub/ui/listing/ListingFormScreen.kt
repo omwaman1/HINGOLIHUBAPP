@@ -384,7 +384,7 @@ fun ListingFormScreen(
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    "?? Location captured",
+                                                    "✅ Location captured",
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     fontWeight = FontWeight.Medium,
                                                     color = Color(0xFF2E7D32)
@@ -464,7 +464,7 @@ fun ListingFormScreen(
                         // Services fields
                         if (uiState.listingType == "services") {
                             item {
-                                FormSectionHeader("?? Service Details")
+                                FormSectionHeader("🔧 Service Details")
                             }
                             item {
                                 OutlinedTextField(
@@ -503,7 +503,7 @@ fun ListingFormScreen(
                         // Jobs fields
                         if (uiState.listingType == "jobs") {
                             item {
-                                FormSectionHeader("?? Job Details")
+                                FormSectionHeader("💼 Job Details")
                             }
                             item {
                                 Row(
@@ -599,7 +599,7 @@ fun ListingFormScreen(
                         // Selling fields
                         if (uiState.listingType == "selling") {
                             item {
-                                FormSectionHeader("?? Product Details")
+                                FormSectionHeader("📦 Product Details")
                             }
                             // Hide condition dropdown when:
                             // 1. Condition is pre-set from navigation (Sell Old/New tabs)
@@ -613,8 +613,8 @@ fun ListingFormScreen(
                                         label = "Condition *",
                                         selectedValue = uiState.condition,
                                         options = listOf(
-                                            "new" to "?? New (Brand New / Unused)",
-                                            "old" to "?? Old (Used / Second Hand)"
+                                            "new" to "✨ New (Brand New / Unused)",
+                                            "old" to "♻️ Old (Used / Second Hand)"
                                         ),
                                         onValueSelected = { viewModel.onConditionChange(it) }
                                     )
@@ -631,7 +631,7 @@ fun ListingFormScreen(
                                     ) {
                                         Text(
                                             text = if (uiState.condition == "new") 
-                                                "?? New Product" else "?? Old / Used Product",
+                                                "✨ New Product" else "♻️ Old / Used Product",
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                             fontWeight = FontWeight.Medium,
                                             color = if (uiState.condition == "new") 
@@ -712,7 +712,7 @@ fun ListingFormScreen(
                         // Business fields
                         if (uiState.listingType == "business") {
                             item {
-                                FormSectionHeader("?? Business Details")
+                                FormSectionHeader("🏢 Business Details")
                             }
                             // Note: Business Name is now the Title field above, no separate field needed
                             item {
@@ -753,7 +753,7 @@ fun ListingFormScreen(
                         // Status dropdown (edit mode only)
                         if (uiState.isEditMode) {
                             item {
-                                FormSectionHeader("?? Status")
+                                FormSectionHeader("⚙️ Status")
                             }
                             item {
                                 FormDropdownField(
@@ -966,10 +966,10 @@ private fun FormCityDropdown(
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
-            value = selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "??? ?????..." else "Select City...",
+            value = selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "शहर निवडा..." else "Select City...",
             onValueChange = {},
             readOnly = true,
-            label = { Text(if (isMarathi) "??? *" else "City *") },
+            label = { Text(if (isMarathi) "शहर *" else "City *") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier
                 .fillMaxWidth()
