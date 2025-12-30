@@ -101,28 +101,39 @@ class MyListingsViewModel @Inject constructor(
     fun deleteListing(listingId: Long, listingType: String) {
         viewModelScope.launch {
             try {
+                // DEBUG: Log delete request
+                android.util.Log.d("DebugDelete", "=== DELETE REQUEST ===")
+                android.util.Log.d("DebugDelete", "listingId: $listingId")
+                android.util.Log.d("DebugDelete", "listingType: $listingType")
+                
                 // Route to correct endpoint based on listing type
                 val result = if (listingType == "selling") {
                     // Products use DELETE /products/{id}
+                    android.util.Log.d("DebugDelete", "Using deleteProduct endpoint")
                     sharedDataRepository.deleteProduct(listingId)
                 } else {
                     // Regular listings use DELETE /listings/{id}
+                    android.util.Log.d("DebugDelete", "Using deleteListing endpoint")
                     listingRepository.deleteListing(listingId)
                 }
+                
                 result.fold(
                     onSuccess = {
+                        android.util.Log.d("DebugDelete", "Delete SUCCESS")
                         // Remove from local list
                         _uiState.value = _uiState.value.copy(
                             listings = _uiState.value.listings.filter { it.listingId != listingId }
                         )
                     },
                     onFailure = { e ->
+                        android.util.Log.d("DebugDelete", "Delete FAILED: ${e.message}")
                         _uiState.value = _uiState.value.copy(
                             error = e.message ?: "Failed to delete"
                         )
                     }
                 )
             } catch (e: Exception) {
+                android.util.Log.d("DebugDelete", "Delete EXCEPTION: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Failed to delete"
                 )

@@ -705,16 +705,21 @@ class SharedDataRepository @Inject constructor(
      */
     suspend fun deleteProduct(productId: Long): Result<Unit> {
         return try {
+            android.util.Log.d("DebugDelete", "deleteProduct called with productId: $productId")
             val response = apiService.deleteBusinessProduct(productId)
+            android.util.Log.d("DebugDelete", "API Response - code: ${response.code()}, success: ${response.body()?.success}, message: ${response.body()?.message}")
             if (response.isSuccessful && response.body()?.success == true) {
                 // Remove from local cache
                 _shopProducts.value = _shopProducts.value.filter { it.productId != productId }
                 _oldProducts.value = _oldProducts.value.filter { it.productId != productId }
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Failed to delete product"))
+                val errorMsg = response.body()?.message ?: response.errorBody()?.string() ?: "Failed to delete product"
+                android.util.Log.d("DebugDelete", "Delete API error: $errorMsg")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
+            android.util.Log.d("DebugDelete", "Delete exception: ${e.message}")
             Result.failure(e)
         }
     }
