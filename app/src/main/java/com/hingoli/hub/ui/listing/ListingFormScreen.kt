@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -472,7 +474,9 @@ fun ListingFormScreen(
                                     value = uiState.experienceYears,
                                     onValueChange = { viewModel.onExperienceYearsChange(it) },
                                     label = { Text("Years of Experience") },
-                                    modifier = Modifier.fillMaxWidth()
+                                    placeholder = { Text("Enter how many years") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                 )
                             }
                             // Price Range (Min/Max)
@@ -484,18 +488,18 @@ fun ListingFormScreen(
                                     OutlinedTextField(
                                         value = uiState.priceMin,
                                         onValueChange = { viewModel.onPriceMinChange(it) },
-                                        label = { Text("Min Price (?)") },
+                                        label = { Text("Min Price (₹)") },
                                         placeholder = { Text("e.g. 100") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
                                     )
                                     OutlinedTextField(
                                         value = uiState.priceMax,
                                         onValueChange = { viewModel.onPriceMaxChange(it) },
-                                        label = { Text("Max Price (?)") },
+                                        label = { Text("Max Price (₹)") },
                                         placeholder = { Text("e.g. 5000") },
                                         modifier = Modifier.weight(1f),
-                                        leadingIcon = { Text("?", modifier = Modifier.padding(start = 12.dp)) }
+                                        leadingIcon = { Text("₹", modifier = Modifier.padding(start = 12.dp)) }
                                     )
                                 }
                             }
