@@ -24,6 +24,8 @@ data class ShopProduct(
     @SerializedName("min_qty") val minQty: Int = 1,
     @SerializedName("sell_online") val sellOnline: Boolean = false,
     @SerializedName("condition") val condition: String? = null,
+    @SerializedName("is_old_product") val isOldProduct: Boolean = false,
+    @SerializedName("product_source") val productSource: String? = null,
     @SerializedName("business_name") val businessName: String?,
     @SerializedName("business_phone") val businessPhone: String?,
     @SerializedName("city") val city: String?,

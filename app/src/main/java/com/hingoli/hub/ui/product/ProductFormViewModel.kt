@@ -151,11 +151,14 @@ private fun loadCategoriesForCondition() {
                 if (response.isSuccessful && response.body()?.success == true) {
                     val product = response.body()?.data
                     if (product != null) {
-                        val productCondition = product.condition ?: "new"
+                        // Use isOldProduct flag to determine product type
+                        val isOldProduct = product.isOldProduct
+                        // Map the condition - for old products use "old", for new use actual condition
+                        val productCondition = if (isOldProduct) "old" else (product.condition ?: "new")
                         
-                        // Determine which category ID to use based on condition
+                        // Determine which category ID to use based on product type
                         // NEW products use shop_category_id, OLD products use category_id
-                        val selectedCategoryId = if (productCondition == "new") {
+                        val selectedCategoryId = if (!isOldProduct) {
                             product.shopCategoryId ?: product.categoryId
                         } else {
                             product.categoryId
@@ -175,8 +178,8 @@ private fun loadCategoriesForCondition() {
                             isLoading = false
                         )
                         
-                        // Load correct categories based on product's condition
-                        val categories = if (productCondition == "new") {
+                        // Load correct categories based on product type
+                        val categories = if (!isOldProduct) {
                             val shopCategories = sharedDataRepository.getShopCategories()
                             shopCategories.map { it.toCategory() }
                         } else {
@@ -200,9 +203,9 @@ private fun loadCategoriesForCondition() {
                         }
                         
                         // Update state with categories and selected category/subcategory
-                        // Note: For OLD products, we don't pre-select category if it's from old selling categories
-                        val validCategoryId = if (productCondition == "old") {
-                            // Only keep category if it exists in old_categories (IDs 1-70)
+                        // For OLD products, validate category exists in old_categories
+                        val validCategoryId = if (isOldProduct) {
+                            // Only keep category if it exists in old_categories (IDs 1-100)
                             if (selectedCategoryId in 1..100) selectedCategoryId else null
                         } else {
                             selectedCategoryId
@@ -211,13 +214,13 @@ private fun loadCategoriesForCondition() {
                         _uiState.value = _uiState.value.copy(
                             categories = categories,
                             categoryId = validCategoryId,
-                            shopCategoryId = if (productCondition == "new") selectedCategoryId else null,
+                            shopCategoryId = if (!isOldProduct) selectedCategoryId else null,
                             subcategoryId = if (validCategoryId != null) product.subcategoryId else null
                         )
                         
                         // Load subcategories for selected category
                         if (validCategoryId != null) {
-                            val subcats = if (productCondition == "new") {
+                            val subcats = if (!isOldProduct) {
                                 val shopSubcats = sharedDataRepository.getShopSubcategories(validCategoryId)
                                 shopSubcats.map { it.toCategory() }
                             } else {
