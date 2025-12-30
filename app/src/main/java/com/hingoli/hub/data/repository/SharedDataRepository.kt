@@ -125,14 +125,44 @@ class SharedDataRepository @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading
     
     private var lastFetchTime = 0L
-    private val CACHE_VALIDITY_MS = 15 * 60 * 1000L // 15 minutes
+    private val CACHE_VALIDITY_MS = 30 * 60 * 1000L // 30 minutes for in-memory cache
+    
+    // Dedicated tag for cache debugging - filter with "tag:CacheDebug" in Logcat
+    private val CACHE_TAG = "CacheDebug"
     
     /**
-     * Check if cache is valid
+     * Check if cache is valid (has data AND not expired)
      */
     fun isCacheValid(): Boolean {
-        return prefetchCompleted.get() && 
-               System.currentTimeMillis() - lastFetchTime < CACHE_VALIDITY_MS
+        val hasData = prefetchCompleted.get() && 
+                      (_servicesListings.value.isNotEmpty() || 
+                       _businessListings.value.isNotEmpty() || 
+                       _shopProducts.value.isNotEmpty())
+        val elapsedMs = System.currentTimeMillis() - lastFetchTime
+        val elapsedMins = elapsedMs / 60000
+        val notExpired = elapsedMs < CACHE_VALIDITY_MS
+        val isValid = hasData && notExpired
+        
+        Log.d(CACHE_TAG, "📊 Cache check: hasData=$hasData, age=${elapsedMins}min, notExpired=$notExpired, isValid=$isValid")
+        return isValid
+    }
+    
+    /**
+     * Ensure data is fresh - refreshes if cache is stale or empty.
+     * This should be called before loading data from cache.
+     */
+    suspend fun ensureDataFresh(city: String? = null) {
+        if (!isCacheValid()) {
+            Log.d(CACHE_TAG, "🔄 Cache STALE or EMPTY - triggering API refresh...")
+            Log.d(TAG, "🔄 Cache stale or empty, refreshing data...")
+            // Reset atomic flags to allow re-fetch
+            prefetchStarted.set(false)
+            prefetchCompleted.set(false)
+            prefetchAllData(city)
+            Log.d(CACHE_TAG, "✅ API refresh completed, cache updated")
+        } else {
+            Log.d(CACHE_TAG, "✅ Cache VALID - using cached data")
+        }
     }
     
     /**

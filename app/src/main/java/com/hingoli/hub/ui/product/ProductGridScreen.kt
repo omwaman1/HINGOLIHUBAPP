@@ -28,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -73,6 +74,9 @@ fun ProductGridScreen(
     val gridState = rememberLazyGridState()
     val snackbarHostState = remember { SnackbarHostState() }
     
+    // Collapsing top bar scroll behavior
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    
     // Show snackbar when cart message changes
     LaunchedEffect(uiState.cartMessage) {
         uiState.cartMessage?.let { message ->
@@ -95,7 +99,6 @@ fun ProductGridScreen(
             val layoutInfo = gridState.layoutInfo
             val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             val totalItems = layoutInfo.totalItemsCount
-            // Account for header items (search + categories = 2 items)
             lastVisibleItem >= totalItems - 6 && totalItems > 2
         }
     }
@@ -108,16 +111,22 @@ fun ProductGridScreen(
     }
     
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            HingoliHubTopAppBar(
-                title = if (condition == "old") {
-                    if (isMarathi) "जुन्या वस्तू खरेदी विक्री" else "Buy Sell Old Things"
-                } else {
-                    if (isMarathi) "खरेदी" else "Shop"
+            // Collapsing Top App Bar
+            TopAppBar(
+                title = {
+                    Text(
+                        text = if (condition == "old") {
+                            if (isMarathi) "जुन्या वस्तू" else "Old Items"
+                        } else {
+                            if (isMarathi) "खरेदी" else "Shop"
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 },
-                showCitySelector = false,
-                isMarathi = isMarathi,
                 actions = {
                     // Cart icon with badge
                     Box {
@@ -128,7 +137,6 @@ fun ProductGridScreen(
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        // Badge showing cart count
                         if (uiState.cartItemCount > 0) {
                             Badge(
                                 modifier = Modifier
@@ -144,24 +152,30 @@ fun ProductGridScreen(
                             }
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    scrolledContainerColor = Color.White
+                ),
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3), // 3-column grid
-            state = gridState,
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF8F8F8)), // Light gray background
-            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 100.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .background(Color(0xFFF3F4F6)) // Light gray background for entire content
         ) {
-            // Search Bar - spans full width
-            item(span = { GridItemSpan(3) }, key = "search_bar") {
-                SearchBarWithFilter(
+            // Sticky Header - Search & Compact Categories (stays visible)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+                // Compact Search Bar
+                CompactSearchBar(
                     query = uiState.searchQuery,
                     onQueryChange = viewModel::onSearchQueryChange,
                     onSearch = viewModel::onSearch,
@@ -174,11 +188,11 @@ fun ProductGridScreen(
                     },
                     isMarathi = isMarathi
                 )
-            }
-            
-            // Category Chips - spans full width
-            item(span = { GridItemSpan(3) }, key = "categories") {
-                CategoryChips(
+                
+                Spacer(modifier = Modifier.height(6.dp))
+                
+                // Compact Category Chips - smaller
+                CompactCategoryChips(
                     categories = uiState.categories,
                     selectedCategoryId = uiState.selectedCategoryId,
                     onCategorySelected = viewModel::onCategorySelected,
@@ -186,66 +200,75 @@ fun ProductGridScreen(
                 )
             }
             
-            // Content states
-            when {
-                uiState.isLoading && uiState.products.isEmpty() -> {
-                    item(span = { GridItemSpan(3) }, key = "loading_shimmer") {
-                        ShimmerGridScreen()
+            // Products Grid
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                state = gridState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(all = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Content states
+                when {
+                    uiState.isLoading && uiState.products.isEmpty() -> {
+                        item(span = { GridItemSpan(3) }, key = "loading_shimmer") {
+                            ShimmerGridScreen()
+                        }
                     }
-                }
-                uiState.error != null && uiState.products.isEmpty() -> {
-                    item(span = { GridItemSpan(3) }, key = "error") {
-                        ErrorView(
-                            message = uiState.error!!,
-                            onRetry = viewModel::refresh
-                        )
-                    }
-                }
-                uiState.shopProducts.isEmpty() -> {
-                    item(span = { GridItemSpan(3) }, key = "empty") {
-                        EmptyView(message = "No products found")
-                    }
-                }
-                else -> {
-                    // Shop Products from businesses
-                    // Use index in key to avoid duplicate key crashes if database has duplicate IDs
-                    uiState.shopProducts.forEachIndexed { index, product ->
-                        item(key = "shop_${index}_${product.productId}") {
-                            val isInCart = product.productId in uiState.productsInCart
-                            val isAdding = uiState.addingToCartProductId == product.productId
-                            val isOwner = uiState.currentUserId > 0 && product.userId == uiState.currentUserId
-                            ShopProductCard(
-                                product = product,
-                                isInCart = isInCart,
-                                isAdding = isAdding,
-                                isOwner = isOwner,
-                                onClick = { onProductClick(product.productId) },
-                                onAddToCart = { viewModel.addToCart(product) },
-                                onCheckoutClick = onCheckoutClick
+                    uiState.error != null && uiState.products.isEmpty() -> {
+                        item(span = { GridItemSpan(3) }, key = "error") {
+                            ErrorView(
+                                message = uiState.error!!,
+                                onRetry = viewModel::refresh
                             )
                         }
                     }
-                    
-                    // Loading more indicator - spans full width
-                    if (uiState.isLoadingMore) {
-                        item(span = { GridItemSpan(3) }, key = "loading_more") {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = Primary
+                    uiState.shopProducts.isEmpty() -> {
+                        item(span = { GridItemSpan(3) }, key = "empty") {
+                            EmptyView(message = "No products found")
+                        }
+                    }
+                    else -> {
+                        // Shop Products
+                        uiState.shopProducts.forEachIndexed { index, product ->
+                            item(key = "shop_${index}_${product.productId}") {
+                                val isInCart = product.productId in uiState.productsInCart
+                                val isAdding = uiState.addingToCartProductId == product.productId
+                                val isOwner = uiState.currentUserId > 0 && product.userId == uiState.currentUserId
+                                ShopProductCard(
+                                    product = product,
+                                    isInCart = isInCart,
+                                    isAdding = isAdding,
+                                    isOwner = isOwner,
+                                    onClick = { onProductClick(product.productId) },
+                                    onAddToCart = { viewModel.addToCart(product) },
+                                    onCheckoutClick = onCheckoutClick
                                 )
                             }
                         }
-                    }
-                    
-                    // Bottom spacing
-                    item(span = { GridItemSpan(3) }, key = "bottom_spacer") {
-                        Spacer(modifier = Modifier.height(60.dp))
+                        
+                        // Loading more indicator
+                        if (uiState.isLoadingMore) {
+                            item(span = { GridItemSpan(3) }, key = "loading_more") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Primary
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Bottom spacing
+                        item(span = { GridItemSpan(3) }, key = "bottom_spacer") {
+                            Spacer(modifier = Modifier.height(60.dp))
+                        }
                     }
                 }
             }
@@ -253,9 +276,9 @@ fun ProductGridScreen(
     }
 }
 
-
+// Compact Search Bar - smaller height
 @Composable
-private fun SearchBarWithFilter(
+private fun CompactSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
@@ -266,43 +289,39 @@ private fun SearchBarWithFilter(
     isMarathi: Boolean = false
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Search Field - Clean minimal design matching reference
+        // Compact Search Field
         Surface(
             modifier = Modifier
                 .weight(1f)
-                .height(48.dp),
+                .height(40.dp), // Smaller height
             shape = RoundedCornerShape(8.dp),
-            color = Color.White,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E5E5))
+            color = Color(0xFFF5F5F5)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
                     tint = Color(0xFF9CA3AF),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 
-                // Basic TextField for search
                 androidx.compose.foundation.text.BasicTextField(
                     value = query,
                     onValueChange = onQueryChange,
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
                         color = Color.Black
                     ),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -311,8 +330,8 @@ private fun SearchBarWithFilter(
                         Box {
                             if (query.isEmpty()) {
                                 Text(
-                                    text = if (isMarathi) "उत्पादने शोधा" else "Search products",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    text = if (isMarathi) "शोधा..." else "Search...",
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = Color(0xFF9CA3AF)
                                 )
                             }
@@ -323,27 +342,26 @@ private fun SearchBarWithFilter(
             }
         }
         
-        // Filter/Sort Button - Clean icon button
+        // Compact Sort Button
         Box {
             Surface(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(40.dp),
                 shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E5E5))
+                color = Color(0xFFF5F5F5)
             ) {
                 IconButton(
-                    onClick = { onSortMenuToggle(true) }
+                    onClick = { onSortMenuToggle(true) },
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
                         contentDescription = "Sort",
                         tint = if (currentSortOrder != SortOrder.NONE) Primary else Color(0xFF6B7280),
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
             
-            // Sort Dropdown Menu
             DropdownMenu(
                 expanded = showSortMenu,
                 onDismissRequest = { onSortMenuToggle(false) }
@@ -351,25 +369,117 @@ private fun SearchBarWithFilter(
                 SortOrder.values().forEach { sortOption ->
                     DropdownMenuItem(
                         text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (sortOption == currentSortOrder) {
-                                    Text("?", color = Primary)
-                                }
-                                Text(
-                                    text = sortOption.displayName,
-                                    fontWeight = if (sortOption == currentSortOrder) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (sortOption == currentSortOrder) Primary else Color.Unspecified
-                                )
-                            }
+                            Text(
+                                text = sortOption.displayName,
+                                fontWeight = if (sortOption == currentSortOrder) FontWeight.Bold else FontWeight.Normal,
+                                color = if (sortOption == currentSortOrder) Primary else Color.Unspecified,
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         },
                         onClick = { onSortChange(sortOption) }
                     )
                 }
             }
         }
+    }
+}
+
+// Compact Category Chips - smaller size
+@Composable
+private fun CompactCategoryChips(
+    categories: List<Category>,
+    selectedCategoryId: Int?,
+    onCategorySelected: (Int?) -> Unit,
+    isMarathi: Boolean = false
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // "All" icon chip
+        item {
+            CompactIconChip(
+                name = if (isMarathi) "सर्व" else "All",
+                imageUrl = null,
+                isSelected = selectedCategoryId == null,
+                onClick = { onCategorySelected(null) }
+            )
+        }
+        
+        // Category chips with icons
+        items(categories) { category ->
+            CompactIconChip(
+                name = category.getLocalizedName(isMarathi),
+                imageUrl = category.imageUrl ?: category.iconUrl,
+                isSelected = selectedCategoryId == category.categoryId,
+                onClick = { onCategorySelected(category.categoryId) }
+            )
+        }
+    }
+}
+
+// Compact icon chip - smaller size with image
+@Composable
+private fun CompactIconChip(
+    name: String,
+    imageUrl: String?,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(56.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Small icon container
+        Surface(
+            modifier = Modifier.size(44.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = if (isSelected) Primary.copy(alpha = 0.1f) else Color(0xFFF5F5F5),
+            border = if (isSelected) {
+                androidx.compose.foundation.BorderStroke(1.5.dp, Primary)
+            } else {
+                null
+            }
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (!imageUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = name,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    // "All" icon
+                    Icon(
+                        imageVector = Icons.Default.Apps,
+                        contentDescription = name,
+                        modifier = Modifier.size(24.dp),
+                        tint = if (isSelected) Primary else Color(0xFF6B7280)
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(2.dp))
+        
+        // Category name - small text
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) Primary else Color(0xFF6B7280),
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -597,11 +707,10 @@ private fun ShopProductCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFE5E5E5), RoundedCornerShape(4.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(4.dp), // Rectangle with slight corner
+        shape = RoundedCornerShape(12.dp), // More rounded corners
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // No shadow, border instead
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Subtle shadow for depth
     ) {
         Column {
             // Product Image - compact

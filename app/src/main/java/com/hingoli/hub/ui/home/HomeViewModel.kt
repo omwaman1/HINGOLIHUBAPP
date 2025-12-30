@@ -1,5 +1,6 @@
 ﻿package com.hingoli.hub.ui.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hingoli.hub.data.model.Banner
@@ -50,13 +51,21 @@ class HomeViewModel @Inject constructor(
     private var currentCity: String? = null
     private var isInitialized = false
     
+    // Debug tag for cache logging - filter with "tag:CacheDebug" in Logcat
+    private val TAG = "CacheDebug"
+    
     init {
         loadHomeData()
     }
     
     fun loadHomeData(city: String? = null) {
-        // Skip if already initialized with same city
-        if (isInitialized && city == currentCity && _uiState.value.servicesListings.isNotEmpty()) {
+        Log.d(TAG, "🏠 HomeViewModel.loadHomeData() called, city=$city")
+        
+        // Skip if already initialized with same city AND cache is still valid
+        if (isInitialized && city == currentCity && 
+            _uiState.value.servicesListings.isNotEmpty() && 
+            sharedDataRepository.isCacheValid()) {
+            Log.d(TAG, "⏭️ Skipping load - already initialized with valid cache")
             return
         }
         
@@ -64,15 +73,21 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             // Check if cache is valid - instant load without loading state
             if (sharedDataRepository.isCacheValid()) {
+                Log.d(TAG, "📦 Cache valid - loading from cache (no loading indicator)")
                 loadFromCache()
                 _uiState.value = _uiState.value.copy(isLoading = false, currentCity = city)
                 isInitialized = true
             } else {
-                // Show loading while waiting for prefetch to complete
+                Log.d(TAG, "⚠️ Cache invalid - showing loading and refreshing...")
+                // Show loading while fetching fresh data
                 _uiState.value = _uiState.value.copy(isLoading = true, currentCity = city)
                 
-                // Load from cache - SharedDataRepository handles fetching if needed
+                // Ensure data is fresh - this will refresh if cache is stale
+                sharedDataRepository.ensureDataFresh(city)
+                
+                // Now load from refreshed cache
                 loadFromCache()
+                Log.d(TAG, "✅ Data loaded after refresh")
                 
                 _uiState.value = _uiState.value.copy(isLoading = false)
                 isInitialized = true

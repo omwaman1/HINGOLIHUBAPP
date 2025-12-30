@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK & AAB
 
 on:
   push:
@@ -29,14 +29,18 @@ jobs:
     - name: Build Signed Release APK
       run: ./gradlew assembleRelease
     
+    - name: Build Signed Release AAB (App Bundle)
+      run: ./gradlew bundleRelease
+    
     - name: Get version name
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
-    - name: Rename APKs with version
+    - name: Rename build outputs with version
       run: |
         mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
         mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
+        mv app/build/outputs/bundle/release/app-release.aab app/build/outputs/bundle/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -48,12 +52,15 @@ jobs:
         files: |
           app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
           app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
+          app/build/outputs/bundle/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab
         generate_release_notes: true
         body: |
           ## Hingoli Hub ${{ steps.get_version.outputs.VERSION }}
           
           ### Downloads
-          - **Release APK** (Signed, for production): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk`
+          - **Release APK** (Signed, for direct install): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk`
+          - **Release AAB** (Signed, for Play Store): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab`
           - **Debug APK** (For testing): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk`
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
