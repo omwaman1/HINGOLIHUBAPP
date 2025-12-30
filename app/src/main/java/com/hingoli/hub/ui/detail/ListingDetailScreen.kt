@@ -1178,7 +1178,7 @@ private fun ShopTab(
     // Use service-appropriate labels
     val itemLabel = if (isServiceListing) "Service" else "Product"
     val itemLabelPlural = if (isServiceListing) "services" else "products"
-    val emptyEmoji = if (isServiceListing) "??" else "??"
+    val emptyEmoji = if (isServiceListing) "🔧" else "🛒"
     
     // Snackbar for non-sellOnline products
     val snackbarHostState = remember { SnackbarHostState() }
