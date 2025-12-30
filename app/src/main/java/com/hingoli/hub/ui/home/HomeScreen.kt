@@ -1,5 +1,7 @@
 package com.hingoli.hub.ui.home
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -36,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -384,6 +387,14 @@ fun HomeScreen(
                             onBannerClick = { /* No action */ }
                         )
                     }
+                }
+                
+                // Social Media Footer
+                item(key = "social_media_footer") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SocialMediaFooter(
+                        isMarathi = isMarathi
+                    )
                 }
                 
                 // Empty state
@@ -994,3 +1005,127 @@ private fun GridShopProductCard(
     }
 }
 
+/**
+ * Social Media Footer with buttons for YouTube, Instagram, and Facebook pages
+ */
+@Composable
+private fun SocialMediaFooter(
+    isMarathi: Boolean = false
+) {
+    val context = LocalContext.current
+    
+    // Social media URLs - UPDATE THESE WITH YOUR ACTUAL PAGES
+    val youtubeUrl = "https://www.youtube.com/@HelloHingoli"
+    val instagramUrl = "https://www.instagram.com/hingolihub"
+    val facebookUrl = "https://www.facebook.com/hellohingoli"
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Title
+        Text(
+            text = if (isMarathi) "आम्हाला फॉलो करा" else "Follow Us",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = OnSurface,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        
+        // Social Media Buttons Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // YouTube Button
+            SocialMediaButton(
+                iconResName = "youtube",
+                label = "YouTube",
+                backgroundColor = Color(0xFFFF0000),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl))
+                    context.startActivity(intent)
+                }
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Instagram Button
+            SocialMediaButton(
+                iconResName = "instagram",
+                label = "Instagram",
+                backgroundColor = Color(0xFFE4405F),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramUrl))
+                    context.startActivity(intent)
+                }
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Facebook Button
+            SocialMediaButton(
+                iconResName = "facebook",
+                label = "Facebook",
+                backgroundColor = Color(0xFF1877F2),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(facebookUrl))
+                    context.startActivity(intent)
+                }
+            )
+        }
+        
+        // Bottom spacing for navigation bar
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+private fun SocialMediaButton(
+    iconResName: String,
+    label: String,
+    backgroundColor: Color,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier
+                .size(56.dp)
+                .clickable { onClick() },
+            shape = RoundedCornerShape(12.dp),
+            color = backgroundColor,
+            shadowElevation = 4.dp
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Use text icon since we don't have drawable resources
+                Text(
+                    text = when (iconResName) {
+                        "youtube" -> "▶"
+                        "instagram" -> "◎"
+                        "facebook" -> "f"
+                        else -> "•"
+                    },
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = OnSurfaceVariant
+        )
+    }
+}
