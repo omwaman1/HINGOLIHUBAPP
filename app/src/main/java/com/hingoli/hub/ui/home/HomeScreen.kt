@@ -1015,9 +1015,9 @@ private fun SocialMediaFooter(
     val context = LocalContext.current
     
     // Social media URLs - UPDATE THESE WITH YOUR ACTUAL PAGES
-    val youtubeUrl = "https://www.youtube.com/@HelloHingoli"
+    val youtubeUrl = "https://www.youtube.com/@hingolihub"
     val instagramUrl = "https://www.instagram.com/hingolihub"
-    val facebookUrl = "https://www.facebook.com/hellohingoli"
+    val facebookUrl = "https://www.facebook.com/hingolihub"
     
     Column(
         modifier = Modifier
