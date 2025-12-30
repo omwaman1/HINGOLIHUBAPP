@@ -228,19 +228,26 @@ class ListingDetailViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoadingShopProducts = true)
             
             try {
+                android.util.Log.d("DebugProduct", "loadShopProducts called for listingId: $listingId")
                 // Get products for this listing (API filters by listing_id, bypasses sell_online filter)
                 val response = apiService.getShopProducts(listingId = listingId, page = 1, perPage = 50)
+                android.util.Log.d("DebugProduct", "loadShopProducts - HTTP: ${response.code()}, success: ${response.body()?.success}")
                 if (response.isSuccessful && response.body()?.data != null) {
                     val listingProducts = response.body()!!.data!!.products
+                    android.util.Log.d("DebugProduct", "loadShopProducts - loaded ${listingProducts.size} products")
+                    listingProducts.forEachIndexed { i, p ->
+                        android.util.Log.d("DebugProduct", "Product[$i]: ${p.productName}, condition=${p.condition}, sellOnline=${p.sellOnline}")
+                    }
                     _uiState.value = _uiState.value.copy(
                         isLoadingShopProducts = false,
                         shopProducts = listingProducts
                     )
                 } else {
+                    android.util.Log.d("DebugProduct", "loadShopProducts - failed or no data")
                     _uiState.value = _uiState.value.copy(isLoadingShopProducts = false)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ListingDetail", "Error loading shop products: ${e.message}")
+                android.util.Log.e("DebugProduct", "loadShopProducts error: ${e.message}")
                 _uiState.value = _uiState.value.copy(isLoadingShopProducts = false)
             }
         }
