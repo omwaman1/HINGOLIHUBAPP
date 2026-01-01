@@ -11,6 +11,15 @@ android {
     namespace = "com.hingoli.delivery"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../HINGOLIHUBKEY")
+            storePassword = "Som@1973"
+            keyAlias = "key0"
+            keyPassword = "Som@1973"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.hingoli.delivery"
         minSdk = 26
@@ -27,12 +36,13 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv4/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv5/\"")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/api/\"")
+            signingConfig = signingConfigs.getByName("release")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv5/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

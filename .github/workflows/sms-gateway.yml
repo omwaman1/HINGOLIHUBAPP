@@ -1,0 +1,62 @@
+name: Build SMS Gateway APK
+
+on:
+  push:
+    tags:
+      - 'sms-v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+    
+    - name: Grant execute permission for gradlew
+      working-directory: sms-gateway
+      run: chmod +x gradlew
+    
+    - name: Build Debug APK
+      working-directory: sms-gateway
+      run: ./gradlew assembleDebug
+    
+    - name: Build Signed Release APK
+      working-directory: sms-gateway
+      run: ./gradlew assembleRelease
+    
+    - name: Get version name
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/sms-}" >> $GITHUB_OUTPUT
+    
+    - name: Rename build outputs with version
+      run: |
+        mv sms-gateway/app/build/outputs/apk/debug/app-debug.apk sms-gateway/app/build/outputs/apk/debug/SMSGateway-${{ steps.get_version.outputs.VERSION }}-debug.apk
+        mv sms-gateway/app/build/outputs/apk/release/app-release.apk sms-gateway/app/build/outputs/apk/release/SMSGateway-${{ steps.get_version.outputs.VERSION }}-release.apk
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: SMS Gateway ${{ steps.get_version.outputs.VERSION }}
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        files: |
+          sms-gateway/app/build/outputs/apk/debug/SMSGateway-${{ steps.get_version.outputs.VERSION }}-debug.apk
+          sms-gateway/app/build/outputs/apk/release/SMSGateway-${{ steps.get_version.outputs.VERSION }}-release.apk
+        generate_release_notes: true
+        body: |
+          ## SMS Gateway ${{ steps.get_version.outputs.VERSION }}
+          
+          ### Downloads
+          - **Release APK** (Signed, for direct install): `SMSGateway-${{ steps.get_version.outputs.VERSION }}-release.apk`
+          - **Debug APK** (For testing): `SMSGateway-${{ steps.get_version.outputs.VERSION }}-debug.apk`
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

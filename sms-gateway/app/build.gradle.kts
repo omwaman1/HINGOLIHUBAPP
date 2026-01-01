@@ -9,6 +9,15 @@ android {
     namespace = "com.hellohingoli.smsgateway"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../HINGOLIHUBKEY")
+            storePassword = "Som@1973"
+            keyAlias = "key0"
+            keyPassword = "Som@1973"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.hellohingoli.smsgateway"
         minSdk = 24
@@ -20,6 +29,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
