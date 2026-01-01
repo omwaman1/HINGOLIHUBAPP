@@ -151,20 +151,46 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
      *          hingoliHub://reel/{id}
      */
     private fun parseReelDeepLink(intent: Intent?): Int? {
-        val data = intent?.data ?: return null
+        val data = intent?.data
+        Log.d("DeepLink", "=== Deep Link Debug ===")
+        Log.d("DeepLink", "Intent action: ${intent?.action}")
+        Log.d("DeepLink", "Intent data URI: $data")
+        Log.d("DeepLink", "Scheme: ${data?.scheme}")
+        Log.d("DeepLink", "Host: ${data?.host}")
+        Log.d("DeepLink", "Path: ${data?.path}")
+        Log.d("DeepLink", "PathSegments: ${data?.pathSegments}")
+        Log.d("DeepLink", "LastPathSegment: ${data?.lastPathSegment}")
+        
+        if (data == null) {
+            Log.d("DeepLink", "No data in intent")
+            return null
+        }
+        
         return try {
-            when {
+            val reelId = when {
                 // Custom scheme: hingoliHub://reel/123
-                data.scheme == "hingoliHub" && data.host == "reel" -> {
-                    data.pathSegments?.firstOrNull()?.toIntOrNull()
+                data.scheme?.equals("hingoliHub", ignoreCase = true) == true && data.host == "reel" -> {
+                    Log.d("DeepLink", "Matched custom scheme hingoliHub://reel")
+                    // For hingoliHub://reel/123, pathSegments would be ["123"]
+                    val id = data.pathSegments?.firstOrNull()?.toIntOrNull()
                         ?: data.lastPathSegment?.toIntOrNull()
+                    Log.d("DeepLink", "Extracted reel ID from custom scheme: $id")
+                    id
                 }
                 // HTTPS: https://hellohingoli.com/apiv5/reel/123
                 data.host == "hellohingoli.com" && data.path?.contains("/reel/") == true -> {
-                    data.lastPathSegment?.toIntOrNull()
+                    Log.d("DeepLink", "Matched HTTPS hellohingoli.com/reel")
+                    val id = data.lastPathSegment?.toIntOrNull()
+                    Log.d("DeepLink", "Extracted reel ID from HTTPS: $id")
+                    id
                 }
-                else -> null
+                else -> {
+                    Log.d("DeepLink", "No match for deep link pattern")
+                    null
+                }
             }
+            Log.d("DeepLink", "Final reel ID: $reelId")
+            reelId
         } catch (e: Exception) {
             Log.e("DeepLink", "Failed to parse reel deep link: ${e.message}")
             null
