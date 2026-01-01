@@ -67,6 +67,8 @@ fun ReelsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .statusBarsPadding() // Don't overlap status bar
+            .navigationBarsPadding() // Don't overlap bottom navigation
     ) {
         when {
             uiState.isLoading -> {
