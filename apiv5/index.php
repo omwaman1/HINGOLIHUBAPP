@@ -2,6 +2,7 @@
 /**
  * Hello Hingoli API - Main Router
  * Upload this entire 'api' folder to your Hostinger public_html directory
+ * Cache-bust: 20260101-151230
  */
 
 // Error reporting (disable in production)
