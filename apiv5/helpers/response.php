@@ -72,6 +72,13 @@ function getJsonBody(): array {
 }
 
 /**
+ * Alias for getJsonBody - used by some functions
+ */
+function getJsonInput(): array {
+    return getJsonBody();
+}
+
+/**
  * Get query parameter with default
  */
 function getQueryParam(string $key, $default = null) {

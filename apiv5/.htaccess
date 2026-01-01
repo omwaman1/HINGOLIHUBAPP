@@ -10,6 +10,7 @@ RewriteRule ^(.+)/$ /$1 [L,R=301]
 
 # Allow direct access to specific PHP files
 RewriteRule ^debug\.php$ - [L]
+RewriteRule ^debug_.*\.php$ - [L]
 RewriteRule ^reel\.php$ - [L]
 
 # Reel deep links: /reel/123 -> reel.php?id=123 (standalone file)
