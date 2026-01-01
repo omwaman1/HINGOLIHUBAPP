@@ -347,10 +347,18 @@ fun MainScreen(
         }
         initialListingId?.let { navController.navigate(Screen.ListingDetail.createRoute(it)) }
         initialConversationId?.let { navController.navigate(Screen.Conversation.createRoute(it, "Chat")) }
-        // Navigate to reels if deep link has reel ID
-        initialReelId?.let { 
-            Log.d("DeepLink", "Opening reel: $it")
-            navController.navigate(Screen.Reels.route)
+        // Navigate to reels if deep link has reel ID - but require login first
+        initialReelId?.let { reelId ->
+            Log.d("DeepLink", "Opening reel: $reelId")
+            // Check if user is logged in
+            val isUserLoggedIn = authRepository.getCurrentUserName() != null
+            if (isUserLoggedIn) {
+                navController.navigate(Screen.Reels.route)
+            } else {
+                // Redirect to login first
+                Log.d("DeepLink", "User not logged in, redirecting to login")
+                navController.navigate(Screen.Login.route)
+            }
         }
     }
     
