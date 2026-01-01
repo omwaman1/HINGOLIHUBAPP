@@ -7671,7 +7671,10 @@ function handleReels(string $method, array $segments): void {
             }
             break;
         case 'POST':
-            requireAuth();
+            global $currentUserId;
+            $authUser = requireAuth();
+            $currentUserId = $authUser['user_id'] ?? null;
+            
             if ($action === 'like') {
                 toggleReelLike();
             } else if ($action === 'watched') {
