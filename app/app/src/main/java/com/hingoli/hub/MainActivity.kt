@@ -340,25 +340,29 @@ fun MainScreen(
     var currentUserName by remember { mutableStateOf(userName) }
     var currentUserPhone by remember { mutableStateOf(userPhone) }
     
-    // Handle deep link navigation on launch
+    // Handle deep link navigation on launch - ALL require login
     LaunchedEffect(Unit) {
+        val isUserLoggedIn = authRepository.getCurrentUserName() != null
+        
+        if (!isUserLoggedIn) {
+            // Redirect to login if any deep link is present but user not logged in
+            if (initialNotificationType != null || initialListingId != null || 
+                initialConversationId != null || initialReelId != null) {
+                Log.d("DeepLink", "User not logged in, redirecting to login")
+                navController.navigate(Screen.Login.route)
+                return@LaunchedEffect
+            }
+        }
+        
+        // User is logged in - handle deep links
         if (initialNotificationType == "admin_notification") {
             navController.navigate(Screen.Notifications.route)
         }
         initialListingId?.let { navController.navigate(Screen.ListingDetail.createRoute(it)) }
         initialConversationId?.let { navController.navigate(Screen.Conversation.createRoute(it, "Chat")) }
-        // Navigate to reels if deep link has reel ID - but require login first
         initialReelId?.let { reelId ->
             Log.d("DeepLink", "Opening reel: $reelId")
-            // Check if user is logged in
-            val isUserLoggedIn = authRepository.getCurrentUserName() != null
-            if (isUserLoggedIn) {
-                navController.navigate(Screen.Reels.route)
-            } else {
-                // Redirect to login first
-                Log.d("DeepLink", "User not logged in, redirecting to login")
-                navController.navigate(Screen.Login.route)
-            }
+            navController.navigate(Screen.Reels.route)
         }
     }
     
