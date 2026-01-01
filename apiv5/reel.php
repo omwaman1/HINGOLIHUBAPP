@@ -35,7 +35,7 @@ if ($reelId && is_numeric($reelId)) {
 
 $playStoreUrl = "market://details?id=com.hingoli.hub";
 $playStoreWeb = "https://play.google.com/store/apps/details?id=com.hingoli.hub";
-$deepLink = "hingoliHub://reel/" . ($reelId ?? '');
+$deepLink = "hingolihub://reel/" . ($reelId ?? '');
 
 // Output HTML
 header('Content-Type: text/html; charset=utf-8');

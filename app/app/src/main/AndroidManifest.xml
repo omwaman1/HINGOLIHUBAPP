@@ -66,13 +66,13 @@
                     android:pathPrefix="/apiv5/reel" />
             </intent-filter>
             
-            <!-- Custom Scheme: hingoliHub://reel/{id} -->
+            <!-- Custom Scheme: hingolihub://reel/{id} -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="hingoliHub"
+                    android:scheme="hingolihub"
                     android:host="reel" />
             </intent-filter>
         </activity>

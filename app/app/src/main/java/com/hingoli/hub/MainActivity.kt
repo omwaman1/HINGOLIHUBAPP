@@ -168,9 +168,9 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         
         return try {
             val reelId = when {
-                // Custom scheme: hingoliHub://reel/123
-                data.scheme?.equals("hingoliHub", ignoreCase = true) == true && data.host == "reel" -> {
-                    Log.d("DeepLink", "Matched custom scheme hingoliHub://reel")
+                // Custom scheme: hingolihub://reel/123
+                data.scheme?.equals("hingolihub", ignoreCase = true) == true && data.host == "reel" -> {
+                    Log.d("DeepLink", "Matched custom scheme hingolihub://reel")
                     // For hingoliHub://reel/123, pathSegments would be ["123"]
                     val id = data.pathSegments?.firstOrNull()?.toIntOrNull()
                         ?: data.lastPathSegment?.toIntOrNull()
