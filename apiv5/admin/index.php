@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Enable output buffering for header redirects
 require_once 'auth_check.php';
 require_once '../config/database.php'; // Path from apiv4/admin/ to apiv4/config/
 
