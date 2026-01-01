@@ -607,12 +607,7 @@ private fun MainScaffold(
                                     modifier = Modifier.size(28.dp)
                                 )
                             },
-                            label = { 
-                                Text(
-                                    text = if (selectedLanguage == AppLanguage.MARATHI) item.titleMr else item.title,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            },
+                            label = null, // Icons only, no labels
                             selected = isSelected,
                             onClick = {
                                 // For Home, navigate directly to Home route (not restoring potentially wrong state)
