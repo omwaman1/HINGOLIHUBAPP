@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.BusinessCenter
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Handyman
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.BusinessCenter
+import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -141,8 +143,8 @@ val bottomNavItems = listOf(
         title = "Reels",
         titleMr = "रील्स",
         screen = Screen.Reels,
-        selectedIcon = Icons.Filled.PlayCircle,
-        unselectedIcon = Icons.Outlined.PlayCircle
+        selectedIcon = Icons.Filled.SmartDisplay,
+        unselectedIcon = Icons.Outlined.SmartDisplay
     ),
     BottomNavItem(
         title = "Business",
