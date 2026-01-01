@@ -343,7 +343,7 @@ fun MainScreen(
     val showBottomBar = remember(currentDestination) {
         currentDestination?.route in listOf(
             Screen.Home.route, Screen.Services.route, Screen.Shop.route,
-            Screen.Old.route, Screen.Businesses.route
+            Screen.Old.route, Screen.Businesses.route, Screen.Reels.route
         )
     }
     
@@ -586,9 +586,12 @@ private fun MainScaffold(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
+                // Check if on Reels screen for dark theme bottom bar
+                val isReelsScreen = currentDestination?.route == Screen.Reels.route
+                
                 // Bottom navigation without toggle (Shop and Old are now separate tabs)
                 NavigationBar(
-                    containerColor = androidx.compose.ui.graphics.Color.White,
+                    containerColor = if (isReelsScreen) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White,
                     tonalElevation = 0.dp
                 ) {
                     bottomNavItems.forEach { item ->
@@ -630,13 +633,25 @@ private fun MainScaffold(
                                     }
                                 }
                             },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = com.hingoli.hub.ui.theme.Primary,
-                                selectedTextColor = com.hingoli.hub.ui.theme.Primary,
-                                unselectedIconColor = androidx.compose.ui.graphics.Color(0xFF9E9E9E),
-                                unselectedTextColor = androidx.compose.ui.graphics.Color(0xFF9E9E9E),
-                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent
-                            )
+                            colors = if (isReelsScreen) {
+                                // Dark theme colors for Reels
+                                NavigationBarItemDefaults.colors(
+                                    selectedIconColor = androidx.compose.ui.graphics.Color.White,
+                                    selectedTextColor = androidx.compose.ui.graphics.Color.White,
+                                    unselectedIconColor = androidx.compose.ui.graphics.Color(0xFF888888),
+                                    unselectedTextColor = androidx.compose.ui.graphics.Color(0xFF888888),
+                                    indicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                                )
+                            } else {
+                                // Light theme colors for other screens
+                                NavigationBarItemDefaults.colors(
+                                    selectedIconColor = com.hingoli.hub.ui.theme.Primary,
+                                    selectedTextColor = com.hingoli.hub.ui.theme.Primary,
+                                    unselectedIconColor = androidx.compose.ui.graphics.Color(0xFF9E9E9E),
+                                    unselectedTextColor = androidx.compose.ui.graphics.Color(0xFF9E9E9E),
+                                    indicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                                )
+                            }
                         )
                     }
                 }

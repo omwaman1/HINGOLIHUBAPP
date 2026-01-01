@@ -357,18 +357,18 @@ fun ReelVideoItem(
             )
         }
         
-        // Progress bar at bottom
+        // Progress bar at very bottom edge (just above nav bar)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(24.dp)
+                .height(16.dp)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f))
                     )
                 )
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 0.dp, vertical = 0.dp)
         ) {
             // Background track
             Box(
