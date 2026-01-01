@@ -121,6 +121,9 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         val deepLink = intent?.getStringExtra("deepLink")
         val notificationType = intent?.getStringExtra("notificationType")
         
+        // Parse reel deep link from URL
+        val reelId = parseReelDeepLink(intent)
+        
         setContent {
             HingoliHubTheme {
                 MainScreen(
@@ -135,9 +138,36 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                     initialListingId = listingId,
                     initialConversationId = conversationId,
                     initialDeepLink = deepLink,
-                    initialNotificationType = notificationType
+                    initialNotificationType = notificationType,
+                    initialReelId = reelId
                 )
             }
+        }
+    }
+    
+    /**
+     * Parse reel ID from deep link intent
+     * Handles: https://hellohingoli.com/apiv5/reel/{id}
+     *          hingoliHub://reel/{id}
+     */
+    private fun parseReelDeepLink(intent: Intent?): Int? {
+        val data = intent?.data ?: return null
+        return try {
+            when {
+                // Custom scheme: hingoliHub://reel/123
+                data.scheme == "hingoliHub" && data.host == "reel" -> {
+                    data.pathSegments?.firstOrNull()?.toIntOrNull()
+                        ?: data.lastPathSegment?.toIntOrNull()
+                }
+                // HTTPS: https://hellohingoli.com/apiv5/reel/123
+                data.host == "hellohingoli.com" && data.path?.contains("/reel/") == true -> {
+                    data.lastPathSegment?.toIntOrNull()
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.e("DeepLink", "Failed to parse reel deep link: ${e.message}")
+            null
         }
     }
     
@@ -232,7 +262,8 @@ fun MainScreen(
     initialListingId: Long? = null,
     initialConversationId: String? = null,
     initialDeepLink: String? = null,
-    initialNotificationType: String? = null
+    initialNotificationType: String? = null,
+    initialReelId: Int? = null
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -290,6 +321,11 @@ fun MainScreen(
         }
         initialListingId?.let { navController.navigate(Screen.ListingDetail.createRoute(it)) }
         initialConversationId?.let { navController.navigate(Screen.Conversation.createRoute(it, "Chat")) }
+        // Navigate to reels if deep link has reel ID
+        initialReelId?.let { 
+            Log.d("DeepLink", "Opening reel: $it")
+            navController.navigate(Screen.Reels.route)
+        }
     }
     
     // Refresh user details on main screens (after login)
@@ -420,6 +456,7 @@ fun MainScreen(
                         onMyOrdersClick = { navigateWithAuth(Screen.Orders.route) },
                         onMyListingsClick = { navigateWithAuth(Screen.MyListings.route) },
                         onJobsClick = { navigateTo(Screen.Jobs.route, false) },
+                        onShopClick = { navigateTo(Screen.Shop.route, false) },
                         // Registration & Selling callbacks
                         onServiceRegistrationClick = { navigateWithAuth(Screen.PostListing.createRoute("services")) },
                         onBusinessRegistrationClick = { navigateWithAuth(Screen.PostListing.createRoute("business")) },

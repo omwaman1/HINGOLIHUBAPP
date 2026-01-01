@@ -7,12 +7,14 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.BusinessCenter
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Handyman
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.BusinessCenter
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String) {
@@ -35,6 +37,7 @@ sealed class Screen(val route: String) {
     object Selling : Screen("selling")     // Legacy - redirects based on condition
     object Businesses : Screen("businesses")
     object Jobs : Screen("jobs")           // Now in drawer menu
+    object Reels : Screen("reels")         // Instagram Reels - center of bottom nav
     object Listings : Screen("listings/{listingType}/{categoryId}/{categoryName}") {
         fun createRoute(listingType: String, categoryId: Int, categoryName: String): String {
             val encodedName = java.net.URLEncoder.encode(categoryName, "UTF-8")
@@ -118,7 +121,7 @@ data class BottomNavItem(
     val unselectedIcon: ImageVector
 )
 
-// New bottom navigation: Home, Services, Shop (new), Business, Old
+// New bottom navigation: Home, Services, Reels, Business, Old
 val bottomNavItems = listOf(
     BottomNavItem(
         title = "Home",
@@ -135,11 +138,11 @@ val bottomNavItems = listOf(
         unselectedIcon = Icons.Outlined.Handyman
     ),
     BottomNavItem(
-        title = "Shop",
-        titleMr = "शॉप",
-        screen = Screen.Shop,
-        selectedIcon = Icons.Filled.ShoppingCart,
-        unselectedIcon = Icons.Outlined.ShoppingCart
+        title = "Reels",
+        titleMr = "रील्स",
+        screen = Screen.Reels,
+        selectedIcon = Icons.Filled.VideoLibrary,
+        unselectedIcon = Icons.Outlined.VideoLibrary
     ),
     BottomNavItem(
         title = "Business",
@@ -166,6 +169,12 @@ data class DrawerMenuItem(
 )
 
 val drawerMenuItems = listOf(
+    DrawerMenuItem(
+        title = "Shop",
+        titleMr = "शॉप",
+        screen = Screen.Shop,
+        icon = Icons.Filled.ShoppingCart
+    ),
     DrawerMenuItem(
         title = "Jobs",
         titleMr = "नोकरी",

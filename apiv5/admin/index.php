@@ -13,15 +13,15 @@ $page = $_GET['page'] ?? 'dashboard';
 $tempPage = $page; // For active nav highlighting
 
 // Validate Allowed Pages
-$allowedPages = ['dashboard', 'listings', 'listing_form', 'products', 'product_form', 'old_products', 'old_product_form', 'users', 'user_form', 'categories', 'category_form', 'banners', 'banner_form', 'cities', 'city_form', 'reviews', 'orders', 'order_detail', 'settings', 'enquiries', 'notifications', 'favorites', 'pincodes', 'moderation', 'subcategories', 'analytics', 'export', 'sms_logs', 'app_version'];
+$allowedPages = ['dashboard', 'listings', 'listing_form', 'products', 'product_form', 'old_products', 'old_product_form', 'users', 'user_form', 'categories', 'category_form', 'banners', 'banner_form', 'reels', 'reel_form', 'cities', 'city_form', 'reviews', 'orders', 'order_detail', 'settings', 'enquiries', 'notifications', 'favorites', 'pincodes', 'moderation', 'subcategories', 'analytics', 'export', 'sms_logs', 'app_version'];
 if (!in_array($page, $allowedPages)) {
     $page = 'dashboard';
 }
 
 // Handle AJAX requests BEFORE including header (to avoid HTML in JSON response)
 $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-if ($isAjax && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
+$isAjaxUpload = isset($_POST['ajax_upload']); // For file uploads that don't set X-Requested-With
+if (($isAjax || $isAjaxUpload) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once "pages/{$page}.php";
     exit;
 }

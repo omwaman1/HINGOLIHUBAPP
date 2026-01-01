@@ -470,4 +470,26 @@ interface ApiService {
         @Path("id") productId: Long,
         @Body request: AddReviewRequest
     ): Response<ApiResponse<Review>>
+    
+    // Reels
+    @GET("reels")
+    suspend fun getReels(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ReelsResponse>
+    
+    @GET("reels/{id}")
+    suspend fun getReelById(
+        @Path("id") reelId: Int
+    ): Response<ApiResponse<Reel>>
+    
+    @POST("reels/like")
+    suspend fun likeReel(
+        @Body request: ReelActionRequest
+    ): Response<LikeResponse>
+    
+    @POST("reels/watched")
+    suspend fun markReelWatched(
+        @Body request: ReelActionRequest
+    ): Response<ApiResponse<Any>>
 }

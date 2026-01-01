@@ -47,6 +47,7 @@ fun FullScreenDrawerContent(
     onMyOrdersClick: () -> Unit,
     onMyListingsClick: () -> Unit,
     onJobsClick: () -> Unit = {},
+    onShopClick: () -> Unit = {},
     // Registration & Selling callbacks
     onServiceRegistrationClick: () -> Unit = {},
     onBusinessRegistrationClick: () -> Unit = {},
@@ -195,6 +196,14 @@ fun FullScreenDrawerContent(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             QuickActionButton(
+                icon = Icons.Default.ShoppingCart,
+                label = if (selectedLanguage == AppLanguage.MARATHI) "शॉप" else "Shop",
+                onClick = onShopClick,
+                borderColor = cardBorderColor,
+                textColor = textColor,
+                modifier = Modifier.weight(1f)
+            )
+            QuickActionButton(
                 icon = Icons.Default.BusinessCenter,
                 label = if (selectedLanguage == AppLanguage.MARATHI) "नोकरी" else "Jobs",
                 onClick = onJobsClick,
@@ -202,6 +211,14 @@ fun FullScreenDrawerContent(
                 textColor = textColor,
                 modifier = Modifier.weight(1f)
             )
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             QuickActionButton(
                 icon = Icons.Default.ShoppingBag,
                 label = if (selectedLanguage == AppLanguage.MARATHI) "माझ्या ऑर्डर्स" else "My Orders",

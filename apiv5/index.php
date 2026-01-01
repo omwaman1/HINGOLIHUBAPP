@@ -41,7 +41,8 @@ $requestUri = $_SERVER['REQUEST_URI'];
 // Remove query string and base path
 $path = parse_url($requestUri, PHP_URL_PATH);
 
-// Remove /apiv4 or /api prefix if present (adjust based on your hosting setup)
+// Remove /apiv5, /apiv4 or /api prefix if present (adjust based on your hosting setup)
+$path = preg_replace('#^/apiv5#', '', $path);
 $path = preg_replace('#^/apiv4#', '', $path);
 $path = preg_replace('#^/api#', '', $path);
 $path = trim($path, '/');
@@ -148,6 +149,10 @@ function routeRequest(string $method, array $segments): void {
             
         case 'app-config':
             handleAppConfig($method, array_slice($segments, 1));
+            break;
+            
+        case 'reels':
+            handleReels($method, array_slice($segments, 1));
             break;
             
         default:
@@ -7639,3 +7644,221 @@ function updateDeliveryProfile(int $deliveryUserId): void {
     successResponse(['message' => 'Profile updated successfully']);
 }
 
+// =============================================================================
+// REELS (Instagram Reels for app content)
+// =============================================================================
+
+/**
+ * Handle reels routes: GET /reels, POST /reels/like, POST /reels/watched
+ */
+function handleReels(string $method, array $segments): void {
+    $action = $segments[0] ?? null;
+    
+    switch ($method) {
+        case 'GET':
+            if ($action === null) {
+                getReels();
+            } else if (is_numeric($action)) {
+                getReelById((int)$action);
+            } else {
+                errorResponse('Invalid route', 404);
+            }
+            break;
+        case 'POST':
+            requireAuth();
+            if ($action === 'like') {
+                toggleReelLike();
+            } else if ($action === 'watched') {
+                markReelWatched();
+            } else {
+                errorResponse('Invalid action', 400);
+            }
+            break;
+        default:
+            errorResponse('Method not allowed', 405);
+    }
+}
+
+/**
+ * Get all active reels (with like status for authenticated users, excludes watched)
+ */
+function getReels(): void {
+    $db = getDB();
+    $page = max(1, (int)(getQueryParam('page') ?? 1));
+    $limit = min(50, max(10, (int)(getQueryParam('limit') ?? 20)));
+    $offset = ($page - 1) * $limit;
+    
+    // Check if user is authenticated
+    $userId = null;
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        try {
+            $decoded = decodeJWT($matches[1]);
+            $userId = $decoded['user_id'] ?? null;
+        } catch (Exception $e) {
+            // Not authenticated, continue without user context
+        }
+    }
+    
+    // Build query - exclude watched reels if user is logged in
+    $excludeWatched = '';
+    $params = [];
+    if ($userId) {
+        $excludeWatched = "AND r.reel_id NOT IN (SELECT reel_id FROM reel_views WHERE user_id = ?)";
+        $params[] = $userId;
+    }
+    
+    // Count unwatched reels
+    $countSql = "SELECT COUNT(*) as total FROM reels r WHERE r.status = 'active' $excludeWatched";
+    $countStmt = $db->prepare($countSql);
+    $countStmt->execute($params);
+    $totalUnwatched = (int)$countStmt->fetch()['total'];
+    
+    // If all watched and user logged in, reset watched history
+    if ($userId && $totalUnwatched === 0) {
+        $db->prepare("DELETE FROM reel_views WHERE user_id = ?")->execute([$userId]);
+        $excludeWatched = '';
+        $params = [];
+        $totalUnwatched = (int)$db->query("SELECT COUNT(*) FROM reels WHERE status = 'active'")->fetchColumn();
+    }
+    
+    // Get reels with likes count
+    $sql = "
+        SELECT r.reel_id, r.instagram_url, r.video_url, r.title, r.thumbnail_url, 
+               r.sort_order, r.created_at, r.likes_count
+        FROM reels r
+        WHERE r.status = 'active' $excludeWatched
+        ORDER BY r.sort_order ASC, r.created_at DESC
+        LIMIT " . (int)$limit . " OFFSET " . (int)$offset . "
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $reels = $stmt->fetchAll();
+    
+    // Get user's liked reels if authenticated
+    $likedReelIds = [];
+    if ($userId && !empty($reels)) {
+        $reelIds = array_column($reels, 'reel_id');
+        $placeholders = implode(',', array_fill(0, count($reelIds), '?'));
+        $likeStmt = $db->prepare("SELECT reel_id FROM reel_likes WHERE user_id = ? AND reel_id IN ($placeholders)");
+        $likeStmt->execute(array_merge([$userId], $reelIds));
+        $likedReelIds = $likeStmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+    
+    // Transform reels
+    $reels = array_map(function($reel) use ($likedReelIds) {
+        return [
+            'reel_id' => (int)$reel['reel_id'],
+            'instagram_url' => $reel['instagram_url'],
+            'video_url' => $reel['video_url'],
+            'title' => $reel['title'],
+            'thumbnail_url' => $reel['thumbnail_url'],
+            'sort_order' => (int)$reel['sort_order'],
+            'likes_count' => (int)($reel['likes_count'] ?? 0),
+            'is_liked' => in_array((int)$reel['reel_id'], $likedReelIds),
+            'created_at' => $reel['created_at']
+        ];
+    }, $reels);
+    
+    successResponse([
+        'reels' => $reels,
+        'total' => $totalUnwatched,
+        'page' => $page,
+        'has_more' => ($page * $limit) < $totalUnwatched
+    ]);
+}
+
+/**
+ * Get single reel by ID (public, for deep links)
+ */
+function getReelById(int $reelId): void {
+    $db = getDB();
+    
+    $stmt = $db->prepare("
+        SELECT reel_id, instagram_url, video_url, title, thumbnail_url, sort_order, likes_count, created_at
+        FROM reels
+        WHERE reel_id = ? AND status = 'active'
+    ");
+    $stmt->execute([$reelId]);
+    $reel = $stmt->fetch();
+    
+    if (!$reel) {
+        errorResponse('Reel not found', 404);
+    }
+    
+    successResponse([
+        'reel_id' => (int)$reel['reel_id'],
+        'instagram_url' => $reel['instagram_url'],
+        'video_url' => $reel['video_url'],
+        'title' => $reel['title'],
+        'thumbnail_url' => $reel['thumbnail_url'],
+        'likes_count' => (int)($reel['likes_count'] ?? 0),
+        'sort_order' => (int)$reel['sort_order'],
+        'created_at' => $reel['created_at']
+    ]);
+}
+
+/**
+ * Toggle like on a reel (requires auth)
+ */
+function toggleReelLike(): void {
+    global $currentUserId;
+    $db = getDB();
+    $input = getJsonInput();
+    
+    $reelId = (int)($input['reel_id'] ?? 0);
+    if ($reelId <= 0) {
+        errorResponse('Invalid reel_id', 400);
+    }
+    
+    // Check if already liked
+    $stmt = $db->prepare("SELECT id FROM reel_likes WHERE user_id = ? AND reel_id = ?");
+    $stmt->execute([$currentUserId, $reelId]);
+    $existing = $stmt->fetch();
+    
+    if ($existing) {
+        // Unlike
+        $db->prepare("DELETE FROM reel_likes WHERE user_id = ? AND reel_id = ?")->execute([$currentUserId, $reelId]);
+        $db->prepare("UPDATE reels SET likes_count = GREATEST(0, likes_count - 1) WHERE reel_id = ?")->execute([$reelId]);
+        $isLiked = false;
+    } else {
+        // Like
+        $db->prepare("INSERT INTO reel_likes (user_id, reel_id) VALUES (?, ?)")->execute([$currentUserId, $reelId]);
+        $db->prepare("UPDATE reels SET likes_count = likes_count + 1 WHERE reel_id = ?")->execute([$reelId]);
+        $isLiked = true;
+    }
+    
+    // Get updated count
+    $countStmt = $db->prepare("SELECT likes_count FROM reels WHERE reel_id = ?");
+    $countStmt->execute([$reelId]);
+    $likesCount = (int)$countStmt->fetchColumn();
+    
+    successResponse([
+        'is_liked' => $isLiked,
+        'likes_count' => $likesCount,
+        'message' => $isLiked ? 'Reel liked!' : 'Reel unliked'
+    ]);
+}
+
+/**
+ * Mark reel as watched (requires auth)
+ */
+function markReelWatched(): void {
+    global $currentUserId;
+    $db = getDB();
+    $input = getJsonInput();
+    
+    $reelId = (int)($input['reel_id'] ?? 0);
+    if ($reelId <= 0) {
+        errorResponse('Invalid reel_id', 400);
+    }
+    
+    // Insert or ignore if already watched
+    try {
+        $db->prepare("INSERT IGNORE INTO reel_views (user_id, reel_id) VALUES (?, ?)")->execute([$currentUserId, $reelId]);
+    } catch (Exception $e) {
+        // Already watched, ignore
+    }
+    
+    successResponse(['message' => 'Marked as watched']);
+}

@@ -11,6 +11,9 @@ RewriteRule ^(.+)/$ /$1 [L,R=301]
 # Allow direct access to debug.php
 RewriteRule ^debug\.php$ - [L]
 
+# Reel deep links: /reel/123 -> /reel/index.php?id=123
+RewriteRule ^reel/([0-9]+)$ reel/index.php?id=$1 [QSA,L]
+
 # Route all other requests to index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

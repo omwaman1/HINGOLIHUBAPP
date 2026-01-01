@@ -219,6 +219,9 @@
             <a href="index.php?page=banners" class="nav-item <?= ($tempPage ?? '') === 'banners' ? 'active' : '' ?>">
                 <span class="icon">🖼️</span><span class="nav-text">Banners</span>
             </a>
+            <a href="index.php?page=reels" class="nav-item <?= ($tempPage ?? '') === 'reels' ? 'active' : '' ?>">
+                <span class="icon">🎬</span><span class="nav-text">Reels</span>
+            </a>
             <a href="index.php?page=cities" class="nav-item <?= ($tempPage ?? '') === 'cities' ? 'active' : '' ?>">
                 <span class="icon">🏙️</span><span class="nav-text">Cities</span>
             </a>

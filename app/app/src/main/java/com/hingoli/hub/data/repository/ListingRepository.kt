@@ -1,8 +1,11 @@
 ﻿package com.hingoli.hub.data.repository
 
 import com.hingoli.hub.data.api.ApiService
+import com.hingoli.hub.data.model.LikeResponse
 import com.hingoli.hub.data.model.Listing
 import com.hingoli.hub.data.model.PriceListItem
+import com.hingoli.hub.data.model.ReelActionRequest
+import com.hingoli.hub.data.model.ReelsResponse
 import com.hingoli.hub.data.model.Review
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -146,6 +149,48 @@ class ListingRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+    
+    suspend fun getReels(page: Int = 1): ReelsResponse {
+        return try {
+            val response = apiService.getReels(page = page)
+            if (response.isSuccessful && response.body() != null) {
+                response.body()!!
+            } else {
+                ReelsResponse(
+                    success = false,
+                    message = response.body()?.message ?: "Failed to load reels",
+                    data = null
+                )
+            }
+        } catch (e: Exception) {
+            ReelsResponse(
+                success = false,
+                message = e.message ?: "Network error",
+                data = null
+            )
+        }
+    }
+    
+    suspend fun likeReel(request: ReelActionRequest): LikeResponse {
+        return try {
+            val response = apiService.likeReel(request)
+            if (response.isSuccessful && response.body() != null) {
+                response.body()!!
+            } else {
+                LikeResponse(success = false, data = null)
+            }
+        } catch (e: Exception) {
+            LikeResponse(success = false, data = null)
+        }
+    }
+    
+    suspend fun markReelWatched(request: ReelActionRequest) {
+        try {
+            apiService.markReelWatched(request)
+        } catch (e: Exception) {
+            // Silently ignore
         }
     }
 }

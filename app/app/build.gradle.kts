@@ -144,4 +144,9 @@ dependencies {
     
     // Baseline Profiles - 30-40% faster cold start
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    
+    // Media3 ExoPlayer for video playback (Reels)
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
 }

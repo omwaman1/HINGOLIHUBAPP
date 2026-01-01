@@ -138,6 +138,15 @@ fun AppNavigation(
             )
         }
         
+        // Reels Screen - Instagram Reels in app
+        composable(Screen.Reels.route) {
+            com.hingoli.hub.ui.reels.ReelsScreen(
+                onMenuClick = onMenuClick,
+                onBackClick = { navController.popBackStack() },
+                settingsManager = settingsManager!!
+            )
+        }
+        
         // Old Screen - Used/Old items with category browsing from old_categories
         composable(Screen.Old.route) {
             com.hingoli.hub.ui.old.OldCategoryScreen(
