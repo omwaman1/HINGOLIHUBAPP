@@ -100,10 +100,35 @@ fun ReelsScreen(
             }
             else -> {
                 val pagerState = rememberPagerState(pageCount = { uiState.reels.size })
+                val context = LocalContext.current
+                
+                // Pre-cache next 2 reels when current page changes
+                LaunchedEffect(pagerState.currentPage, uiState.reels) {
+                    val currentIndex = pagerState.currentPage
+                    val reels = uiState.reels
+                    
+                    // Pre-cache next 2 reels (if they exist)
+                    for (offset in 1..2) {
+                        val nextIndex = currentIndex + offset
+                        if (nextIndex < reels.size) {
+                            reels[nextIndex].videoUrl?.let { url ->
+                                // Create temporary player to pre-load media
+                                val cachePlayer = ExoPlayer.Builder(context).build()
+                                cachePlayer.setMediaItem(MediaItem.fromUri(url))
+                                cachePlayer.prepare()
+                                cachePlayer.playWhenReady = false
+                                // Release after a short delay to let buffer fill
+                                delay(500)
+                                cachePlayer.release()
+                            }
+                        }
+                    }
+                }
                 
                 VerticalPager(
                     state = pagerState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    beyondBoundsPageCount = 1 // Keep 1 page on each side
                 ) { page ->
                     ReelVideoItem(
                         reel = uiState.reels[page],
