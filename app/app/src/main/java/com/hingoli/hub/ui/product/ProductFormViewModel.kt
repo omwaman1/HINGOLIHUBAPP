@@ -43,6 +43,7 @@ data class ProductFormUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isSuccess: Boolean = false,
+    val successMessage: String? = null,
     val error: String? = null
 )
 
@@ -374,11 +375,21 @@ private fun loadCategoriesForCondition() {
                 state.subcategoryId?.let { addField("subcategory_id", it.toString()) }
                 addField("delivery_by", state.deliveryBy.toString())
                 
-                val response = apiService.updateProduct(state.productId, requestMap, imagePart)
+                // Call correct API based on condition
+                val response = if (state.condition == "old") {
+                    // Old products use different API
+                    apiService.updateOldProduct(state.productId, requestMap, imagePart)
+                } else {
+                    // New products (shop products)
+                    apiService.updateProduct(state.productId, requestMap, imagePart)
+                }
+                
                 if (response.isSuccessful && response.body()?.success == true) {
+                    val successMsg = response.body()?.message ?: "Product updated successfully"
                     _uiState.value = _uiState.value.copy(
                         isSaving = false,
-                        isSuccess = true
+                        isSuccess = true,
+                        successMessage = successMsg
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(

@@ -57,7 +57,8 @@ fun ProductFormScreen(
     // Handle success - show toast and navigate back
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            android.widget.Toast.makeText(context, "Product updated successfully", android.widget.Toast.LENGTH_SHORT).show()
+            val message = uiState.successMessage ?: "Product updated successfully"
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
             onSuccess()
         }
     }

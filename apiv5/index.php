@@ -1118,7 +1118,8 @@ function getOldProductById(int $productId): void {
  * Create new old product listing
  */
 function createOldProduct(): void {
-    $userId = getCurrentUserId();
+    $user = requireAuth();
+    $userId = (int)$user['user_id'];
     $db = getDB();
     
     // Handle multipart form data or JSON
@@ -1197,7 +1198,8 @@ function createOldProduct(): void {
  * Update old product
  */
 function updateOldProduct(int $productId): void {
-    $userId = getCurrentUserId();
+    $user = requireAuth();
+    $userId = (int)$user['user_id'];
     $db = getDB();
     
     // Check ownership
@@ -1212,9 +1214,44 @@ function updateOldProduct(int $productId): void {
         errorResponse('Not authorized to edit this product', 403);
     }
     
+    // Get form data - PUT requests require special handling for multipart
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    $data = [];
+    
     if (strpos($contentType, 'multipart/form-data') !== false) {
-        $data = $_POST;
+        // PHP doesn't populate $_POST for PUT requests, so we need to parse manually
+        // First, try $_POST (works if request is actually POST)
+        if (!empty($_POST)) {
+            $data = $_POST;
+        } else {
+            // For PUT, parse the input stream manually
+            $putData = file_get_contents('php://input');
+            
+            // Extract boundary from content-type header
+            if (preg_match('/boundary=(.*)$/i', $contentType, $matches)) {
+                $boundary = $matches[1];
+                
+                // Split by boundary
+                $blocks = preg_split("/-+$boundary/", $putData);
+                array_pop($blocks); // Remove last empty element
+                
+                foreach ($blocks as $block) {
+                    if (empty(trim($block))) continue;
+                    
+                    // Match field name
+                    if (preg_match('/name=\"([^\"]+)\"/', $block, $nameMatch)) {
+                        $name = $nameMatch[1];
+                        
+                        // Get value after double newline
+                        $parts = preg_split("/\r\n\r\n/", $block, 2);
+                        if (count($parts) >= 2) {
+                            $value = rtrim($parts[1], "\r\n");
+                            $data[$name] = $value;
+                        }
+                    }
+                }
+            }
+        }
     } else {
         $data = json_decode(file_get_contents('php://input'), true) ?? [];
     }
@@ -1222,16 +1259,29 @@ function updateOldProduct(int $productId): void {
     $updates = [];
     $params = [];
     
-    $allowedFields = ['product_name', 'description', 'price', 'original_price', 'condition',
+    $allowedFields = ['product_name', 'description', 'price', 'original_price',
                       'age_months', 'has_warranty', 'warranty_months', 'has_bill', 
                       'reason_for_selling', 'brand', 'model', 'city', 'pincode',
-                      'show_phone', 'accept_offers', 'status'];
+                      'show_phone', 'accept_offers', 'status', 'old_category_id', 'subcategory_id'];
     
     foreach ($allowedFields as $field) {
         if (isset($data[$field])) {
             $updates[] = "`$field` = ?";
             $params[] = $data[$field];
         }
+    }
+    
+    // Handle condition field - only allow valid ENUM values
+    $validConditions = ['like_new', 'good', 'fair', 'poor'];
+    if (isset($data['condition']) && in_array($data['condition'], $validConditions)) {
+        $updates[] = "`condition` = ?";
+        $params[] = $data['condition'];
+    }
+    
+    // Handle category_id alias (app sends category_id, db uses old_category_id)
+    if (isset($data['category_id']) && !isset($data['old_category_id'])) {
+        $updates[] = "`old_category_id` = ?";
+        $params[] = $data['category_id'];
     }
     
     // Handle image upload
@@ -6502,9 +6552,6 @@ function updateBusinessProduct(int $productId): void {
     $stmt->execute();
     $autoModProducts = $stmt->fetchColumn() === 'true';
     
-    // Add product_id to params
-    $params[] = $productId;
-    
     // Handle old_products table differently
     if ($isOldProduct) {
         // For old_products, update the table directly - no is_active, different field names
@@ -6595,6 +6642,9 @@ function updateBusinessProduct(int $productId): void {
         $updates[] = 'is_active = ?';
         $params[] = 0;
     }
+    
+    // Add product_id LAST (after all updates including moderation)
+    $params[] = $productId;
     
     $sql = "UPDATE shop_products SET " . implode(', ', $updates) . ", updated_at = NOW() WHERE product_id = ?";
     $stmt = $db->prepare($sql);
