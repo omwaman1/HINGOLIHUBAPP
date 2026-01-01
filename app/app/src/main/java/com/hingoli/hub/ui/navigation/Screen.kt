@@ -143,8 +143,8 @@ val bottomNavItems = listOf(
         title = "Reels",
         titleMr = "रील्स",
         screen = Screen.Reels,
-        selectedIcon = Icons.Filled.SmartDisplay,
-        unselectedIcon = Icons.Outlined.SmartDisplay
+        selectedIcon = Icons.Filled.Slideshow,
+        unselectedIcon = Icons.Outlined.Slideshow
     ),
     BottomNavItem(
         title = "Business",
