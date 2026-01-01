@@ -705,48 +705,27 @@ fun ListingFormScreen(
                                     }
                                 }
                             }
-                        }
-                        
-                        // Business fields
-                        if (uiState.listingType == "business") {
+                            // Delivery Days Dropdown
                             item {
-                                FormSectionHeader("🏢 Business Details")
-                            }
-                            // Note: Business Name is now the Title field above, no separate field needed
-                            item {
-                                OutlinedTextField(
-                                    value = uiState.industry,
-                                    onValueChange = { viewModel.onIndustryChange(it) },
-                                    label = { Text("Industry") },
-                                    modifier = Modifier.fillMaxWidth()
+                                FormDropdownField(
+                                    label = "Delivery Time",
+                                    selectedValue = uiState.deliveryBy.toString(),
+                                    options = listOf(
+                                        "1" to "Today",
+                                        "2" to "Tomorrow",
+                                        "3" to "3 Days",
+                                        "4" to "4 Days",
+                                        "5" to "5 Days",
+                                        "6" to "6 Days",
+                                        "7" to "7 Days",
+                                        "8" to "8 Days"
+                                    ),
+                                    onValueSelected = { viewModel.onDeliveryByChange(it.toInt()) }
                                 )
-                            }
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    OutlinedTextField(
-                                        value = uiState.establishedYear,
-                                        onValueChange = { viewModel.onEstablishedYearChange(it) },
-                                        label = { Text("Established Year") },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        FormDropdownField(
-                                            label = "Team Size",
-                                            selectedValue = uiState.employeeCount,
-                                            options = listOf(
-                                                "1-10" to "1-10",
-                                                "11-50" to "11-50",
-                                                "51-200" to "51-200"
-                                            ),
-                                            onValueSelected = { viewModel.onEmployeeCountChange(it) }
-                                        )
-                                    }
-                                }
-                            }
                         }
+                        } // Close if (selling)
+                        
+                        // Business fields removed - no longer collecting industry/year/team size
                         
                         // Status dropdown (edit mode only)
                         if (uiState.isEditMode) {

@@ -104,7 +104,7 @@ fun ListingCard(
                         style = MaterialTheme.typography.titleMedium,
                         color = OnSurface,
                         fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)
                     )

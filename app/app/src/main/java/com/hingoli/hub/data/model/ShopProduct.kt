@@ -30,6 +30,7 @@ data class ShopProduct(
     @SerializedName("business_phone") val businessPhone: String?,
     @SerializedName("city") val city: String?,
     @SerializedName("user_id") val userId: Long? = null,
+    @SerializedName("delivery_by") val deliveryBy: Int = 3,
     @SerializedName("created_at") val createdAt: String?
 )
 

@@ -492,4 +492,9 @@ interface ApiService {
     suspend fun markReelWatched(
         @Body request: ReelActionRequest
     ): Response<ApiResponse<Any>>
+    
+    // ==================== APP STATS ====================
+    
+    @GET("stats")
+    suspend fun getAppStats(): Response<ApiResponse<AppStats>>
 }

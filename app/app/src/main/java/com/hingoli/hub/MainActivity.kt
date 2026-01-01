@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -624,15 +625,28 @@ private fun MainScaffold(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
-                // Check if on Reels screen for dark theme bottom bar
+                // Check if on Reels screen for transparent bottom bar
                 val isReelsScreen = currentDestination?.route == Screen.Reels.route
                 
-                // Bottom navigation without toggle (Shop and Old are now separate tabs)
-                NavigationBar(
-                    modifier = Modifier.height(56.dp), // Compact height
-                    containerColor = if (isReelsScreen) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White,
-                    tonalElevation = 0.dp
+                // Bottom navigation - transparent on Reels to show content behind
+                Column(
+                    modifier = Modifier
+                        .background(
+                            if (isReelsScreen) 
+                                androidx.compose.ui.graphics.Color.Transparent 
+                            else 
+                                androidx.compose.ui.graphics.Color.White
+                        )
+                        .navigationBarsPadding() // Padding applied outside NavigationBar
                 ) {
+                    NavigationBar(
+                        modifier = Modifier.height(56.dp), // Compact height preserved
+                        containerColor = if (isReelsScreen) 
+                            androidx.compose.ui.graphics.Color.Transparent 
+                        else 
+                            androidx.compose.ui.graphics.Color.White,
+                        tonalElevation = 0.dp
+                    ) {
                     bottomNavItems.forEach { item ->
                         val isSelected = currentDestination?.hierarchy?.any { 
                             it.route == item.screen.route 
@@ -643,28 +657,19 @@ private fun MainScaffold(
                                 Icon(
                                     imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                                     contentDescription = item.title,
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(31.dp)
                                 )
                             },
                             label = null, // Icons only, no labels
                             selected = isSelected,
                             onClick = {
-                                // For Home, navigate directly to Home route (not restoring potentially wrong state)
-                                if (item.screen == Screen.Home) {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Home.route) {
-                                            inclusive = true
-                                        }
-                                        launchSingleTop = true
+                                // Navigate to the selected tab with state preservation
+                                navController.navigate(item.screen.route) {
+                                    popUpTo(Screen.Home.route) {
+                                        saveState = true
                                     }
-                                } else {
-                                    navController.navigate(item.screen.route) {
-                                        popUpTo(Screen.Home.route) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             },
                             colors = if (isReelsScreen) {
@@ -688,8 +693,9 @@ private fun MainScaffold(
                             }
                         )
                     }
-                }
-            }
+                    } // Close NavigationBar
+                } // Close Column
+            } // Close AnimatedVisibility
         }
     ) { innerPadding ->
         AppNavigation(

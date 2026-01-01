@@ -29,6 +29,8 @@ import com.hingoli.hub.ui.components.ShimmerDetailScreen
 import com.hingoli.hub.ui.detail.AddProductReviewDialog
 import com.hingoli.hub.ui.detail.components.ReviewsTab
 import com.hingoli.hub.ui.theme.Primary
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -365,6 +367,34 @@ private fun ProductContent(
                         }
                     }
                 }
+            }
+            
+            // Delivery Date - "Get it by" section
+            Spacer(modifier = Modifier.height(12.dp))
+            val deliveryDate = remember(product.deliveryBy) {
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.DAY_OF_YEAR, product.deliveryBy)
+                calendar.time
+            }
+            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("d MMMM", Locale.getDefault())
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocalShipping,
+                    contentDescription = null,
+                    tint = Color(0xFF10B981),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Get it by ${dayFormat.format(deliveryDate)}, ${dateFormat.format(deliveryDate)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF10B981)
+                )
             }
             
             Spacer(modifier = Modifier.height(12.dp))

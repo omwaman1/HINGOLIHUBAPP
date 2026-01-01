@@ -67,7 +67,7 @@ fun OldCategoryScreen(
     Scaffold(
         topBar = {
             val cityDisplayName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "हिंगोली" else "Hingoli"
-            val screenTitle = if (isMarathi) "जुने सामान" else "Used Items"
+            val screenTitle = if (isMarathi) "जुन्या वस्तू खरेदी विक्री" else "Buy Sell Old Things"
             
             HingoliHubTopAppBar(
                 title = screenTitle,

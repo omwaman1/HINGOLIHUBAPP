@@ -3,6 +3,8 @@
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hingoli.hub.data.api.ApiService
+import com.hingoli.hub.data.model.AppStats
 import com.hingoli.hub.data.model.Banner
 import com.hingoli.hub.data.model.Listing
 import com.hingoli.hub.data.model.ShopProduct
@@ -28,12 +30,14 @@ data class HomeUiState(
     val shopProducts: List<ShopProduct> = emptyList(),
     val oldProducts: List<ShopProduct> = emptyList(), // Buy/Sell Old section - condition='old'
     val isLoading: Boolean = false,
+    val isDataReady: Boolean = false, // True when data has been loaded at least once
     val error: String? = null,
     val selectedFilter: CategoryFilter = CategoryFilter.ALL,
     val searchQuery: String = "",
     val banners: List<Banner> = emptyList(),
     val bottomBanners: List<Banner> = emptyList(),
-    val currentCity: String? = null
+    val currentCity: String? = null,
+    val stats: AppStats? = null
 )
 
 /**
@@ -42,7 +46,8 @@ data class HomeUiState(
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepository: SharedDataRepository,
+    private val apiService: ApiService
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -71,6 +76,9 @@ class HomeViewModel @Inject constructor(
         
         currentCity = city
         viewModelScope.launch {
+            // Load stats in parallel (fresh each time for accurate numbers)
+            loadStats()
+            
             // Check if cache is valid - instant load without loading state
             if (sharedDataRepository.isCacheValid()) {
                 Log.d(TAG, "📦 Cache valid - loading from cache (no loading indicator)")
@@ -95,6 +103,19 @@ class HomeViewModel @Inject constructor(
         }
     }
     
+    private suspend fun loadStats() {
+        try {
+            val response = apiService.getAppStats()
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data?.let { stats ->
+                    _uiState.value = _uiState.value.copy(stats = stats)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load stats: ${e.message}")
+        }
+    }
+    
     private suspend fun loadFromCache() {
         // All data comes from SharedDataRepository cache
         // SharedDataRepository.getListings() will return cached data or fetch if empty
@@ -106,7 +127,8 @@ class HomeViewModel @Inject constructor(
             oldProducts = sharedDataRepository.getOldProducts().take(10),
             banners = sharedDataRepository.getBanners(),
             bottomBanners = sharedDataRepository.getBannersForPlacement("home_bottom"),
-            isLoading = false
+            isLoading = false,
+            isDataReady = true
         )
     }
     

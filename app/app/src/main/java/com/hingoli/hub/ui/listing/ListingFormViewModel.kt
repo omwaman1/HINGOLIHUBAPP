@@ -80,12 +80,10 @@ data class ListingFormUiState(
     val discountedPrice: String = "",  // MRP (original price before discount)
     val stockQty: String = "",          // Stock quantity
     val sellOnline: Boolean = true,     // Available for online purchase
+    val deliveryBy: Int = 3,            // Delivery days: 1=Today, 2=Tomorrow, 3-8=days
     
     // Business-specific
     val businessName: String = "",
-    val industry: String = "",
-    val establishedYear: String = "",
-    val employeeCount: String = "1-10",
     
     // Location coordinates
     val latitude: Double? = null,
@@ -565,21 +563,13 @@ class ListingFormViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(sellOnline = value)
     }
     
+    fun onDeliveryByChange(value: Int) {
+        _uiState.value = _uiState.value.copy(deliveryBy = value)
+    }
+    
     // Business
     fun onBusinessNameChange(value: String) {
         _uiState.value = _uiState.value.copy(businessName = value)
-    }
-    
-    fun onIndustryChange(value: String) {
-        _uiState.value = _uiState.value.copy(industry = value)
-    }
-    
-    fun onEstablishedYearChange(value: String) {
-        _uiState.value = _uiState.value.copy(establishedYear = value)
-    }
-    
-    fun onEmployeeCountChange(value: String) {
-        _uiState.value = _uiState.value.copy(employeeCount = value)
     }
     
     /**
@@ -693,6 +683,7 @@ class ListingFormViewModel @Inject constructor(
                             addField("stock_qty", state.stockQty)
                         }
                         addField("sell_online", if (state.sellOnline) "1" else "0")
+                        addField("delivery_by", state.deliveryBy.toString())
                         
                         // DEBUG: Log all selling fields
                         Log.d("DebugNew", "=== SELLING NEW PRODUCT DEBUG ===")
@@ -711,9 +702,6 @@ class ListingFormViewModel @Inject constructor(
                     "business" -> {
                         // Use title as business name (they're the same field now)
                         addField("business_name", state.title)
-                        addField("industry", state.industry)
-                        addField("established_year", state.establishedYear)
-                        addField("employee_count", state.employeeCount)
                     }
                 }
                 
@@ -739,7 +727,9 @@ class ListingFormViewModel @Inject constructor(
                 }
                 
                 if (response.isSuccessful && response.body()?.success == true) {
-                    val successMsg = response.body()?.message ?: "Success"
+                    // Show bilingual success message about admin approval
+                    val successMsg = "Your listing has been submitted for admin approval\n" +
+                        "तुमची नोंदणी admin मंजुरीसाठी पाठवली आहे"
                     _uiState.value = _uiState.value.copy(
                         isSubmitting = false,
                         isSuccess = true,

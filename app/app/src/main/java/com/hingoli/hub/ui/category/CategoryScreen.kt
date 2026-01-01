@@ -74,8 +74,8 @@ fun CategoryScreen(
             // Dynamic title based on listing type
             val cityDisplayName = cityUiState.selectedCity?.getLocalizedName(isMarathi) ?: if (isMarathi) "हिंगोली" else "Hingoli"
             val screenTitle = when (listingType) {
-                "services" -> if (isMarathi) "सेवा - $cityDisplayName" else "Services in $cityDisplayName"
-                "business" -> if (isMarathi) "स्थानिक व्यवसाय" else "Local Businesses"
+                "services" -> if (isMarathi) "सेवा बुक करा - $cityDisplayName" else "Book Services in $cityDisplayName"
+                "business" -> if (isMarathi) "स्थानिक व्यवसाय - $cityDisplayName" else "Local Businesses in $cityDisplayName"
                 "selling" -> if (isMarathi) "जुन्या वस्तू खरेदी विक्री" else "Buy Sell Old Things"
                 "jobs" -> if (isMarathi) "नोकरी - $cityDisplayName" else "Jobs in $cityDisplayName"
                 else -> if (isMarathi) "हिंगोली हब" else "HINGOLI HUB"

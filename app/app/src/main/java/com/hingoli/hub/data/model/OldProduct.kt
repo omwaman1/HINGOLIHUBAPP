@@ -90,6 +90,9 @@ data class OldProduct(
     @SerializedName("seller")
     val seller: OldProductSeller? = null,
     
+    @SerializedName("delivery_by")
+    val deliveryBy: Int = 3,
+    
     @SerializedName("created_at")
     val createdAt: String? = null
 ) {

@@ -161,6 +161,67 @@ function routeRequest(string $method, array $segments): void {
             handleReels($method, array_slice($segments, 1));
             break;
             
+        case 'stats':
+            getAppStats();
+            break;
+            
+        case 'test-notification':
+            // Debug endpoint to test Firebase notification - returns detailed errors
+            $userId = $_GET['user_id'] ?? null;
+            if (!$userId) {
+                errorResponse('user_id required', 400);
+            }
+            
+            // Test getting Firebase access token first
+            $accessToken = getFirebaseAccessToken();
+            
+            if (!$accessToken) {
+                successResponse([
+                    'error' => 'Failed to get Firebase access token',
+                    'service_account_exists' => file_exists(__DIR__ . '/firebase-service-account.json'),
+                    'user_id' => (int)$userId
+                ], 'Firebase authentication failed');
+            } else {
+                // Try to write to Firebase and capture response
+                $firebaseUrl = 'https://hellohingoliapp-default-rtdb.asia-southeast1.firebasedatabase.app';
+                $notificationId = 'test_' . bin2hex(random_bytes(8));
+                $url = "{$firebaseUrl}/notifications/{$userId}/{$notificationId}.json";
+                
+                $notificationData = [
+                    'title' => 'Test Notification',
+                    'body' => 'This is a test',
+                    'type' => 'test',
+                    'timestamp' => time() * 1000
+                ];
+                
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_CUSTOMREQUEST => 'PUT',
+                    CURLOPT_POSTFIELDS => json_encode($notificationData),
+                    CURLOPT_HTTPHEADER => [
+                        'Content-Type: application/json',
+                        'Authorization: Bearer ' . $accessToken
+                    ],
+                    CURLOPT_TIMEOUT => 10
+                ]);
+                
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+                
+                successResponse([
+                    'http_code' => $httpCode,
+                    'firebase_response' => json_decode($response, true) ?: $response,
+                    'curl_error' => $curlError ?: null,
+                    'url_used' => $url,
+                    'user_id' => (int)$userId
+                ], $httpCode >= 200 && $httpCode < 300 ? 'Success!' : "Firebase write failed with HTTP $httpCode");
+            }
+            break;
+            
         default:
             errorResponse('Endpoint not found', 404);
     }
@@ -1896,15 +1957,13 @@ function createListing(): void {
             ]);
         } elseif ($listingType === 'business') {
             $businessName = $data['business_name'] ?? $title;
-            $industry = $data['industry'] ?? null;
-            $establishedYear = !empty($data['established_year']) ? (int)$data['established_year'] : null;
-            $employeeCount = $data['employee_count'] ?? null;
+            // industry, established_year, employee_count removed from table
             
             $stmt = $db->prepare("
-                INSERT INTO business_listings (listing_id, business_name, industry, established_year, employee_count) 
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO business_listings (listing_id, business_name) 
+                VALUES (?, ?)
             ");
-            $stmt->execute([$listingId, $businessName, $industry, $establishedYear, $employeeCount]);
+            $stmt->execute([$listingId, $businessName]);
         }
         
         // Update user listing count
@@ -1946,8 +2005,8 @@ function updateListing(int $listingId): void {
     
     $db = getDB();
     
-    // Check ownership
-    $stmt = $db->prepare("SELECT user_id, listing_type, main_image_url FROM listings WHERE listing_id = ?");
+    // Check ownership - also fetch status and title for approval notification
+    $stmt = $db->prepare("SELECT user_id, listing_type, main_image_url, status, title FROM listings WHERE listing_id = ?");
     $stmt->execute([$listingId]);
     $listing = $stmt->fetch();
     
@@ -2055,9 +2114,16 @@ function updateListing(int $listingId): void {
         $params[] = !empty($data['longitude']) ? (float)$data['longitude'] : null;
     }
     
+    // Track if listing is being approved (status changing to active)
+    $isBeingApproved = false;
     if (isset($data['status']) && in_array($data['status'], ['active', 'inactive', 'pending'])) {
         $updates[] = "status = ?";
         $params[] = $data['status'];
+        
+        // Check if status is being changed from pending to active (approval)
+        if ($data['status'] === 'active' && $listing['status'] === 'pending') {
+            $isBeingApproved = true;
+        }
     }
     
     // Handle image upload
@@ -2186,18 +2252,7 @@ function updateListing(int $listingId): void {
                 $bizUpdates[] = "business_name = ?";
                 $bizParams[] = $data['business_name'];
             }
-            if (isset($data['industry'])) {
-                $bizUpdates[] = "industry = ?";
-                $bizParams[] = $data['industry'];
-            }
-            if (isset($data['established_year'])) {
-                $bizUpdates[] = "established_year = ?";
-                $bizParams[] = !empty($data['established_year']) ? (int)$data['established_year'] : null;
-            }
-            if (isset($data['employee_count'])) {
-                $bizUpdates[] = "employee_count = ?";
-                $bizParams[] = $data['employee_count'];
-            }
+            // industry, established_year, employee_count removed from table
             
             if (!empty($bizUpdates)) {
                 $bizParams[] = $listingId;
@@ -2208,6 +2263,14 @@ function updateListing(int $listingId): void {
         }
         
         $db->commit();
+        
+        // Send push notification if listing was approved
+        if ($isBeingApproved) {
+            sendListingApprovedNotification(
+                (int)$listing['user_id'],
+                $listing['title']
+            );
+        }
         
         // Return updated listing with appropriate status message
         $statusMessage = $autoModListings 
@@ -2932,6 +2995,8 @@ function getListingById(int $listingId): void {
         'listing_type' => $listing['listing_type'],
         'title' => $listing['title'],
         'description' => $listing['description'],
+        'category_id' => (int)$listing['category_id'],
+        'subcategory_id' => $listing['subcategory_id'] ? (int)$listing['subcategory_id'] : null,
         'category' => [
             'id' => (int)$listing['category_id'],
             'name' => $listing['category_name'],
@@ -2994,10 +3059,8 @@ function getListingById(int $listingId): void {
         ] : null,
         'business_details' => ($listing['listing_type'] === 'business' && $typeData) ? [
             'business_name' => $typeData['business_name'] ?? null,
-            'industry' => $typeData['industry'] ?? null,
+            // industry, established_year, employee_count removed
             'business_type' => $typeData['business_type'] ?? null,
-            'established_year' => isset($typeData['established_year']) ? (int)$typeData['established_year'] : null,
-            'employee_count' => $typeData['employee_count'] ?? null,
             'website_url' => $typeData['website_url'] ?? null,
             'business_email' => $typeData['business_email'] ?? null,
             'business_phone' => $typeData['business_phone'] ?? null
@@ -6152,6 +6215,7 @@ function addBusinessProduct(): void {
     $subcategoryId = $_POST['subcategory_id'] ?? null;
     $condition = in_array($_POST['condition'] ?? '', ['old', 'new']) ? $_POST['condition'] : 'new';
     $sellOnline = isset($_POST['sell_online']) && $_POST['sell_online'] == '1' ? 1 : 0;
+    $deliveryBy = isset($_POST['delivery_by']) ? max(1, min(8, intval($_POST['delivery_by']))) : 3;
     
     // Validate required fields
     if (!$listingId) {
@@ -6203,8 +6267,8 @@ function addBusinessProduct(): void {
         
         $stmt = $db->prepare("
             INSERT INTO old_products 
-            (product_id, user_id, listing_id, product_name, description, old_category_id, subcategory_id, price, image_url, `condition`, city, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'good', ?, 'active')
+            (product_id, user_id, listing_id, product_name, description, old_category_id, subcategory_id, price, image_url, `condition`, city, status, delivery_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'good', ?, 'active', ?)
         ");
         
         // Get city from listing
@@ -6213,7 +6277,7 @@ function addBusinessProduct(): void {
         $city = $cityStmt->fetchColumn() ?: 'Hingoli';
         
         $stmt->execute([
-            $productId, $userId, $listingId, $productName, $description, $categoryId, $subcategoryId, $price, $imageUrl, $city
+            $productId, $userId, $listingId, $productName, $description, $categoryId, $subcategoryId, $price, $imageUrl, $city, $deliveryBy
         ]);
         
         successResponse([
@@ -6237,11 +6301,11 @@ function addBusinessProduct(): void {
         
         $stmt = $db->prepare("
             INSERT INTO shop_products 
-            (listing_id, product_name, description, shop_category_id, subcategory_id, price, image_url, sell_online, `condition`, is_active, sort_order) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'new', 1, ?)
+            (listing_id, product_name, description, shop_category_id, subcategory_id, price, image_url, sell_online, `condition`, is_active, sort_order, delivery_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'new', 1, ?, ?)
         ");
         $stmt->execute([
-            $listingId, $productName, $description, $effectiveCategoryId, $subcategoryId, $price, $imageUrl, $sellOnline, $sortOrder
+            $listingId, $productName, $description, $effectiveCategoryId, $subcategoryId, $price, $imageUrl, $sellOnline, $sortOrder, $deliveryBy
         ]);
         $productId = (int)$db->lastInsertId();
         
@@ -6411,6 +6475,10 @@ function updateBusinessProduct(int $productId): void {
         $updates[] = 'is_active = ?';
         $params[] = $data['is_active'] ? 1 : 0;
     }
+    if (isset($data['delivery_by'])) {
+        $updates[] = 'delivery_by = ?';
+        $params[] = max(1, min(8, intval($data['delivery_by'])));
+    }
     
     // Handle image upload
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -6474,6 +6542,10 @@ function updateBusinessProduct(int $productId): void {
         if (isset($data['subcategory_id'])) {
             $oldUpdates[] = 'subcategory_id = ?';
             $oldParams[] = intval($data['subcategory_id']) > 0 ? intval($data['subcategory_id']) : null;
+        }
+        if (isset($data['delivery_by'])) {
+            $oldUpdates[] = 'delivery_by = ?';
+            $oldParams[] = max(1, min(8, intval($data['delivery_by'])));
         }
         
         // Handle image upload for old products
@@ -7732,12 +7804,13 @@ function getReels(): void {
     }
     
     // Get reels with likes count
+    // Priority/sponsored reels (sort_order > 0) show first, then random reels
     $sql = "
         SELECT r.reel_id, r.instagram_url, r.video_url, r.title, r.thumbnail_url, 
                r.sort_order, r.created_at, r.likes_count
         FROM reels r
         WHERE r.status = 'active' $excludeWatched
-        ORDER BY r.sort_order ASC, r.created_at DESC
+        ORDER BY CASE WHEN r.sort_order > 0 THEN 0 ELSE 1 END, r.sort_order ASC, RAND()
         LIMIT " . (int)$limit . " OFFSET " . (int)$offset . "
     ";
     $stmt = $db->prepare($sql);
@@ -7998,4 +8071,205 @@ function serveReelLandingPage(array $segments): void {
 </body>
 </html>';
     exit;
+}
+
+// =============================================================================
+// APP STATISTICS (For home screen stats display)
+// =============================================================================
+
+/**
+ * Get app statistics for home screen display
+ * GET /stats
+ */
+function getAppStats(): void {
+    $db = getDB();
+    
+    // Count active users (uses is_active column)
+    $users = (int)$db->query("SELECT COUNT(*) FROM users WHERE is_active = 1")->fetchColumn();
+    
+    // Count businesses (listing_type = 'business')
+    $businesses = (int)$db->query("SELECT COUNT(*) FROM listings WHERE listing_type = 'business' AND status = 'active'")->fetchColumn();
+    
+    // Count services
+    $services = (int)$db->query("SELECT COUNT(*) FROM listings WHERE listing_type = 'services' AND status = 'active'")->fetchColumn();
+    
+    // Count jobs
+    $jobs = (int)$db->query("SELECT COUNT(*) FROM listings WHERE listing_type = 'jobs' AND status = 'active'")->fetchColumn();
+    
+    // Count old products (uses `condition` column, is_active for status)
+    $oldProducts = (int)$db->query("SELECT COUNT(*) FROM shop_products WHERE `condition` = 'old' AND is_active = 1")->fetchColumn();
+    
+    // Count new products
+    $newProducts = (int)$db->query("SELECT COUNT(*) FROM shop_products WHERE `condition` = 'new' AND is_active = 1")->fetchColumn();
+    
+    successResponse([
+        'users' => $users,
+        'businesses' => $businesses,
+        'services' => $services,
+        'jobs' => $jobs,
+        'old_products' => $oldProducts,
+        'new_products' => $newProducts
+    ]);
+}
+
+/**
+ * Send push notification to user via Firebase Realtime Database
+ * This triggers the Cloud Function which sends the actual FCM notification
+ * Uses service account for authentication
+ * 
+ * @param int $userId The user ID to send notification to
+ * @param string $title Notification title
+ * @param string $body Notification body
+ * @param string $type Notification type (e.g., 'listing_approved')
+ * @param array $extraData Additional data to include
+ * @return bool Success status
+ */
+function sendFirebaseNotification(int $userId, string $title, string $body, string $type = 'general', array $extraData = []): bool {
+    // Firebase Realtime Database URL (from google-services.json)
+    $firebaseUrl = 'https://hellohingoliapp-default-rtdb.asia-southeast1.firebasedatabase.app';
+    
+    // Get access token from service account
+    $accessToken = getFirebaseAccessToken();
+    if (!$accessToken) {
+        error_log("Firebase notification failed: Could not get access token");
+        return false;
+    }
+    
+    // Generate unique notification ID (no dots, Firebase doesn't allow them in paths)
+    $notificationId = 'notif_' . bin2hex(random_bytes(8));
+    
+    // Prepare notification data
+    $notificationData = array_merge([
+        'title' => $title,
+        'body' => $body,
+        'type' => $type,
+        'timestamp' => time() * 1000, // milliseconds
+        'createdAt' => date('c')
+    ], $extraData);
+    
+    // Write to /notifications/{userId}/{notificationId}
+    $url = "{$firebaseUrl}/notifications/{$userId}/{$notificationId}.json";
+    
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_POSTFIELDS => json_encode($notificationData),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $accessToken
+        ],
+        CURLOPT_TIMEOUT => 10
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode >= 200 && $httpCode < 300) {
+        error_log("Firebase notification sent to user $userId: $title");
+        return true;
+    } else {
+        error_log("Firebase notification failed for user $userId: HTTP $httpCode - $response");
+        return false;
+    }
+}
+
+/**
+ * Get Firebase access token using service account
+ * Uses JWT to get OAuth2 access token from Google
+ */
+function getFirebaseAccessToken(): ?string {
+    static $cachedToken = null;
+    static $tokenExpiry = 0;
+    
+    // Return cached token if still valid (with 5 min buffer)
+    if ($cachedToken && time() < ($tokenExpiry - 300)) {
+        return $cachedToken;
+    }
+    
+    // Load service account
+    $serviceAccountPath = __DIR__ . '/firebase-service-account.json';
+    if (!file_exists($serviceAccountPath)) {
+        error_log("Firebase service account not found at: $serviceAccountPath");
+        return null;
+    }
+    
+    $serviceAccount = json_decode(file_get_contents($serviceAccountPath), true);
+    if (!$serviceAccount) {
+        error_log("Failed to parse Firebase service account JSON");
+        return null;
+    }
+    
+    // Create JWT with URL-safe Base64 encoding
+    $now = time();
+    $jwtHeader = rtrim(strtr(base64_encode(json_encode(['alg' => 'RS256', 'typ' => 'JWT'])), '+/', '-_'), '=');
+    $jwtClaims = rtrim(strtr(base64_encode(json_encode([
+        'iss' => $serviceAccount['client_email'],
+        'sub' => $serviceAccount['client_email'],
+        'aud' => 'https://oauth2.googleapis.com/token',
+        'iat' => $now,
+        'exp' => $now + 3600,
+        'scope' => 'https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email'
+    ])), '+/', '-_'), '=');
+    
+    // Sign JWT with private key
+    $signatureInput = "{$jwtHeader}.{$jwtClaims}";
+    $privateKey = openssl_pkey_get_private($serviceAccount['private_key']);
+    if (!$privateKey) {
+        error_log("Failed to load Firebase private key");
+        return null;
+    }
+    
+    openssl_sign($signatureInput, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+    $jwtSignature = rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
+    $jwt = "{$jwtHeader}.{$jwtClaims}.{$jwtSignature}";
+    
+    // Exchange JWT for access token
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://oauth2.googleapis.com/token',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query([
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $jwt
+        ]),
+        CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+        CURLOPT_TIMEOUT => 10
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode !== 200) {
+        error_log("Failed to get Firebase access token: HTTP $httpCode - $response");
+        return null;
+    }
+    
+    $tokenData = json_decode($response, true);
+    if (!isset($tokenData['access_token'])) {
+        error_log("Firebase token response missing access_token: $response");
+        return null;
+    }
+    
+    $cachedToken = $tokenData['access_token'];
+    $tokenExpiry = $now + ($tokenData['expires_in'] ?? 3600);
+    
+    return $cachedToken;
+}
+
+/**
+ * Send listing approved notification to user
+ */
+function sendListingApprovedNotification(int $userId, string $listingTitle): bool {
+    return sendFirebaseNotification(
+        $userId,
+        'Listing Approved! / नोंदणी मंजूर!',
+        "Your listing \"$listingTitle\" has been approved! Check it in the app.\nतुमची \"$listingTitle\" नोंदणी मंजूर झाली! अॅपमध्ये पहा.",
+        'listing_approved',
+        ['listingTitle' => $listingTitle]
+    );
 }

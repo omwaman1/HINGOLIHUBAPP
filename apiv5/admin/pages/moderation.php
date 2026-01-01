@@ -4,9 +4,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['action'])) {
             switch ($_POST['action']) {
+                case 'toggle_moderation_listings':
+                    $newValue = $_POST['value'] === 'true' ? 'true' : 'false';
+                    $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('auto_moderation_listings', ?) 
+                                  ON DUPLICATE KEY UPDATE setting_value = ?")->execute([$newValue, $newValue]);
+                    header("Location: index.php?page=moderation&msg=" . urlencode("Listings moderation updated!"));
+                    exit;
+                case 'toggle_moderation_products':
+                    $newValue = $_POST['value'] === 'true' ? 'true' : 'false';
+                    $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('auto_moderation_products', ?) 
+                                  ON DUPLICATE KEY UPDATE setting_value = ?")->execute([$newValue, $newValue]);
+                    header("Location: index.php?page=moderation&msg=" . urlencode("Products moderation updated!"));
+                    exit;
                 case 'approve':
                     $id = $_POST['listing_id'];
+                    
+                    // Get listing details for notification
+                    $stmt = $db->prepare("SELECT user_id, title FROM listings WHERE listing_id = ?");
+                    $stmt->execute([$id]);
+                    $listing = $stmt->fetch();
+                    
+                    // Update status
                     $db->prepare("UPDATE listings SET status = 'active', is_verified = 1 WHERE listing_id = ?")->execute([$id]);
+                    
+                    // Send push notification to user
+                    if ($listing) {
+                        require_once __DIR__ . '/../../helpers/firebase.php';
+                        sendListingApprovedNotification((int)$listing['user_id'], $listing['title']);
+                    }
+                    
                     header("Location: index.php?page=moderation&msg=" . urlencode("Listing approved!"));
                     exit;
                 case 'reject':
@@ -67,10 +93,61 @@ try {
         // Ignore errors
     }
 }
+
+// Fetch current moderation settings
+$stmt = $db->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('auto_moderation_listings', 'auto_moderation_products')");
+$stmt->execute();
+$settingsRows = $stmt->fetchAll();
+$settings = [];
+foreach ($settingsRows as $row) {
+    $settings[$row['setting_key']] = $row['setting_value'] === 'true';
+}
+$autoModListings = $settings['auto_moderation_listings'] ?? false;
+$autoModProducts = $settings['auto_moderation_products'] ?? false;
 ?>
 
 <div class="header">
     <div class="page-title">🛡️ Moderation Queue</div>
+</div>
+
+<!-- MODERATION SETTINGS -->
+<div class="card" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+    <h3 style="margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        ⚙️ Moderation Settings
+    </h3>
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <!-- Listings Toggle -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-weight: 500;">Listings:</span>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="toggle_moderation_listings">
+                <input type="hidden" name="value" value="<?= $autoModListings ? 'false' : 'true' ?>">
+                <button type="submit" class="btn <?= $autoModListings ? 'btn-primary' : 'btn-outline' ?>" 
+                        style="padding: 6px 12px; font-size: 0.85rem;">
+                    <?= $autoModListings ? '✓ Auto Approve' : '⏸ Manual Approval' ?>
+                </button>
+            </form>
+            <small style="color: var(--text-light);">
+                <?= $autoModListings ? 'New listings go live immediately' : 'Listings require admin approval' ?>
+            </small>
+        </div>
+        
+        <!-- Products Toggle -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-weight: 500;">Products:</span>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="toggle_moderation_products">
+                <input type="hidden" name="value" value="<?= $autoModProducts ? 'false' : 'true' ?>">
+                <button type="submit" class="btn <?= $autoModProducts ? 'btn-primary' : 'btn-outline' ?>" 
+                        style="padding: 6px 12px; font-size: 0.85rem;">
+                    <?= $autoModProducts ? '✓ Auto Approve' : '⏸ Manual Approval' ?>
+                </button>
+            </form>
+            <small style="color: var(--text-light);">
+                <?= $autoModProducts ? 'New products go live immediately' : 'Products require admin approval' ?>
+            </small>
+        </div>
+    </div>
 </div>
 
 <!-- PENDING LISTINGS -->

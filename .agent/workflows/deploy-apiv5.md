@@ -23,7 +23,7 @@ curl.exe -u "u122332128.apiv5:Hostinger#293330" -T "apiv5\<FILENAME>" "ftp://ftp
 ### Upload index.php (Main API File)
 ```powershell
 // turbo
-curl.exe -u "u122332128.apiv5:Hostinger#293330" -T "apiv5\index.php" "ftp://ftp.hellohingoli.com/index.php"
+curl.exe -u "u122332128.apiv5:Hostinger#293330" -T "apiv5\index.php" "ftp://ftp.hellohingoli.com/"
 ```
 
 ### Upload Helper Files (jwt.php, response.php)

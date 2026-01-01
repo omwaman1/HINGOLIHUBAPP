@@ -32,6 +32,7 @@ data class ProductFormUiState(
     val condition: String = "new",
     val sellOnline: Boolean = true,
     val stockQty: String = "",
+    val deliveryBy: Int = 3, // Delivery days: 1=Today, 2=Tomorrow, 3-8=days
     val imageUrl: String = "",
     val selectedImageUri: Uri? = null,
     val categoryId: Int? = null,
@@ -175,6 +176,7 @@ private fun loadCategoriesForCondition() {
                             condition = productCondition,
                             sellOnline = product.sellOnline,
                             stockQty = product.stockQty?.toString() ?: "",
+                            deliveryBy = product.deliveryBy,
                             imageUrl = product.imageUrl ?: "",
                             isLoading = false
                         )
@@ -308,6 +310,10 @@ private fun loadCategoriesForCondition() {
         _uiState.value = _uiState.value.copy(stockQty = value, error = null)
     }
     
+    fun onDeliveryByChange(value: Int) {
+        _uiState.value = _uiState.value.copy(deliveryBy = value, error = null)
+    }
+    
     fun onImageSelected(uri: Uri) {
         _uiState.value = _uiState.value.copy(selectedImageUri = uri, error = null)
     }
@@ -366,6 +372,7 @@ private fun loadCategoriesForCondition() {
                     state.categoryId?.let { addField("category_id", it.toString()) }
                 }
                 state.subcategoryId?.let { addField("subcategory_id", it.toString()) }
+                addField("delivery_by", state.deliveryBy.toString())
                 
                 val response = apiService.updateProduct(state.productId, requestMap, imagePart)
                 if (response.isSuccessful && response.body()?.success == true) {

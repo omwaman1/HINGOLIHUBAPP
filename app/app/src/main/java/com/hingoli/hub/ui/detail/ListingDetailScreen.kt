@@ -1594,59 +1594,11 @@ private fun AboutTab(
             }
         }
         
+        
         // ========== BUSINESS DETAILS SECTION ==========
         
-        // Business Name
-        listing.businessDetails?.businessName?.let { name ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Store,
-                    contentDescription = null,
-                    tint = PrimaryBlue,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Business Name",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = OnSurface,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-            }
-        }
-        
-        // Established Year
-        listing.businessDetails?.establishedYear?.let { year ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.CalendarMonth,
-                    contentDescription = null,
-                    tint = PrimaryBlue,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Established",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = OnSurface,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "$year (${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) - year}+ years)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-            }
-        }
+        // Business Name - removed (already shown in header)
+        // Established Year - removed (no longer collecting this data)
         
         // Website
         listing.businessDetails?.websiteUrl?.let { website ->

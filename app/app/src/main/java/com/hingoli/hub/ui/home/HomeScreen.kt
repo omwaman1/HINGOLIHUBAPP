@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.text.input.ImeAction
 import coil.compose.AsyncImage
+import com.hingoli.hub.data.model.AppStats
 import com.hingoli.hub.data.model.Listing
 import com.hingoli.hub.data.model.ShopProduct
 import com.hingoli.hub.data.settings.AppLanguage
@@ -54,6 +55,8 @@ import com.hingoli.hub.ui.city.CitySelectionBottomSheet
 import com.hingoli.hub.ui.city.CitySelectionViewModel
 import com.hingoli.hub.ui.components.*
 import com.hingoli.hub.ui.theme.*
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +112,8 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
-                            tint = OnSurface
+                            tint = OnSurface,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 },
@@ -118,7 +122,8 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Outlined.Notifications,
                             contentDescription = "Notifications",
-                            tint = Primary
+                            tint = Primary,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 },
@@ -277,8 +282,8 @@ fun HomeScreen(
                 }
             }
             
-            // Loading state - show shimmer skeleton
-            if (uiState.isLoading) {
+            // Loading state - show shimmer skeleton (while loading OR before data is ready)
+            if (uiState.isLoading || !uiState.isDataReady) {
                 item(key = "loading_shimmer") {
                     ShimmerHomeScreen()
                 }
@@ -395,6 +400,16 @@ fun HomeScreen(
                     SocialMediaFooter(
                         isMarathi = isMarathi
                     )
+                }
+                
+                // App Stats Section with animated counters
+                uiState.stats?.let { stats ->
+                    item(key = "app_stats") {
+                        AppStatsSection(
+                            stats = stats,
+                            isMarathi = isMarathi
+                        )
+                    }
                 }
                 
                 // Empty state
@@ -1145,3 +1160,82 @@ private fun SocialMediaButton(
         }
     }
 }
+
+/**
+ * App Statistics Section - Simple text format with animated numbers
+ */
+@Composable
+private fun AppStatsSection(
+    stats: AppStats,
+    isMarathi: Boolean = false
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Stats in 2 columns, 3 rows - centered
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                StatText(
+                    label = if (isMarathi) "वापरकर्ते" else "Users",
+                    value = stats.users
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                StatText(
+                    label = if (isMarathi) "सेवा" else "Services",
+                    value = stats.services
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                StatText(
+                    label = if (isMarathi) "जुने प्रोडक्ट्स" else "Old Products",
+                    value = stats.oldProducts
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                StatText(
+                    label = if (isMarathi) "व्यवसाय" else "Businesses",
+                    value = stats.businesses
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                StatText(
+                    label = if (isMarathi) "नोकरी" else "Jobs",
+                    value = stats.jobs
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                StatText(
+                    label = if (isMarathi) "नवीन प्रोडक्ट्स" else "New Products",
+                    value = stats.newProducts
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Simple stat text with animated counter: "Label: value"
+ */
+@Composable
+private fun StatText(
+    label: String,
+    value: Int
+) {
+    // Animate the number from 0 to value
+    val animatedValue by animateIntAsState(
+        targetValue = value,
+        animationSpec = tween(durationMillis = 1500),
+        label = "stat_counter"
+    )
+    
+    Text(
+        text = "$label: $animatedValue",
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.Bold,
+        color = OnSurface
+    )
+}
+

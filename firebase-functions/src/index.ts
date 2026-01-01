@@ -89,6 +89,33 @@ export const sendChatNotification = functions.database
                         ttl: 30 * 1000, // 30 seconds TTL for cancellation
                     },
                 };
+            } else if (notificationData.type === "listing_approved") {
+                // LISTING APPROVED: Send with green color
+                console.log(`✅ LISTING APPROVED - Sending notification with green color`);
+
+                message = {
+                    token: fcmToken,
+                    notification: {
+                        title: notificationData.title || "Listing Approved!",
+                        body: notificationData.body || "Your listing has been approved",
+                    },
+                    data: {
+                        type: "listing_approved",
+                        listingTitle: notificationData.listingTitle || "",
+                    },
+                    android: {
+                        priority: "high",
+                        notification: {
+                            channelId: "chat_notifications",
+                            priority: "max",
+                            defaultSound: true,
+                            defaultVibrateTimings: true,
+                            visibility: "public",
+                            color: "#4CAF50", // Green color
+                            icon: "ic_notification",
+                        },
+                    },
+                };
             } else {
                 // REGULAR NOTIFICATIONS: Send with notification block (Android handles display)
                 message = {

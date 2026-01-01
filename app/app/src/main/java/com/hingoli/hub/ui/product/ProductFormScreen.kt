@@ -238,6 +238,51 @@ fun ProductFormScreen(
                             singleLine = true
                         )
                         
+                        // Delivery Days Dropdown
+                        val deliveryOptions = listOf(
+                            1 to "Today",
+                            2 to "Tomorrow",
+                            3 to "3 Days",
+                            4 to "4 Days",
+                            5 to "5 Days",
+                            6 to "6 Days",
+                            7 to "7 Days",
+                            8 to "8 Days"
+                        )
+                        var deliveryExpanded by remember { mutableStateOf(false) }
+                        val selectedDelivery = deliveryOptions.find { it.first == uiState.deliveryBy } 
+                            ?: deliveryOptions[2] // Default to "3 Days"
+                        
+                        ExposedDropdownMenuBox(
+                            expanded = deliveryExpanded,
+                            onExpandedChange = { deliveryExpanded = !deliveryExpanded }
+                        ) {
+                            OutlinedTextField(
+                                value = "Delivery: ${selectedDelivery.second}",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Delivery Time") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = deliveryExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = deliveryExpanded,
+                                onDismissRequest = { deliveryExpanded = false }
+                            ) {
+                                deliveryOptions.forEach { (days, label) ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            viewModel.onDeliveryByChange(days)
+                                            deliveryExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        
                         // Main Category Dropdown
                         var categoryExpanded by remember { mutableStateOf(false) }
                         val selectedCategory = uiState.categories.find { it.categoryId == uiState.categoryId }
