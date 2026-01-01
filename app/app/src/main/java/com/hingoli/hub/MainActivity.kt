@@ -591,6 +591,7 @@ private fun MainScaffold(
                 
                 // Bottom navigation without toggle (Shop and Old are now separate tabs)
                 NavigationBar(
+                    modifier = Modifier.height(56.dp), // Compact height
                     containerColor = if (isReelsScreen) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White,
                     tonalElevation = 0.dp
                 ) {

@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -62,6 +63,19 @@ fun ReelsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var isMuted by remember { mutableStateOf(false) }
+    val view = LocalView.current
+    
+    // Set status bar icons to white (light icons on dark background) for Reels
+    DisposableEffect(Unit) {
+        val window = (view.context as android.app.Activity).window
+        val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, view)
+        insetsController.isAppearanceLightStatusBars = false // White icons on black
+        
+        onDispose {
+            // Restore to dark icons when leaving Reels
+            insetsController.isAppearanceLightStatusBars = true
+        }
+    }
     
     Box(
         modifier = Modifier
