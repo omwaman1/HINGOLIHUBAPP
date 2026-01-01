@@ -643,7 +643,7 @@ private fun MainScaffold(
                                 Icon(
                                     imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                                     contentDescription = item.title,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(32.dp)
                                 )
                             },
                             label = null, // Icons only, no labels
