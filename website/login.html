@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hingoli Hub™</title>
+    <meta name="description" content="Login to your Hingoli Hub™ account.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .auth-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            margin: 0 auto 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Login Method Tabs */
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .login-tab.active {
+            background: white;
+            color: #6366f1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-error.show {
+            display: block;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* OTP Input */
+        .otp-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .otp-input {
+            width: 48px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .resend-otp {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 12px;
+        }
+
+        .resend-otp button {
+            background: none;
+            border: none;
+            color: #6366f1;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resend-otp button:disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .auth-links {
+            text-align: center;
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 16px;
+        }
+
+        .auth-links a {
+            color: #6366f1;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .message-box {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .message-box.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .message-box.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message-box.show {
+            display: block;
+        }
+
+        /* Hide/show login forms */
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .otp-step {
+            display: none;
+        }
+
+        .otp-step.active {
+            display: block;
+        }
+
+        .phone-display {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .phone-display strong {
+            color: #1e293b;
+        }
+
+        .phone-display button {
+            background: none;
+            border: none;
+            color: #6366f1;
+            font-size: 13px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="images/logo.jpg" alt="Hingoli Hub" class="auth-logo">
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Login to your Hingoli Hub™ account</p>
+            </div>
+
+            <!-- Login Method Tabs -->
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchLoginMethod('otp')">📱 OTP Login</button>
+                <button class="login-tab" onclick="switchLoginMethod('password')">🔑 Password</button>
+            </div>
+
+            <div id="messageBox" class="message-box"></div>
+
+            <!-- OTP Login Form -->
+            <div id="otpLoginForm" class="login-form active">
+                <!-- Step 1: Phone Input -->
+                <div id="otpStep1" class="otp-step active">
+                    <div class="form-group">
+                        <label class="form-label" for="otpPhone">📞 Phone Number</label>
+                        <input type="tel" id="otpPhone" class="form-input" placeholder="Enter 10-digit phone number"
+                            maxlength="10" required>
+                        <p id="otpPhoneError" class="form-error">Please enter a valid 10-digit phone number</p>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="sendOTP()">
+                        Send OTP →
+                    </button>
+                </div>
+
+                <!-- Step 2: OTP Input -->
+                <div id="otpStep2" class="otp-step">
+                    <div class="phone-display">
+                        OTP sent to <strong id="displayPhone">+91 9876543210</strong>
+                        <button onclick="editPhone()">Change</button>
+                    </div>
+                    <div class="otp-container">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 1)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 2)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 3)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 4)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 5)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 6)">
+                    </div>
+                    <button type="button" class="btn-submit" onclick="verifyOTP()">
+                        Verify & Login
+                    </button>
+                    <div class="resend-otp">
+                        Didn't receive OTP?
+                        <button id="resendBtn" onclick="resendOTP()" disabled>Resend in <span
+                                id="timer">30</span>s</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Login Form -->
+            <div id="passwordLoginForm" class="login-form">
+                <form onsubmit="return handlePasswordLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="phone">📞 Phone Number</label>
+                        <input type="tel" id="phone" class="form-input" placeholder="Enter 10-digit phone number"
+                            maxlength="10" required>
+                        <p id="phoneError" class="form-error">Please enter a valid 10-digit phone number</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">🔒 Password</label>
+                        <input type="password" id="password" class="form-input" placeholder="Enter your password"
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        Login
+                    </button>
+                </form>
+            </div>
+
+            <div class="auth-divider">or</div>
+
+            <p class="auth-links">
+                Don't have an account? <a href="register.html">Register</a>
+            </p>
+
+            <p class="auth-links" style="margin-top: 12px;">
+                <a href="index.html">← Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let otpTimer = null;
+        let otpPhone = '';
+
+        // Check if already logged in
+        if (localStorage.getItem('auth_token')) {
+            window.location.href = 'index.html';
+        }
+
+        // Switch between login methods
+        function switchLoginMethod(method) {
+            document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.login-form').forEach(form => form.classList.remove('active'));
+
+            if (method === 'otp') {
+                document.querySelector('.login-tab:first-child').classList.add('active');
+                document.getElementById('otpLoginForm').classList.add('active');
+            } else {
+                document.querySelector('.login-tab:last-child').classList.add('active');
+                document.getElementById('passwordLoginForm').classList.add('active');
+            }
+            hideMessage();
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = 'message-box ' + type + ' show';
+        }
+
+        function hideMessage() {
+            document.getElementById('messageBox').classList.remove('show');
+        }
+
+        // OTP Login - Step 1: Send OTP
+        async function sendOTP() {
+            const phone = document.getElementById('otpPhone').value.trim();
+
+            if (!/^\d{10}$/.test(phone)) {
+                document.getElementById('otpPhoneError').classList.add('show');
+                return;
+            }
+            document.getElementById('otpPhoneError').classList.remove('show');
+
+            otpPhone = phone;
+
+            try {
+                const response = await fetch('https://hellohingoli.com/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show OTP step
+                    document.getElementById('otpStep1').classList.remove('active');
+                    document.getElementById('otpStep2').classList.add('active');
+                    document.getElementById('displayPhone').textContent = '+91 ' + phone;
+                    startTimer();
+                    // Focus first OTP input
+                    document.querySelector('.otp-input').focus();
+                } else {
+                    showMessage(data.message || 'Failed to send OTP', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // OTP input navigation
+        function moveToNext(input, index) {
+            const inputs = document.querySelectorAll('.otp-input');
+            if (input.value && index < inputs.length) {
+                inputs[index].focus();
+            }
+            // Auto-verify when all filled
+            const otp = Array.from(inputs).map(i => i.value).join('');
+            if (otp.length === 6) {
+                verifyOTP();
+            }
+        }
+
+        // Verify OTP
+        async function verifyOTP() {
+            const inputs = document.querySelectorAll('.otp-input');
+            const otp = Array.from(inputs).map(i => i.value).join('');
+
+            if (otp.length !== 6) {
+                showMessage('Please enter complete 6-digit OTP', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://hellohingoli.com/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: otpPhone, otp })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data?.access_token) {
+                    localStorage.setItem('auth_token', data.data.access_token);
+                    localStorage.setItem('refresh_token', data.data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+
+                    showMessage('Login successful! Redirecting...', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+                } else {
+                    showMessage(data.message || 'Invalid OTP', 'error');
+                    // Clear OTP inputs
+                    inputs.forEach(i => i.value = '');
+                    inputs[0].focus();
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Timer for resend
+        function startTimer() {
+            let seconds = 30;
+            const timerEl = document.getElementById('timer');
+            const resendBtn = document.getElementById('resendBtn');
+
+            resendBtn.disabled = true;
+
+            otpTimer = setInterval(() => {
+                seconds--;
+                timerEl.textContent = seconds;
+
+                if (seconds <= 0) {
+                    clearInterval(otpTimer);
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = 'Resend OTP';
+                }
+            }, 1000);
+        }
+
+        // Resend OTP
+        async function resendOTP() {
+            await sendOTP();
+        }
+
+        // Edit phone number
+        function editPhone() {
+            document.getElementById('otpStep2').classList.remove('active');
+            document.getElementById('otpStep1').classList.add('active');
+            clearInterval(otpTimer);
+        }
+
+        // Password Login
+        async function handlePasswordLogin(e) {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!/^\d{10}$/.test(phone)) {
+                document.getElementById('phoneError').classList.add('show');
+                return false;
+            }
+            document.getElementById('phoneError').classList.remove('show');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('https://hellohingoli.com/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data?.access_token) {
+                    localStorage.setItem('auth_token', data.data.access_token);
+                    localStorage.setItem('refresh_token', data.data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+
+                    showMessage('Login successful! Redirecting...', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+                } else {
+                    showMessage(data.message || 'Invalid phone number or password', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Login';
+            return false;
+        }
+
+        // Handle backspace in OTP
+        document.querySelectorAll('.otp-input').forEach((input, index) => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    document.querySelectorAll('.otp-input')[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

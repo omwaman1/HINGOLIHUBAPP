@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - Hingoli Hub™</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .dashboard-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .dashboard-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--space-6);
+        }
+
+        /* Profile Sidebar */
+        .profile-sidebar {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto var(--space-4);
+        }
+
+        .profile-name {
+            text-align: center;
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .profile-phone {
+            text-align: center;
+            color: var(--gray-500);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-4);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-card {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--primary-600);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: var(--primary-50);
+            color: var(--primary-600);
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            min-height: 400px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .content-header h2 {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+        }
+
+        /* Listings Grid */
+        .my-listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .my-listing-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .my-listing-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: var(--gray-100);
+        }
+
+        .my-listing-content {
+            padding: var(--space-4);
+        }
+
+        .my-listing-type {
+            display: inline-block;
+            font-size: var(--font-size-xs);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-2);
+        }
+
+        .type-services {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-business {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .type-jobs {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .type-selling {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .my-listing-title {
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+            font-size: var(--font-size-sm);
+        }
+
+        .my-listing-status {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .my-listing-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .my-listing-actions button {
+            flex: 1;
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--gray-200);
+            background: white;
+        }
+
+        .my-listing-actions .btn-edit {
+            color: var(--primary-600);
+            border-color: var(--primary-200);
+        }
+
+        .my-listing-actions .btn-delete {
+            color: var(--error);
+            border-color: #fee2e2;
+        }
+
+        /* Edit Profile Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .modal-header h3 {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-400);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            margin-bottom: var(--space-1);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-sidebar {
+                position: relative;
+            }
+
+            .my-listings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="cart.html" style="position: relative; text-decoration: none; font-size: 1.3rem;">🛒</a>
+                <div id="authNav">
+                    <a href="login.html" class="btn btn-white">👤 Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Dashboard -->
+    <div class="dashboard-page">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>👤 My Dashboard</h1>
+                <a href="add-listing.html" class="btn btn-primary">+ Add Listing</a>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Profile Sidebar -->
+                <div class="profile-sidebar">
+                    <div class="profile-avatar" id="profileAvatar">👤</div>
+                    <h2 class="profile-name" id="profileName">Loading...</h2>
+                    <p class="profile-phone" id="profilePhone">...</p>
+
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="listingCount">0</div>
+                            <div class="stat-label">Listings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="orderCount">0</div>
+                            <div class="stat-label">Orders</div>
+                        </div>
+                    </div>
+
+                    <nav class="sidebar-nav">
+                        <a href="#listings" class="active" onclick="switchTab('listings')">📋 My Listings</a>
+                        <a href="#orders" onclick="switchTab('orders')">📦 My Orders</a>
+                        <a href="#profile" onclick="switchTab('profile')">⚙️ Edit Profile</a>
+                        <a href="#" onclick="logout()">🚪 Logout</a>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div class="dashboard-main">
+                    <!-- My Listings Tab -->
+                    <div class="tab-content active" id="listings-tab">
+                        <div class="content-header">
+                            <h2>My Listings</h2>
+                            <select id="listingTypeFilter" onchange="loadMyListings(this.value)">
+                                <option value="all">All Types</option>
+                                <option value="services">Services</option>
+                                <option value="selling">Products</option>
+                                <option value="business">Business</option>
+                                <option value="jobs">Jobs</option>
+                            </select>
+                        </div>
+                        <div class="my-listings-grid" id="myListingsGrid">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div class="tab-content" id="orders-tab">
+                        <div class="content-header">
+                            <h2>My Orders</h2>
+                        </div>
+                        <div id="myOrdersList">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tab -->
+                    <div class="tab-content" id="profile-tab">
+                        <div class="content-header">
+                            <h2>Edit Profile</h2>
+                        </div>
+                        <div
+                            style="background: white; border-radius: var(--radius-lg); padding: var(--space-6); max-width: 500px;">
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" id="editUsername" placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="editEmail" placeholder="Email address">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="editGender">
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let userProfile = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            app.initAuth();
+
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html?redirect=dashboard.html';
+                return;
+            }
+
+            await loadProfile();
+            await loadMyListings('all');
+        });
+
+        async function loadProfile() {
+            try {
+                const response = await api.getUserProfile();
+                if (response.success && response.data) {
+                    userProfile = response.data;
+                    renderProfile(userProfile);
+                }
+            } catch (error) {
+                console.error('Profile error:', error);
+            }
+        }
+
+        function renderProfile(profile) {
+            document.getElementById('profileName').textContent = profile.username || 'User';
+            document.getElementById('profilePhone').textContent = profile.phone || '';
+            document.getElementById('listingCount').textContent = profile.listing_count || 0;
+
+            // Avatar
+            const initial = (profile.username || 'U').charAt(0).toUpperCase();
+            document.getElementById('profileAvatar').textContent = initial;
+
+            // Edit form
+            document.getElementById('editUsername').value = profile.username || '';
+            document.getElementById('editEmail').value = profile.email || '';
+            document.getElementById('editGender').value = profile.gender || '';
+        }
+
+        async function loadMyListings(type) {
+            const grid = document.getElementById('myListingsGrid');
+            grid.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await api.getUserListings(type);
+                const listings = response.data || [];
+
+                if (listings.length === 0) {
+                    grid.innerHTML = `
+                        <div style="text-align: center; padding: var(--space-8); grid-column: 1/-1;">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">📭</div>
+                            <h3>No listings yet</h3>
+                            <p style="color: var(--gray-500); margin-bottom: var(--space-4);">Create your first listing to get started</p>
+                            <a href="add-listing.html" class="btn btn-primary">+ Add Listing</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = listings.map(listing => `
+                    <div class="my-listing-card">
+                        <img src="${listing.main_image_url || 'https://via.placeholder.com/300x140'}" 
+                             alt="${listing.title}" class="my-listing-image"
+                             onerror="this.src='https://via.placeholder.com/300x140?text=No+Image'">
+                        <div class="my-listing-content">
+                            <span class="my-listing-type type-${listing.listing_type}">${listing.listing_type}</span>
+                            <h3 class="my-listing-title">${listing.title}</h3>
+                            <p class="my-listing-status">
+                                ${listing.status === 'active' ? '🟢 Active' : '🔴 Inactive'}
+                                ${listing.price ? ` • ₹${components.formatPrice(listing.price)}` : ''}
+                            </p>
+                            <div class="my-listing-actions">
+                                <button class="btn-edit" onclick="editListing(${listing.listing_id}, '${listing.listing_type}')">✏️ Edit</button>
+                                <button class="btn-delete" onclick="deleteListing(${listing.listing_id}, '${listing.listing_type}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                grid.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function loadMyOrders() {
+            const container = document.getElementById('myOrdersList');
+            container.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await api.getOrders();
+                const orders = response.data || [];
+
+                if (orders.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: var(--space-8);">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-4);">📦</div>
+                            <h3>No orders yet</h3>
+                            <p style="color: var(--gray-500);">Your orders will appear here</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = orders.map(order => `
+                    <a href="order-detail.html?id=${order.order_id}" style="display: block; background: white; border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-3); text-decoration: none; color: inherit;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>#${order.order_number}</strong>
+                                <p style="color: var(--gray-500); font-size: var(--font-size-sm);">${new Date(order.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--font-size-xs);">${order.order_status}</span>
+                                <p style="font-weight: 600; color: var(--primary-600);">₹${components.formatPrice(order.total_amount)}</p>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+
+                document.getElementById('orderCount').textContent = orders.length;
+
+            } catch (error) {
+                container.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            }
+        }
+
+        function switchTab(tab) {
+            // Update nav
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.querySelector(`.sidebar-nav a[href="#${tab}"]`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+
+            // Load data
+            if (tab === 'orders') loadMyOrders();
+        }
+
+        function editListing(id, type) {
+            window.location.href = `edit-listing.html?id=${id}&type=${type}`;
+        }
+
+        async function deleteListing(id, type) {
+            if (!confirm('Are you sure you want to delete this listing?')) return;
+
+            try {
+                await api.deleteListing(id);
+                loadMyListings(document.getElementById('listingTypeFilter').value);
+            } catch (error) {
+                alert('Failed to delete: ' + error.message);
+            }
+        }
+
+        async function saveProfile() {
+            const profileData = {
+                username: document.getElementById('editUsername').value.trim(),
+                email: document.getElementById('editEmail').value.trim(),
+                gender: document.getElementById('editGender').value
+            };
+
+            try {
+                const response = await api.updateUserProfile(profileData);
+                if (response.success) {
+                    alert('Profile updated!');
+                    loadProfile();
+                } else {
+                    alert(response.message || 'Failed to update');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function logout() {
+            app.logout();
+        }
+    </script>
+</body>
+
+</html>

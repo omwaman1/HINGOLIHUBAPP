@@ -1,0 +1,66 @@
+name: Build Android APK & AAB
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v4, v5, etc.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+    
+    - name: Build Signed Release APK
+      run: ./gradlew assembleRelease
+    
+    - name: Build Signed Release AAB (App Bundle)
+      run: ./gradlew bundleRelease
+    
+    - name: Get version name
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    
+    - name: Rename build outputs with version
+      run: |
+        mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
+        mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
+        mv app/build/outputs/bundle/release/app-release.aab app/build/outputs/bundle/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Hingoli Hub ${{ steps.get_version.outputs.VERSION }}
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        files: |
+          app/build/outputs/apk/debug/HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk
+          app/build/outputs/apk/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk
+          app/build/outputs/bundle/release/HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab
+        generate_release_notes: true
+        body: |
+          ## Hingoli Hub ${{ steps.get_version.outputs.VERSION }}
+          
+          ### Downloads
+          - **Release APK** (Signed, for direct install): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.apk`
+          - **Release AAB** (Signed, for Play Store): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-release.aab`
+          - **Debug APK** (For testing): `HingoliHub-${{ steps.get_version.outputs.VERSION }}-debug.apk`
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">हिंगोली हब</string>
+    <string name="services">सेवा</string>
+    <string name="businesses">व्यवसाय</string>
+    <string name="login">लॉगिन</string>
+    <string name="phone_number">फोन नंबर</string>
+    <string name="password">पासवर्ड</string>
+    <string name="enter_phone">तुमचा फोन नंबर टाका</string>
+    <string name="enter_password">तुमचा पासवर्ड टाका</string>
+    <string name="categories">श्रेण्या</string>
+    <string name="listings">यादी</string>
+    <string name="no_listings">कोणतीही यादी सापडली नाही</string>
+    <string name="loading">लोड होत आहे...</string>
+    <string name="error_occurred">एक त्रुटी आली</string>
+    <string name="retry">पुन्हा प्रयत्न करा</string>
+    <string name="call">कॉल करा</string>
+    <string name="chat">चॅट करा</string>
+    <string name="reviews">रिव्ह्यू</string>
+    <string name="price_list">किंमत यादी</string>
+    <string name="about">माहिती</string>
+    <string name="location">ठिकाण</string>
+    
+    <!-- Drawer Menu -->
+    <string name="home">होम</string>
+    <string name="chats">चॅट्स</string>
+    <string name="favorites">आवडते</string>
+    <string name="notifications">नोटिफिकेशन्स</string>
+    <string name="my_listings">माझ्या जाहिराती</string>
+    <string name="advertise">जाहिरात करा</string>
+    <string name="settings">सेटिंग्ज</string>
+    <string name="help">मदत</string>
+    <string name="rate_us">आम्हाला रेट करा</string>
+    <string name="share">शेअर करा</string>
+    <string name="logout">लॉगआउट</string>
+    <string name="edit_profile">प्रोफाइल संपादित करा</string>
+    
+    <!-- Bottom Navigation -->
+    <string name="services_tab">सेवा</string>
+    <string name="selling_tab">विक्री</string>
+    <string name="business_tab">व्यवसाय</string>
+    <string name="jobs_tab">नोकरी</string>
+    
+    <!-- Auth -->
+    <string name="continue_btn">पुढे जा</string>
+    <string name="verify_otp">OTP सत्यापित करा</string>
+    <string name="create_account">खाते तयार करा</string>
+    <string name="forgot_password">पासवर्ड विसरलात?</string>
+    <string name="full_name">पूर्ण नाव</string>
+    <string name="email">ईमेल</string>
+    <string name="gender">लिंग</string>
+    <string name="date_of_birth">जन्मतारीख</string>
+    <string name="male">पुरुष</string>
+    <string name="female">महिला</string>
+    <string name="other">इतर</string>
+</resources>

@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "219583842082",
+    "firebase_url": "https://hellohingoliapp-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "hellohingoliapp",
+    "storage_bucket": "hellohingoliapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219583842082:android:e936845adf45a49addc77b",
+        "android_client_info": {
+          "package_name": "com.hellohingoli.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHZn6FWg-LBvTPkv11iiGoka0CNaxsEy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219583842082:android:1901ac96de51a8aaddc77b",
+        "android_client_info": {
+          "package_name": "com.hellohingoli.smsgateway"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHZn6FWg-LBvTPkv11iiGoka0CNaxsEy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

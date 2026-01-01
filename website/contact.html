@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Hingoli Hub™</title>
+    <meta name="description" content="Contact Hingoli Hub™. We're here to help you with any questions or support.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .page-hero {
+            background: var(--gradient-primary);
+            padding: 100px 20px 60px;
+            text-align: center;
+            color: white;
+        }
+
+        .page-hero h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .page-hero p {
+            font-size: 14px;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .contact-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .contact-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .contact-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .contact-card a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .contact-card a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .contact-card a.whatsapp {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        }
+
+        .contact-card a.whatsapp:hover {
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .info-item .details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .info-item .details p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .info-item .details a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: center;
+        }
+
+        .social-links a {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .social-links a:hover {
+            transform: translateY(-2px);
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="listings.html">Browse</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div class="hide-mobile" style="display: flex; align-items: center; gap: var(--space-3);">
+                <div id="authNav">
+                    <a href="login.html" class="btn btn-white">👤 Login</a>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <span style="font-weight: 700; font-size: 16px;">🏠 Hingoli Hub™</span>
+                <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+            </div>
+            <div class="mobile-menu-links">
+                <a href="index.html">🏠 Home</a>
+                <a href="about.html">ℹ️ About Us</a>
+                <a href="listings.html">📋 Browse Listings</a>
+                <a href="contact.html">📞 Contact Us</a>
+                <a href="login.html" class="btn btn-primary"
+                    style="text-align: center; color: white; margin-top: 12px;">Login / Register</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
+        document.getElementById('mobileMenu')?.addEventListener('click', function (e) {
+            if (e.target === this) toggleMobileMenu();
+        });
+    </script>
+
+    <!-- Page Hero -->
+    <section class="page-hero">
+        <h1>Contact Us</h1>
+        <p>We're here to help! Reach out to us through any of the following channels.</p>
+    </section>
+
+    <!-- Content -->
+    <div class="content-section">
+        <!-- Quick Contact Cards -->
+        <div class="contact-grid">
+            <div class="contact-card">
+                <div class="icon">📞</div>
+                <h3>Call Us</h3>
+                <p>Speak directly with our support team</p>
+                <a href="tel:+919595340263">+91 9595340263</a>
+            </div>
+
+            <div class="contact-card">
+                <div class="icon">💬</div>
+                <h3>WhatsApp</h3>
+                <p>Chat with us on WhatsApp for quick support</p>
+                <a href="https://wa.me/919595340263?text=Hi%2C%20I%20need%20help%20with%20Hingoli%20Hub"
+                    class="whatsapp" target="_blank">Chat Now</a>
+            </div>
+
+            <div class="contact-card">
+                <div class="icon">📧</div>
+                <h3>Email Us</h3>
+                <p>Send us an email for detailed inquiries</p>
+                <a href="mailto:support@hellohingoli.com">Send Email</a>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="info-card">
+            <h2>📍 Contact Information</h2>
+
+            <div class="info-item">
+                <div class="icon">📱</div>
+                <div class="details">
+                    <h4>Phone Number</h4>
+                    <p><a href="tel:+919595340263">+91 9595340263</a></p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="icon">📧</div>
+                <div class="details">
+                    <h4>Email Address</h4>
+                    <p><a href="mailto:support@hellohingoli.com">support@hellohingoli.com</a></p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="icon">🏢</div>
+                <div class="details">
+                    <h4>Office Address</h4>
+                    <p>Hingoli Hub™<br>Hingoli, Maharashtra 431513<br>India</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="icon">⏰</div>
+                <div class="details">
+                    <h4>Business Hours</h4>
+                    <p>Monday - Saturday: 9:00 AM - 7:00 PM<br>Sunday: 10:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/hellohingoli" target="_blank" title="Facebook">📘</a>
+                <a href="https://www.instagram.com/hellohingoli" target="_blank" title="Instagram">📸</a>
+                <a href="https://twitter.com/hellohingoli" target="_blank" title="Twitter">🐦</a>
+                <a href="https://www.youtube.com/@hellohingoli" target="_blank" title="YouTube">📺</a>
+            </div>
+        </div>
+
+        <!-- FAQ Link -->
+        <div style="text-align: center; margin-top: 40px;">
+            <p style="color: #64748b; margin-bottom: 16px;">Looking for answers?</p>
+            <a href="about.html" class="btn btn-outline" style="padding: 14px 28px;">Learn More About Us →</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>🏠 Hingoli Hub™</h3>
+                <p>Your trusted local marketplace for Hingoli district.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="listings.html">Browse Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="listings.html?type=services">Services</a></li>
+                    <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                    <li><a href="listings.html?type=business">Businesses</a></li>
+                    <li><a href="listings.html?type=jobs">Jobs</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 Hingoli Hub™. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script>app.initAuth();</script>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+# Robots.txt for Hingoli Hub
+# https://hellohingoli.com/
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://hellohingoli.com/sitemap.xml
+
+# Disallow private/user pages from indexing
+Disallow: /dashboard.html
+Disallow: /orders.html
+Disallow: /order-detail.html
+Disallow: /checkout.html
+Disallow: /add-listing.html
+Disallow: /edit-listing.html
+
+# Allow search engines to crawl static assets
+Allow: /css/
+Allow: /js/
+Allow: /images/
+
+# Crawl-delay for rate limiting (optional)
+Crawl-delay: 1

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Hingoli Hub™</title>
+    <meta name="description" content="View product details on Hingoli Hub™ marketplace.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .product-page {
+            padding-top: 70px;
+        }
+
+        .product-hero {
+            height: 250px;
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+
+        .product-container {
+            max-width: 900px;
+            margin: -30px auto 0;
+            padding: 0 var(--space-4);
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-category {
+            display: inline-block;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            margin-bottom: var(--space-3);
+        }
+
+        .product-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--space-3);
+        }
+
+        .product-price {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--primary-600);
+            margin-bottom: var(--space-4);
+        }
+
+        .product-price .original {
+            text-decoration: line-through;
+            color: var(--gray-400);
+            font-size: var(--font-size-lg);
+            margin-right: var(--space-2);
+        }
+
+        .product-price .discount {
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            margin-left: var(--space-2);
+        }
+
+        .product-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .product-meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+        }
+
+        .product-description {
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+            line-height: 1.6;
+            margin-top: var(--space-4);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .product-actions button {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .product-actions button:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-call {
+            background: var(--primary-500);
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-chat {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-cart {
+            background: var(--gradient-primary);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-buy {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .cart-actions .btn-cart,
+        .cart-actions .btn-buy {
+            flex: 1;
+            padding: 16px 24px;
+            font-size: 15px;
+        }
+
+        .cart-actions .btn-cart {
+            flex: 2;
+        }
+
+        .cart-link {
+            position: relative;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b35;
+            color: white;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 65px;
+            left: var(--space-4);
+            background: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            cursor: pointer;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .product-hero {
+                height: 200px;
+            }
+
+            .product-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="cart.html" class="cart-link">🛒<span class="cart-badge" id="cartBadge"
+                        style="display:none;">0</span></a>
+                <div id="authNav">
+                    <a href="login.html" class="btn btn-white">👤 Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Back Button -->
+    <button class="back-button" onclick="history.back()">←</button>
+
+    <!-- Product Detail -->
+    <div class="product-page" id="productDetail">
+        <!-- Hero Image -->
+        <div class="product-hero">
+            <img id="productImage" src="https://via.placeholder.com/600x400?text=Loading..." alt="Product Image">
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-container">
+            <div class="product-card">
+                <span class="product-category" id="productCategory">Loading...</span>
+                <h1 class="product-title" id="productTitle">Loading...</h1>
+
+                <div class="product-price" id="productPrice">
+                    Loading...
+                </div>
+
+                <div class="product-meta">
+                    <div class="product-meta-item">
+                        <span>🏪</span>
+                        <span id="productBusiness">-</span>
+                    </div>
+                    <div class="product-meta-item">
+                        <span>📍</span>
+                        <span id="productLocation">Hingoli</span>
+                    </div>
+                    <div class="product-meta-item">
+                        <span>📦</span>
+                        <span id="productCondition">New</span>
+                    </div>
+                </div>
+
+                <p class="product-description" id="productDescription">Loading description...</p>
+
+                <div class="product-actions">
+                    <button class="btn-call" id="callButton">📞 Call Now</button>
+                    <button class="btn-whatsapp" id="whatsappButton">💬 WhatsApp</button>
+                    <button class="btn-chat" id="chatButton">✉️ Chat</button>
+                </div>
+
+                <div class="cart-actions" id="cartActions" style="display:none;">
+                    <button class="product-actions btn-cart" id="addToCartBtn" onclick="addToCart()">🛒 Add to
+                        Cart</button>
+                    <button class="product-actions btn-buy" id="buyNowBtn" onclick="buyNow()">⚡ Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Load product details
+        async function loadProductDetail() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (!id) {
+                document.getElementById('productDetail').innerHTML =
+                    '<div style="text-align:center;padding:4rem;">Product not found</div>';
+                return;
+            }
+
+            try {
+                const response = await api.getProductById(id);
+
+                if (response.success && response.data) {
+                    renderProduct(response.data);
+                } else {
+                    document.getElementById('productDetail').innerHTML =
+                        '<div style="text-align:center;padding:4rem;">Product not found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+            }
+        }
+
+        let currentProduct = null;
+
+        function renderProduct(product) {
+            currentProduct = product;
+            document.title = `${product.product_name} - Hingoli Hub™`;
+
+            // Show cart actions if product can be sold online
+            if (product.sell_online || product.price) {
+                document.getElementById('cartActions').style.display = 'flex';
+            }
+
+            // Image
+            const img = document.getElementById('productImage');
+            img.src = product.image_url || 'https://via.placeholder.com/600x400?text=No+Image';
+            img.onerror = () => img.src = 'https://via.placeholder.com/600x400?text=No+Image';
+
+            // Details
+            document.getElementById('productCategory').textContent = product.category_name || 'Product';
+            document.getElementById('productTitle').textContent = product.product_name;
+            document.getElementById('productBusiness').textContent = product.business_name || '-';
+            document.getElementById('productLocation').textContent = product.city || 'Hingoli';
+            document.getElementById('productCondition').textContent = product.condition || 'New';
+            document.getElementById('productDescription').textContent = product.description || 'No description available.';
+
+            // Price
+            const priceEl = document.getElementById('productPrice');
+            if (product.discounted_price && product.discounted_price < product.price) {
+                const discount = Math.round((product.price - product.discounted_price) / product.price * 100);
+                priceEl.innerHTML = `
+                    <span class="original">₹${components.formatPrice(product.price)}</span>
+                    ₹${components.formatPrice(product.discounted_price)}
+                    <span class="discount">${discount}% OFF</span>
+                `;
+            } else {
+                priceEl.textContent = `₹${components.formatPrice(product.price)}`;
+            }
+
+            // Contact buttons
+            document.getElementById('callButton').onclick = () => app.callSupport();
+            document.getElementById('whatsappButton').onclick = () => app.openWhatsApp(product.product_name);
+            document.getElementById('chatButton').onclick = () => app.openLiveChat();
+        }
+
+        async function addToCart() {
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+
+            const btn = document.getElementById('addToCartBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Adding...';
+
+            try {
+                await api.addToCart(currentProduct.product_id, 1);
+                btn.innerHTML = '✅ Added!';
+                updateCartBadge();
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '🛒 Add to Cart';
+                }, 2000);
+            } catch (error) {
+                alert('Failed to add to cart: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '🛒 Add to Cart';
+            }
+        }
+
+        async function buyNow() {
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+
+            try {
+                await api.addToCart(currentProduct.product_id, 1);
+                window.location.href = 'checkout.html';
+            } catch (error) {
+                alert('Failed: ' + error.message);
+            }
+        }
+
+        async function updateCartBadge() {
+            if (!app.isLoggedIn()) return;
+            try {
+                const response = await api.getCart();
+                if (response.success && response.data.item_count > 0) {
+                    const badge = document.getElementById('cartBadge');
+                    badge.textContent = response.data.item_count;
+                    badge.style.display = 'flex';
+                }
+            } catch (e) { }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductDetail();
+            app.initAuth();
+            app.initLiveChat();
+            updateCartBadge();
+        });
+    </script>
+</body>
+
+</html>

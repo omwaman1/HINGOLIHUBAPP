@@ -1,0 +1,27 @@
+# IDE
+.idea/
+*.iml
+
+# Android build files
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+
+# Node modules
+node_modules/
+
+# Firebase sensitive files
+**/firebase-service-account.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python cache
+__pycache__/
+*.pyc

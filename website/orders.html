@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Hingoli Hub™</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .orders-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .orders-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        .page-header {
+            margin-bottom: var(--space-6);
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .order-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .order-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-3);
+        }
+
+        .order-number {
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .order-date {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .order-status {
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .status-delivered {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .order-items {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .order-item-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            background: var(--gray-100);
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .order-total {
+            font-weight: 700;
+            color: var(--primary-600);
+        }
+
+        .order-items-count {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: var(--space-16);
+            background: white;
+            border-radius: var(--radius-xl);
+        }
+
+        .empty-orders-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-4);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div id="authNav">
+                <a href="login.html" class="btn btn-white">👤 Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Orders Page -->
+    <div class="orders-page">
+        <div class="orders-container">
+            <div class="page-header">
+                <h1>📦 My Orders</h1>
+            </div>
+
+            <div class="orders-list" id="ordersList">
+                <p>Loading orders...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            app.initAuth();
+
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html?redirect=orders.html';
+                return;
+            }
+
+            await loadOrders();
+        });
+
+        async function loadOrders() {
+            try {
+                const response = await api.getOrders();
+
+                if (response.success && response.data?.length > 0) {
+                    renderOrders(response.data);
+                } else {
+                    document.getElementById('ordersList').innerHTML = `
+                        <div class="empty-orders">
+                            <div class="empty-orders-icon">📦</div>
+                            <h2>No orders yet</h2>
+                            <p style="color: var(--gray-500); margin-bottom: var(--space-6);">
+                                Start shopping to see your orders here
+                            </p>
+                            <a href="listings.html?type=selling" class="btn btn-outline">Browse Products</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('ordersList').innerHTML = `
+                    <div class="empty-orders">
+                        <div class="empty-orders-icon">❌</div>
+                        <h2>Error loading orders</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-outline" onclick="loadOrders()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderOrders(orders) {
+            const html = orders.map(order => {
+                const statusClass = getStatusClass(order.order_status);
+                const date = new Date(order.created_at).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                });
+
+                return `
+                    <div class="order-card" onclick="viewOrder('${order.order_id}')">
+                        <div class="order-header">
+                            <div>
+                                <div class="order-number">#${order.order_number}</div>
+                                <div class="order-date">Placed on ${date}</div>
+                            </div>
+                            <span class="order-status ${statusClass}">${formatStatus(order.order_status)}</span>
+                        </div>
+                        <div class="order-footer">
+                            <span class="order-items-count">${order.item_count} item${order.item_count > 1 ? 's' : ''}</span>
+                            <span class="order-total">₹${components.formatPrice(order.total_amount)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('ordersList').innerHTML = html;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'pending': 'status-pending',
+                'confirmed': 'status-confirmed',
+                'shipped': 'status-shipped',
+                'delivered': 'status-delivered',
+                'cancelled': 'status-cancelled'
+            };
+            return classes[status] || 'status-pending';
+        }
+
+        function formatStatus(status) {
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        function viewOrder(orderId) {
+            window.location.href = `order-detail.html?id=${orderId}`;
+        }
+    </script>
+</body>
+
+</html>

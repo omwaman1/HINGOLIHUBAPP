@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Hingoli Hub™</title>
+    <meta name="description" content="Create your Hingoli Hub™ account.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            width: 100%;
+            max-width: 360px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .auth-logo {
+            font-size: 2rem;
+            margin-bottom: var(--space-2);
+        }
+
+        .auth-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: var(--space-1);
+        }
+
+        .auth-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--space-2);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            transition: border-color var(--transition-fast);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: var(--space-3);
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin: var(--space-6) 0;
+            color: var(--gray-400);
+            font-size: var(--font-size-xs);
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        .auth-links {
+            text-align: center;
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .auth-links a {
+            color: var(--primary-600);
+            font-weight: 500;
+        }
+
+        .error-message,
+        .success-message {
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            text-align: center;
+            margin-bottom: var(--space-4);
+            display: none;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .error-message.show,
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">🏠</div>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join the Hingoli Hub™ community</p>
+            </div>
+
+            <div id="successMessage" class="success-message">
+                Account created! Redirecting to login...
+            </div>
+
+            <div id="errorMessage" class="error-message">
+                Registration failed
+            </div>
+
+            <form id="registerForm" onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label" for="name">Full Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-input" placeholder="10-digit phone number" maxlength="10"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email (Optional)</label>
+                    <input type="email" id="email" class="form-input" placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Minimum 6 characters"
+                        minlength="6" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="auth-divider">or</div>
+
+            <p class="auth-links">
+                Already have an account? <a href="login.html">Login</a>
+            </p>
+
+            <p class="auth-links" style="margin-top: var(--space-3);">
+                <a href="index.html">← Back to Home</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Check if already logged in
+        if (localStorage.getItem('auth_token')) {
+            window.location.href = 'index.html';
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // Hide previous messages
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+
+            // Validate phone
+            if (!/^\d{10}$/.test(phone)) {
+                errorMessage.textContent = 'Please enter a valid 10-digit phone number';
+                errorMessage.classList.add('show');
+                return false;
+            }
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch('https://hellohingoli.com/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: name,
+                        phone,
+                        email: email || null,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    successMessage.classList.add('show');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                } else {
+                    errorMessage.textContent = data.message || 'Registration failed. Try again.';
+                    errorMessage.classList.add('show');
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.classList.add('show');
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+            return false;
+        }
+    </script>
+</body>
+
+</html>

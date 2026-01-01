@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Listings - Hingoli Hub™</title>
+    <meta name="description" content="Browse services, products, businesses, and jobs in Hingoli district.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Listings Page Specific Styles - COMPACT */
+        .page-header {
+            background: var(--gradient-primary);
+            padding: calc(50px + var(--space-6)) var(--space-4) var(--space-6);
+            color: white;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+        }
+
+        .page-header p {
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+            font-size: var(--font-size-xs);
+        }
+
+        .listings-page-content {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: var(--space-4);
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: var(--space-4);
+        }
+
+        /* Sidebar Filters - COMPACT */
+        .filters-sidebar {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            height: fit-content;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 60px;
+        }
+
+        .filter-section {
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .filter-section h3 {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-3);
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-1) 0;
+            cursor: pointer;
+            color: var(--gray-600);
+            font-size: var(--font-size-xs);
+            transition: color var(--transition-fast);
+        }
+
+        .filter-option:hover {
+            color: var(--primary-600);
+        }
+
+        .filter-option input[type="radio"],
+        .filter-option input[type="checkbox"] {
+            accent-color: var(--primary-500);
+            width: 14px;
+            height: 14px;
+        }
+
+        .type-tabs {
+            display: flex;
+            gap: var(--space-1);
+            flex-wrap: wrap;
+        }
+
+        .type-tab {
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--gray-100);
+            color: var(--gray-600);
+            border: none;
+        }
+
+        .type-tab:hover,
+        .type-tab.active {
+            background: var(--primary-500);
+            color: white;
+        }
+
+        /* Main Content */
+        .listings-main {
+            min-height: 300px;
+        }
+
+        .listings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .listings-count {
+            color: var(--gray-500);
+            font-size: var(--font-size-xs);
+        }
+
+        .sort-select {
+            padding: var(--space-1) var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-xs);
+            color: var(--gray-600);
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .listings-page-content {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-sidebar {
+                position: static;
+                display: none;
+            }
+
+            .page-header h1 {
+                font-size: var(--font-size-xl);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div id="authNav" class="hide-mobile">
+                <a href="login.html" class="btn btn-white">👤 Login</a>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <span style="font-weight: 700; font-size: 16px;">🏠 Hingoli Hub™</span>
+                <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+            </div>
+            <div class="mobile-menu-links">
+                <a href="index.html">🏠 Home</a>
+                <a href="listings.html?type=services">🔧 Services</a>
+                <a href="listings.html?type=selling">🛒 Buy & Sell</a>
+                <a href="listings.html?type=business">🏪 Businesses</a>
+                <a href="listings.html?type=jobs">💼 Jobs</a>
+                <a href="about.html">ℹ️ About Us</a>
+                <a href="contact.html">📞 Contact Us</a>
+                <a href="cart.html">🛒 Cart</a>
+                <a href="dashboard.html">👤 My Account</a>
+                <a href="login.html" class="btn btn-primary"
+                    style="text-align: center; color: white; margin-top: 12px;">Login / Register</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
+        document.getElementById('mobileMenu')?.addEventListener('click', function (e) {
+            if (e.target === this) toggleMobileMenu();
+        });
+    </script>
+
+    <!-- Page Header with Search -->
+    <section class="page-header">
+        <h1 id="pageTitle">All Listings</h1>
+        <p>Browse and discover amazing listings from your local community in Hingoli district.</p>
+
+        <!-- Search Bar -->
+        <div class="search-container" style="max-width: 600px; margin: 20px auto 0;">
+            <div
+                style="display: flex; gap: 10px; background: white; border-radius: 50px; padding: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                <input type="text" id="searchInput" placeholder="Search for services, products, businesses..."
+                    style="flex: 1; padding: 12px 20px; border: none; background: transparent; font-size: 14px; outline: none;">
+                <button onclick="performSearch()"
+                    style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                    🔍 Search
+                </button>
+            </div>
+            <p id="searchQuery" style="margin-top: 10px; font-size: 12px; opacity: 0.8;"></p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="listings-page-content">
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+            <div class="filter-section">
+                <h3>Type</h3>
+                <div class="type-tabs">
+                    <button class="type-tab" onclick="app.filterByType('')">All</button>
+                    <button class="type-tab" onclick="app.filterByType('services')">Services</button>
+                    <button class="type-tab" onclick="app.filterByType('selling')">Buy & Sell</button>
+                    <button class="type-tab" onclick="app.filterByType('business')">Business</button>
+                    <button class="type-tab" onclick="app.filterByType('jobs')">Jobs</button>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Categories</h3>
+                <div id="categoryFilters">
+                    <!-- Categories loaded by JavaScript -->
+                    <p class="text-sm" style="color: var(--gray-400);">Loading...</p>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Location</h3>
+                <label class="filter-option">
+                    <input type="radio" name="location" value="Hingoli" checked>
+                    <span>Hingoli</span>
+                </label>
+                <label class="filter-option">
+                    <input type="radio" name="location" value="Washim">
+                    <span>Washim</span>
+                </label>
+                <label class="filter-option">
+                    <input type="radio" name="location" value="Parbhani">
+                    <span>Parbhani</span>
+                </label>
+                <label class="filter-option">
+                    <input type="radio" name="location" value="Nanded">
+                    <span>Nanded</span>
+                </label>
+            </div>
+
+            <button class="btn btn-primary w-full" onclick="location.reload()">
+                Apply Filters
+            </button>
+        </aside>
+
+        <!-- Listings Grid -->
+        <main class="listings-main">
+            <div class="listings-header">
+                <span class="listings-count" id="listingsCount">Loading listings...</span>
+                <select class="sort-select" id="sortSelect">
+                    <option value="recent">Most Recent</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="rating">Highest Rated</option>
+                </select>
+            </div>
+
+            <div class="listings-grid" id="listingsGrid">
+                <!-- Listings loaded by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>🏠 Hingoli Hub™</h3>
+                <p>Your trusted local marketplace connecting the Hingoli community.</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Browse</h4>
+                <ul>
+                    <li><a href="listings.html?type=services">Services</a></li>
+                    <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                    <li><a href="listings.html?type=business">Businesses</a></li>
+                    <li><a href="listings.html?type=jobs">Jobs</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/api/privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="/api/terms-of-service.html">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:support@hellohingoli.com">support@hellohingoli.com</a></li>
+                    <li>Hingoli, Maharashtra</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2024 Hingoli Hub™. All rights reserved.</p>
+            <p>Made with ❤️ in Hingoli</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Get URL params
+        const params = new URLSearchParams(window.location.search);
+        const currentType = params.get('type') || '';
+        const currentSearch = params.get('search') || '';
+        const currentCategory = params.get('category') || '';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set search input value
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput && currentSearch) {
+                searchInput.value = currentSearch;
+                document.getElementById('searchQuery').textContent = `Showing results for "${currentSearch}"`;
+            }
+
+            // Allow Enter key to search
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Highlight active type tab
+            document.querySelectorAll('.type-tab').forEach(tab => {
+                const tabType = tab.getAttribute('onclick').match(/'([^']*)'/)?.[1] || '';
+                if (tabType === currentType) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Load listings
+            loadListingsWithSearch();
+        });
+
+        // Perform search
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const params = new URLSearchParams(window.location.search);
+
+            if (query) {
+                params.set('search', query);
+            } else {
+                params.delete('search');
+            }
+
+            window.location.search = params.toString();
+        }
+
+        // Load listings with search support
+        async function loadListingsWithSearch() {
+            const container = document.getElementById('listingsGrid');
+            if (!container) return;
+
+            // Show loading
+            container.innerHTML = Array(8).fill(components.listingCardSkeleton()).join('');
+
+            try {
+                let listings = [];
+                let total = 0;
+
+                // For 'selling' type, use products API
+                if (currentType === 'selling') {
+                    const params = {
+                        per_page: 30
+                    };
+                    if (currentSearch) params.search = currentSearch;
+                    if (currentCategory) params.category_id = currentCategory;
+
+                    const response = await api.getProducts(params);
+                    const products = response.data?.products || response.data || [];
+
+                    listings = products.map(p => ({
+                        listing_id: p.product_id,
+                        listing_type: 'selling',
+                        title: p.product_name,
+                        description: p.description,
+                        main_image_url: p.image_url,
+                        category_name: p.category_name,
+                        city: p.business_name || 'Hingoli',
+                        price: p.price,
+                        discounted_price: p.discounted_price,
+                        condition: p.condition,
+                        isProduct: true
+                    }));
+                    total = listings.length;
+                } else {
+                    // For other types, use listings API
+                    const params = {
+                        per_page: 30,
+                        status: 'active'
+                    };
+                    if (currentType) params.type = currentType;
+                    if (currentSearch) params.search = currentSearch;
+                    if (currentCategory) params.category_id = currentCategory;
+
+                    const response = await api.getListings(params);
+                    listings = Array.isArray(response.data) ? response.data : response.data?.listings || [];
+                    total = response.pagination?.total || listings.length;
+                }
+
+                // Render results
+                if (listings.length > 0) {
+                    container.innerHTML = listings.map(listing => {
+                        if (listing.isProduct) {
+                            return components.productCard({
+                                product_id: listing.listing_id,
+                                product_name: listing.title,
+                                description: listing.description,
+                                image_url: listing.main_image_url,
+                                category_name: listing.category_name,
+                                business_name: listing.city,
+                                price: listing.price,
+                                discounted_price: listing.discounted_price,
+                                condition: listing.condition
+                            });
+                        }
+                        return components.listingCard(listing);
+                    }).join('');
+
+                    document.getElementById('listingsCount').textContent = `${total} listings found`;
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; grid-column: 1/-1;">
+                            <div style="font-size: 4rem; margin-bottom: 16px;">🔍</div>
+                            <h3 style="margin-bottom: 8px;">No results found</h3>
+                            <p style="color: var(--gray-500);">Try adjusting your search or browse all listings</p>
+                            <a href="listings.html" class="btn btn-primary" style="margin-top: 16px;">Browse All</a>
+                        </div>
+                    `;
+                    document.getElementById('listingsCount').textContent = '0 listings found';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; grid-column: 1/-1;">
+                        <div style="font-size: 4rem; margin-bottom: 16px;">❌</div>
+                        <h3>Error loading listings</h3>
+                        <p style="color: var(--gray-500);">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Clear search
+        function clearSearch() {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('search');
+            window.location.search = params.toString();
+        }
+    </script>
+</body>
+
+</html>

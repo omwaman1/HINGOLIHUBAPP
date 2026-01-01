@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Delivery scooter icon - white on transparent -->
+    <group
+        android:translateX="24"
+        android:translateY="24">
+        <!-- Scooter body -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M48,36c0,-2.21 -1.79,-4 -4,-4h-8v-4c0,-2.21 -1.79,-4 -4,-4h-8c-2.21,0 -4,1.79 -4,4v4h-8c-2.21,0 -4,1.79 -4,4v12c0,2.21 1.79,4 4,4h32c2.21,0 4,-1.79 4,-4V36z"/>
+        <!-- Front wheel -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M12,52m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"/>
+        <path
+            android:fillColor="#FF6B35"
+            android:pathData="M12,52m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"/>
+        <!-- Back wheel -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M44,52m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"/>
+        <path
+            android:fillColor="#FF6B35"
+            android:pathData="M44,52m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"/>
+        <!-- Handle -->
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:pathData="M20,28V20h4"/>
+        <!-- Package box on back -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M32,20h16v12h-16z"/>
+        <path
+            android:strokeColor="#FF6B35"
+            android:strokeWidth="2"
+            android:pathData="M36,20v12M44,20v12M32,26h16"/>
+    </group>
+</vector>

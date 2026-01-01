@@ -1,0 +1,25 @@
+# Firebase Functions .gitignore
+
+# Dependencies
+node_modules/
+
+# Build output
+lib/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

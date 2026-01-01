@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Listing - Hingoli Hub™</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .edit-listing-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        .page-header {
+            margin-bottom: var(--space-6);
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+
+        .listing-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-left: var(--space-3);
+        }
+
+        .type-services {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-business {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .type-jobs {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .type-selling {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-section {
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-6);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            margin-bottom: var(--space-1);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+
+        .current-image {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-3);
+        }
+
+        .current-image img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+        }
+
+        .image-upload {
+            border: 2px dashed var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .image-upload input {
+            display: none;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .submit-btn {
+            flex: 1;
+            padding: var(--space-4);
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            padding: var(--space-4);
+            background: white;
+            color: var(--error);
+            border: 1px solid var(--error);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .status-toggle {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .status-option {
+            flex: 1;
+            padding: var(--space-3);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .status-option.active {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+        }
+
+        .status-option.inactive {
+            border-color: var(--gray-300);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div id="authNav">
+                <a href="login.html" class="btn btn-white">👤 Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Edit Listing Form -->
+    <div class="edit-listing-page">
+        <div class="form-container">
+            <div class="page-header">
+                <a href="dashboard.html"
+                    style="color: var(--gray-500); text-decoration: none; font-size: var(--font-size-sm);">← Back to
+                    Dashboard</a>
+                <h1>✏️ Edit Listing <span class="listing-type-badge" id="typeBadge"></span></h1>
+            </div>
+
+            <form class="form-card" id="editForm" onsubmit="saveListing(event)">
+                <!-- Basic Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Basic Information</h3>
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="title" id="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" id="description"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="category_id" id="categorySelect">
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subcategory</label>
+                            <select name="subcategory_id" id="subcategorySelect">
+                                <option value="">Select subcategory</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Fields -->
+                <div class="form-section" id="productFields" style="display: none;">
+                    <h3 class="section-title">Product Details</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Price (₹)</label>
+                            <input type="number" name="price" id="price">
+                        </div>
+                        <div class="form-group">
+                            <label>Discounted Price (₹)</label>
+                            <input type="number" name="discounted_price" id="discounted_price">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Condition</label>
+                            <select name="condition" id="condition">
+                                <option value="new">New</option>
+                                <option value="old">Used</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Quantity</label>
+                            <input type="number" name="stock_qty" id="stock_qty" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-section" id="locationFields">
+                    <h3 class="section-title">Location</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" name="city" id="city">
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" name="state" id="state">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location / Address</label>
+                        <input type="text" name="location" id="location">
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="form-section">
+                    <h3 class="section-title">Image</h3>
+
+                    <div class="current-image" id="currentImage" style="display: none;">
+                        <img id="currentImageSrc" src="">
+                        <div>
+                            <p style="font-weight: 500;">Current Image</p>
+                            <p style="font-size: var(--font-size-xs); color: var(--gray-500);">Upload new to replace</p>
+                        </div>
+                    </div>
+
+                    <label class="image-upload">
+                        <input type="file" name="main_image" id="mainImage" accept="image/*">
+                        <div>
+                            <div style="font-size: 1.5rem;">📷</div>
+                            <p style="font-size: var(--font-size-sm);">Click to upload new image</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Status -->
+                <div class="form-section">
+                    <h3 class="section-title">Status</h3>
+
+                    <div class="status-toggle">
+                        <div class="status-option active" id="statusActive" onclick="setStatus('active')">
+                            🟢 Active
+                        </div>
+                        <div class="status-option" id="statusInactive" onclick="setStatus('inactive')">
+                            🔴 Inactive
+                        </div>
+                    </div>
+                    <input type="hidden" name="status" id="status" value="active">
+                </div>
+
+                <!-- Actions -->
+                <div class="btn-row">
+                    <button type="submit" class="submit-btn" id="submitBtn">Save Changes</button>
+                    <button type="button" class="delete-btn" onclick="deleteListing()">🗑️ Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let listingId = null;
+        let listingType = '';
+        let listing = null;
+        let categories = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            app.initAuth();
+
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            listingId = params.get('id');
+            listingType = params.get('type');
+
+            if (!listingId) {
+                alert('Listing not found');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            await loadCategories();
+            await loadListing();
+        });
+
+        async function loadCategories() {
+            try {
+                const response = await api.getCategories();
+                if (response.success) {
+                    categories = response.data || [];
+                }
+            } catch (error) {
+                console.error('Failed to load categories');
+            }
+        }
+
+        async function loadListing() {
+            try {
+                // For products, use products API; for others use listings API
+                let response;
+                if (listingType === 'selling') {
+                    response = await api.getProductById(listingId);
+                } else {
+                    response = await api.getListingById(listingId);
+                }
+
+                if (response.success && response.data) {
+                    listing = response.data;
+                    populateForm(listing);
+                } else {
+                    alert('Listing not found');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                alert('Error loading listing: ' + error.message);
+            }
+        }
+
+        function populateForm(data) {
+            // Type badge
+            const type = data.listing_type || listingType;
+            const badge = document.getElementById('typeBadge');
+            badge.textContent = type;
+            badge.className = `listing-type-badge type-${type}`;
+
+            // Show/hide fields based on type
+            if (type === 'selling') {
+                document.getElementById('productFields').style.display = 'block';
+                document.getElementById('locationFields').style.display = 'none';
+
+                // Product fields
+                document.getElementById('title').value = data.product_name || data.title || '';
+                document.getElementById('price').value = data.price || '';
+                document.getElementById('discounted_price').value = data.discounted_price || '';
+                document.getElementById('condition').value = data.condition || 'new';
+                document.getElementById('stock_qty').value = data.stock_qty || 1;
+            } else {
+                document.getElementById('productFields').style.display = 'none';
+                document.getElementById('locationFields').style.display = 'block';
+
+                document.getElementById('title').value = data.title || '';
+                document.getElementById('city').value = data.city || '';
+                document.getElementById('state').value = data.state || '';
+                document.getElementById('location').value = data.location || '';
+            }
+
+            // Common fields
+            document.getElementById('description').value = data.description || '';
+
+            // Category
+            updateCategoriesDropdown(type, data.category_id);
+
+            // Image
+            const imageUrl = data.main_image_url || data.image_url;
+            if (imageUrl) {
+                document.getElementById('currentImage').style.display = 'flex';
+                document.getElementById('currentImageSrc').src = imageUrl;
+            }
+
+            // Status
+            setStatus(data.status || 'active');
+        }
+
+        function updateCategoriesDropdown(type, selectedId) {
+            const select = document.getElementById('categorySelect');
+            const filteredCategories = categories.filter(c => c.listing_type === type);
+
+            select.innerHTML = '<option value="">Select category</option>' +
+                filteredCategories.map(c =>
+                    `<option value="${c.category_id}" ${c.category_id == selectedId ? 'selected' : ''}>${c.name}</option>`
+                ).join('');
+        }
+
+        function setStatus(status) {
+            document.getElementById('status').value = status;
+            document.getElementById('statusActive').classList.toggle('active', status === 'active');
+            document.getElementById('statusInactive').classList.toggle('active', status !== 'active');
+        }
+
+        async function saveListing(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value.trim());
+            formData.append('description', document.getElementById('description').value.trim());
+            formData.append('category_id', document.getElementById('categorySelect').value);
+            formData.append('status', document.getElementById('status').value);
+
+            if (listingType === 'selling') {
+                formData.append('price', document.getElementById('price').value || 0);
+                formData.append('discounted_price', document.getElementById('discounted_price').value || '');
+                formData.append('condition', document.getElementById('condition').value);
+                formData.append('stock_qty', document.getElementById('stock_qty').value || 1);
+            } else {
+                formData.append('city', document.getElementById('city').value.trim());
+                formData.append('state', document.getElementById('state').value.trim());
+                formData.append('location', document.getElementById('location').value.trim());
+            }
+
+            const imageFile = document.getElementById('mainImage').files[0];
+            if (imageFile) {
+                formData.append('main_image', imageFile);
+            }
+
+            try {
+                const response = await api.updateListing(listingId, formData);
+
+                if (response.success) {
+                    alert('Listing updated!');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert(response.message || 'Failed to update');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
+        }
+
+        async function deleteListing() {
+            if (!confirm('Are you sure you want to delete this listing? This cannot be undone.')) return;
+
+            try {
+                await api.deleteListing(listingId);
+                alert('Listing deleted');
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

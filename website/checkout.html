@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Hingoli Hub™</title>
+    <meta name="description" content="Complete your purchase on Hingoli Hub™.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Razorpay SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        .checkout-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .checkout-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        .checkout-header {
+            margin-bottom: var(--space-6);
+        }
+
+        .checkout-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: var(--space-6);
+        }
+
+        .checkout-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-4);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .section-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary-500);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: 700;
+        }
+
+        /* Address */
+        .address-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .address-card {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .address-card.selected {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+        }
+
+        .address-card h4 {
+            font-weight: 600;
+            margin-bottom: var(--space-1);
+        }
+
+        .address-card p {
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+        }
+
+        .add-address-form {
+            display: none;
+            margin-top: var(--space-4);
+        }
+
+        .add-address-form.show {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-3);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            margin-bottom: var(--space-1);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        /* Payment */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .payment-option {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .payment-option.selected {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+        }
+
+        .payment-option input {
+            display: none;
+        }
+
+        .payment-icon {
+            font-size: 1.5rem;
+        }
+
+        .payment-info h4 {
+            font-weight: 600;
+        }
+
+        .payment-info p {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        /* Delivery */
+        .delivery-check {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .delivery-check input {
+            flex: 1;
+            padding: var(--space-3);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+        }
+
+        .delivery-check button {
+            padding: var(--space-3) var(--space-4);
+            background: var(--primary-500);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+
+        .delivery-result {
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .delivery-result.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .delivery-result.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Order Summary Sidebar */
+        .order-summary {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 80px;
+        }
+
+        .summary-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .summary-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: var(--space-4);
+        }
+
+        .summary-item {
+            display: flex;
+            gap: var(--space-3);
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .summary-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+        }
+
+        .summary-item-info {
+            flex: 1;
+        }
+
+        .summary-item-title {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+        }
+
+        .summary-item-qty {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .summary-item-price {
+            font-weight: 600;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-2);
+            font-size: var(--font-size-sm);
+        }
+
+        .summary-row.total {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            border-top: 2px solid var(--gray-100);
+            padding-top: var(--space-3);
+            margin-top: var(--space-3);
+        }
+
+        .place-order-btn {
+            width: 100%;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 16px;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .place-order-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .place-order-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+                z-index: 100;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div id="authNav">
+                <a href="login.html" class="btn btn-white">👤 Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Checkout -->
+    <div class="checkout-page">
+        <div class="checkout-container">
+            <div class="checkout-header">
+                <h1>📦 Checkout</h1>
+            </div>
+
+            <div class="checkout-grid">
+                <div class="checkout-main">
+                    <!-- Delivery Address -->
+                    <div class="checkout-section">
+                        <h2 class="section-title">
+                            <span class="section-number">1</span>
+                            Delivery Address
+                        </h2>
+                        <div class="address-list" id="addressList">
+                            <p>Loading addresses...</p>
+                        </div>
+                        <button class="btn btn-outline mt-4" onclick="toggleAddressForm()" id="addAddressBtn">
+                            + Add New Address
+                        </button>
+
+                        <div class="add-address-form" id="addAddressForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name *</label>
+                                    <input type="text" id="addrName" placeholder="Full name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone *</label>
+                                    <input type="tel" id="addrPhone" placeholder="10-digit phone">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Address Line 1 *</label>
+                                <input type="text" id="addrLine1" placeholder="House no, Building, Street">
+                            </div>
+                            <div class="form-group">
+                                <label>Address Line 2</label>
+                                <input type="text" id="addrLine2" placeholder="Area, Landmark">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>City *</label>
+                                    <input type="text" id="addrCity" placeholder="City" value="Hingoli">
+                                </div>
+                                <div class="form-group">
+                                    <label>Pincode *</label>
+                                    <input type="text" id="addrPincode" placeholder="6-digit pincode" maxlength="6">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveAddress()">Save Address</button>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="checkout-section">
+                        <h2 class="section-title">
+                            <span class="section-number">2</span>
+                            Payment Method
+                        </h2>
+                        <div class="payment-methods">
+                            <label class="payment-option selected" onclick="selectPayment('razorpay')">
+                                <input type="radio" name="payment" value="razorpay" checked>
+                                <span class="payment-icon">💳</span>
+                                <div class="payment-info">
+                                    <h4>Pay Online</h4>
+                                    <p>Credit/Debit Card, UPI, Net Banking</p>
+                                </div>
+                            </label>
+                            <label class="payment-option" onclick="selectPayment('cod')">
+                                <input type="radio" name="payment" value="cod">
+                                <span class="payment-icon">💵</span>
+                                <div class="payment-info">
+                                    <h4>Cash on Delivery</h4>
+                                    <p>Pay when you receive the order</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <h2 class="summary-title">Order Summary</h2>
+                    <div class="summary-items" id="summaryItems">
+                        <!-- Loaded by JS -->
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="shipping">₹0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="totalAmount">₹0</span>
+                    </div>
+
+                    <!-- Terms & Policy Checkbox -->
+                    <div style="margin: 16px 0; padding: 12px; background: #f8fafc; border-radius: 10px;">
+                        <label
+                            style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 12px; color: #475569;">
+                            <input type="checkbox" id="termsCheckbox"
+                                style="margin-top: 2px; width: 16px; height: 16px; accent-color: #6366f1;">
+                            <span>
+                                I agree to the <a href="terms.html" target="_blank"
+                                    style="color: #6366f1; font-weight: 600;">Terms & Conditions</a>
+                                and <a href="refund-policy.html" target="_blank"
+                                    style="color: #6366f1; font-weight: 600;">Refund Policy</a> of Hingoli Hub™
+                            </span>
+                        </label>
+                    </div>
+
+                    <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()" disabled>
+                        Place Order
+                    </button>
+                    <p style="text-align: center; font-size: 11px; color: var(--gray-500); margin-top: 8px;">
+                        🔒 Secured by Razorpay
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Razorpay Key
+        const RAZORPAY_KEY = 'rzp_live_RrqH1rKPqejvOQ';
+
+        let cartData = null;
+        let selectedAddressId = null;
+        let selectedPayment = 'razorpay';
+        let deliveryFee = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            app.initAuth();
+
+            if (!app.isLoggedIn()) {
+                window.location.href = 'login.html?redirect=checkout.html';
+                return;
+            }
+
+            await loadCart();
+            await loadAddresses();
+        });
+
+        async function loadCart() {
+            try {
+                const response = await api.getCart();
+                if (response.success && response.data.items?.length > 0) {
+                    cartData = response.data;
+                    renderOrderSummary();
+                } else {
+                    window.location.href = 'cart.html';
+                }
+            } catch (error) {
+                alert('Failed to load cart');
+                window.location.href = 'cart.html';
+            }
+        }
+
+        function renderOrderSummary() {
+            const itemsHtml = cartData.items.map(item => `
+                <div class="summary-item">
+                    <img src="${item.main_image_url || 'https://via.placeholder.com/50'}" alt="${item.title}">
+                    <div class="summary-item-info">
+                        <div class="summary-item-title">${item.title}</div>
+                        <div class="summary-item-qty">Qty: ${item.quantity}</div>
+                    </div>
+                    <div class="summary-item-price">₹${components.formatPrice(item.subtotal)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('summaryItems').innerHTML = itemsHtml;
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const subtotal = cartData.total;
+            const total = subtotal + deliveryFee;
+
+            document.getElementById('subtotal').textContent = `₹${components.formatPrice(subtotal)}`;
+            document.getElementById('shipping').textContent = deliveryFee > 0 ? `₹${deliveryFee}` : 'Free';
+            document.getElementById('totalAmount').textContent = `₹${components.formatPrice(total)}`;
+        }
+
+        async function loadAddresses() {
+            try {
+                const response = await api.getAddresses();
+                if (response.success && response.data?.length > 0) {
+                    renderAddresses(response.data);
+                } else {
+                    document.getElementById('addressList').innerHTML = '<p class="text-muted">No saved addresses. Add one below.</p>';
+                    toggleAddressForm();
+                }
+            } catch (error) {
+                document.getElementById('addressList').innerHTML = '<p>Failed to load addresses</p>';
+            }
+        }
+
+        function renderAddresses(addresses) {
+            const html = addresses.map((addr, idx) => `
+                <div class="address-card ${idx === 0 ? 'selected' : ''}" onclick="selectAddress(${addr.address_id}, this)">
+                    <h4>${addr.name}</h4>
+                    <p>${addr.address_line1}${addr.address_line2 ? ', ' + addr.address_line2 : ''}</p>
+                    <p>${addr.city}, ${addr.state} - ${addr.pincode}</p>
+                    <p>📞 ${addr.phone}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('addressList').innerHTML = html;
+
+            // Select first address by default
+            if (addresses.length > 0) {
+                selectedAddressId = addresses[0].address_id;
+                checkDelivery(addresses[0].pincode);
+                updatePlaceOrderBtn();
+            }
+        }
+
+        function selectAddress(addressId, element) {
+            document.querySelectorAll('.address-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedAddressId = addressId;
+
+            // Get pincode from selected address and check delivery
+            const pinText = element.querySelector('p:nth-child(3)').textContent;
+            const pincode = pinText.match(/\d{6}/)?.[0];
+            if (pincode) checkDelivery(pincode);
+
+            updatePlaceOrderBtn();
+        }
+
+        async function checkDelivery(pincode) {
+            try {
+                const response = await api.checkDelivery(pincode);
+                if (response.success && response.data.serviceable) {
+                    deliveryFee = response.data.shipping_fee || 0;
+                    updateTotals();
+                }
+            } catch (error) {
+                deliveryFee = 50; // Default shipping
+                updateTotals();
+            }
+        }
+
+        function toggleAddressForm() {
+            const form = document.getElementById('addAddressForm');
+            form.classList.toggle('show');
+        }
+
+        async function saveAddress() {
+            const addressData = {
+                name: document.getElementById('addrName').value.trim(),
+                phone: document.getElementById('addrPhone').value.trim(),
+                address_line1: document.getElementById('addrLine1').value.trim(),
+                address_line2: document.getElementById('addrLine2').value.trim(),
+                city: document.getElementById('addrCity').value.trim(),
+                state: 'Maharashtra',
+                pincode: document.getElementById('addrPincode').value.trim()
+            };
+
+            if (!addressData.name || !addressData.phone || !addressData.address_line1 || !addressData.city || !addressData.pincode) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            try {
+                const response = await api.addAddress(addressData);
+                if (response.success) {
+                    toggleAddressForm();
+                    loadAddresses();
+                } else {
+                    alert(response.message || 'Failed to save address');
+                }
+            } catch (error) {
+                alert('Failed to save address: ' + error.message);
+            }
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`input[value="${method}"]`).parentElement.classList.add('selected');
+        }
+
+        function updatePlaceOrderBtn() {
+            const btn = document.getElementById('placeOrderBtn');
+            const termsChecked = document.getElementById('termsCheckbox')?.checked;
+            btn.disabled = !selectedAddressId || !termsChecked;
+        }
+
+        // Add listener for terms checkbox
+        document.getElementById('termsCheckbox')?.addEventListener('change', updatePlaceOrderBtn);
+
+        async function placeOrder() {
+            if (!selectedAddressId) {
+                alert('Please select a delivery address');
+                return;
+            }
+
+            if (!document.getElementById('termsCheckbox')?.checked) {
+                alert('Please agree to the Terms & Conditions and Refund Policy');
+                return;
+            }
+
+            const btn = document.getElementById('placeOrderBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                const response = await api.createOrder(selectedAddressId, selectedPayment);
+
+                if (response.success && response.data) {
+                    const orderData = response.data;
+
+                    if (selectedPayment === 'razorpay' && orderData.razorpay_order_id) {
+                        // Open Razorpay checkout
+                        openRazorpay(orderData);
+                    } else if (selectedPayment === 'cod') {
+                        // COD order placed successfully
+                        window.location.href = `order-success.html?order=${orderData.order_number}`;
+                    } else {
+                        alert('Order created but payment could not be initiated');
+                    }
+                } else {
+                    alert(response.message || 'Failed to create order');
+                }
+            } catch (error) {
+                alert('Failed to place order: ' + error.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Place Order';
+        }
+
+        function openRazorpay(orderData) {
+            const user = app.getUser();
+            const total = (cartData.total + deliveryFee) * 100; // Razorpay expects paise
+
+            const options = {
+                key: RAZORPAY_KEY,
+                amount: total,
+                currency: 'INR',
+                name: 'Hingoli Hub™',
+                description: `Order #${orderData.order_number}`,
+                order_id: orderData.razorpay_order_id,
+                prefill: {
+                    name: user?.username || '',
+                    contact: user?.phone || ''
+                },
+                theme: {
+                    color: '#6366f1'
+                },
+                handler: async function (response) {
+                    // Verify payment
+                    try {
+                        const verifyRes = await api.verifyPayment(
+                            orderData.order_id,
+                            response.razorpay_payment_id,
+                            response.razorpay_signature
+                        );
+
+                        if (verifyRes.success) {
+                            window.location.href = `order-success.html?order=${orderData.order_number}`;
+                        } else {
+                            alert('Payment verification failed');
+                        }
+                    } catch (error) {
+                        alert('Payment verification failed: ' + error.message);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        alert('Payment cancelled');
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        }
+    </script>
+</body>
+
+</html>

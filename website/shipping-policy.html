@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Policy - Hingoli Hub™</title>
+    <meta name="description"
+        content="Shipping and delivery policy for Hingoli Hub™ - Learn about delivery times, shipping charges, and coverage areas.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .page-hero {
+            background: var(--gradient-primary);
+            padding: 100px 20px 60px;
+            text-align: center;
+            color: white;
+        }
+
+        .page-hero h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .page-hero p {
+            font-size: 14px;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .content-card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-card p {
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .content-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .content-card li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .content-card li:last-child {
+            border-bottom: none;
+        }
+
+        .delivery-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .delivery-table th,
+        .delivery-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .delivery-table th {
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .delivery-table td {
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .delivery-table tr:hover {
+            background: #fafbfc;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+
+        .highlight-box h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .highlight-box p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-primary {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 24px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 3px solid #e0e7ff;
+        }
+
+        .timeline-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .timeline-item p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+
+            .delivery-table th,
+            .delivery-table td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="listings.html">Browse</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div class="hide-mobile" style="display: flex; align-items: center; gap: var(--space-3);">
+                <div id="authNav">
+                    <a href="login.html" class="btn btn-white">👤 Login</a>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <span style="font-weight: 700; font-size: 16px;">🏠 Hingoli Hub™</span>
+                <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+            </div>
+            <div class="mobile-menu-links">
+                <a href="index.html">🏠 Home</a>
+                <a href="about.html">ℹ️ About Us</a>
+                <a href="listings.html">📋 Browse Listings</a>
+                <a href="contact.html">📞 Contact Us</a>
+                <a href="login.html" class="btn btn-primary"
+                    style="text-align: center; color: white; margin-top: 12px;">Login / Register</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
+        document.getElementById('mobileMenu')?.addEventListener('click', function (e) {
+            if (e.target === this) toggleMobileMenu();
+        });
+    </script>
+
+    <!-- Page Hero -->
+    <section class="page-hero">
+        <h1>🚚 Shipping Policy</h1>
+        <p>Fast, reliable delivery across Hingoli district. Learn about our shipping options, charges, and delivery
+            timelines.</p>
+    </section>
+
+    <!-- Content -->
+    <div class="content-section">
+        <div class="content-card">
+            <h2>📦 Delivery Coverage</h2>
+            <p>Hingoli Hub™ provides delivery services across the entire Hingoli district. We are committed to bringing
+                your orders right to your doorstep.</p>
+
+            <div class="highlight-box">
+                <h3>🎉 100% Free Delivery!</h3>
+                <p>We offer completely FREE delivery on all orders across Hingoli district - no minimum order required!
+                </p>
+            </div>
+
+            <ul>
+                <li>📍 <strong>Hingoli City</strong> - Same day / Next day delivery</li>
+                <li>📍 <strong>Kalamnuri</strong> - 1-2 business days</li>
+                <li>📍 <strong>Sengaon</strong> - 1-2 business days</li>
+                <li>📍 <strong>Aundha Nagnath</strong> - 2-3 business days</li>
+                <li>📍 <strong>Basmath</strong> - 2-3 business days</li>
+                <li>📍 <strong>Rural Areas</strong> - 3-5 business days</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <h2>⏱️ Delivery Timelines</h2>
+            <p>We strive to deliver your orders as quickly as possible. Delivery times depend on your location and the
+                type of product ordered.</p>
+
+            <table class="delivery-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Standard Delivery</th>
+                        <th>Express Delivery</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Hingoli City</td>
+                        <td>1-2 days</td>
+                        <td><span class="badge badge-success">Same Day</span></td>
+                    </tr>
+                    <tr>
+                        <td>Taluka Headquarters</td>
+                        <td>2-3 days</td>
+                        <td>Next Day</td>
+                    </tr>
+                    <tr>
+                        <td>Villages (within 15km)</td>
+                        <td>3-4 days</td>
+                        <td>1-2 days</td>
+                    </tr>
+                    <tr>
+                        <td>Remote Areas</td>
+                        <td>4-5 days</td>
+                        <td><span class="badge badge-warning">Limited</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-card">
+            <h2>💰 Shipping Charges</h2>
+            <p>Great news! We believe in providing the best value to our customers.</p>
+
+            <div class="highlight-box">
+                <h3>🚚 Completely FREE Delivery!</h3>
+                <p>All orders are delivered absolutely FREE across Hingoli district. No minimum order value, no hidden
+                    charges!</p>
+            </div>
+
+            <table class="delivery-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Delivery Charges</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Hingoli City</td>
+                        <td><span class="badge badge-success">FREE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Taluka Headquarters</td>
+                        <td><span class="badge badge-success">FREE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Villages & Rural Areas</td>
+                        <td><span class="badge badge-success">FREE</span></td>
+                    </tr>
+                    <tr>
+                        <td>All of Hingoli District</td>
+                        <td><span class="badge badge-success">FREE</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 16px; font-size: 13px; color: #64748b;">
+                <strong>Note:</strong> Free delivery applies to all orders regardless of order value or product weight.
+            </p>
+        </div>
+
+        <div class="content-card">
+            <h2>📋 Order Processing</h2>
+            <p>Here's what happens after you place an order:</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Order Confirmation</h4>
+                    <p>You'll receive an SMS/notification confirming your order within minutes.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Order Processing</h4>
+                    <p>The seller prepares your order for dispatch (usually within 24 hours).</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Dispatched</h4>
+                    <p>Your order is picked up and on its way! You'll receive tracking updates.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Out for Delivery</h4>
+                    <p>Our delivery partner is on the way to your location.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Delivered</h4>
+                    <p>Your order is delivered! You can pay via COD or confirm prepaid delivery.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <h2>💳 Payment Options</h2>
+            <ul>
+                <li>💵 <strong>Cash on Delivery (COD)</strong> - Pay when you receive your order</li>
+                <li>📱 <strong>UPI Payments</strong> - Google Pay, PhonePe, Paytm, and more</li>
+                <li>💳 <strong>Card Payments</strong> - Debit and Credit cards accepted</li>
+                <li>🏦 <strong>Net Banking</strong> - All major banks supported</li>
+            </ul>
+            <p style="font-size: 13px; color: #64748b;">
+                <strong>Tip:</strong> Prepaid orders are processed faster and may be eligible for additional discounts!
+            </p>
+        </div>
+
+        <div class="content-card">
+            <h2>📞 Delivery Issues?</h2>
+            <p>If you face any issues with your delivery, we're here to help!</p>
+            <ul>
+                <li>📞 <strong>Call Us:</strong> +91 9595340263 (9 AM - 9 PM)</li>
+                <li>💬 <strong>WhatsApp:</strong> <a href="https://wa.me/919595340263" style="color: #6366f1;">+91
+                        9595340263</a></li>
+                <li>📧 <strong>Email:</strong> support@hellohingoli.com</li>
+            </ul>
+            <p>Common issues we help with:</p>
+            <ul>
+                <li>🔄 Delayed deliveries</li>
+                <li>📦 Wrong or damaged items</li>
+                <li>📍 Address change requests</li>
+                <li>🚫 Failed delivery attempts</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <h2>ℹ️ Important Notes</h2>
+            <ul>
+                <li>⚠️ Delivery timelines are estimates and may vary during festivals or adverse weather conditions.
+                </li>
+                <li>📱 Please ensure your phone is reachable for delivery coordination.</li>
+                <li>🏠 Provide complete address with landmarks for faster delivery.</li>
+                <li>📦 For fragile items, our team takes extra care during packaging and transit.</li>
+                <li>🔄 Unable to receive delivery? Reschedule via our app or call support.</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 32px;">
+            <a href="contact.html" class="btn btn-primary" style="padding: 16px 32px;">Contact Support →</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>🏠 Hingoli Hub™</h3>
+                <p>Your trusted local marketplace for Hingoli district.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="listings.html">Browse Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Policies</h4>
+                <ul>
+                    <li><a href="shipping-policy.html">Shipping Policy</a></li>
+                    <li><a href="listings.html?type=services">Services</a></li>
+                    <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                    <li><a href="listings.html?type=business">Businesses</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 Hingoli Hub™. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script>app.initAuth();</script>
+</body>
+
+</html>

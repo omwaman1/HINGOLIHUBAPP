@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Hingoli Hub™</title>
+    <meta name="description" content="View your shopping cart on Hingoli Hub™.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .cart-page {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .cart-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+
+        .cart-header {
+            margin-bottom: var(--space-6);
+        }
+
+        .cart-header h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .cart-header p {
+            color: var(--gray-500);
+            font-size: var(--font-size-sm);
+        }
+
+        .cart-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: var(--space-6);
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .cart-item {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            display: flex;
+            gap: var(--space-4);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            background: var(--gray-100);
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-title {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-1);
+        }
+
+        .cart-item-seller {
+            color: var(--gray-500);
+            font-size: var(--font-size-xs);
+            margin-bottom: var(--space-2);
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--primary-600);
+            font-size: var(--font-size-base);
+        }
+
+        .cart-item-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--space-2);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            padding: var(--space-1);
+        }
+
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: white;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .quantity-value {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--error);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+        }
+
+        .cart-summary {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+
+        .cart-summary h2 {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-3);
+            font-size: var(--font-size-sm);
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--gray-100);
+            padding-top: var(--space-3);
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 16px;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .checkout-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .checkout-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: var(--space-16);
+            background: white;
+            border-radius: var(--radius-xl);
+        }
+
+        .empty-cart-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .empty-cart h2 {
+            font-size: var(--font-size-xl);
+            color: var(--gray-700);
+            margin-bottom: var(--space-2);
+        }
+
+        .empty-cart p {
+            color: var(--gray-500);
+            margin-bottom: var(--space-6);
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: var(--space-16);
+            background: white;
+            border-radius: var(--radius-xl);
+        }
+
+        @media (max-width: 768px) {
+            .cart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-summary {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+                z-index: 100;
+            }
+
+            .cart-items {
+                padding-bottom: 200px;
+            }
+
+            .cart-item {
+                flex-direction: column;
+            }
+
+            .cart-item-image {
+                width: 100%;
+                height: 120px;
+            }
+
+            .cart-item-actions {
+                flex-direction: row;
+                justify-content: space-between;
+                margin-top: var(--space-3);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <div id="authNav">
+                <a href="login.html" class="btn btn-white">👤 Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Cart Page -->
+    <div class="cart-page">
+        <div class="cart-container">
+            <div class="cart-header">
+                <h1>🛒 Shopping Cart</h1>
+                <p id="cartCount">Loading...</p>
+            </div>
+
+            <div id="cartContent">
+                <!-- Loaded by JavaScript -->
+                <div class="empty-cart">
+                    <div class="empty-cart-icon">🛒</div>
+                    <h2>Loading cart...</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let cartData = null;
+
+        async function loadCart() {
+            // Check if logged in
+            if (!app.isLoggedIn()) {
+                document.getElementById('cartContent').innerHTML = `
+                    <div class="login-prompt">
+                        <div class="empty-cart-icon">🔐</div>
+                        <h2>Please Login</h2>
+                        <p>You need to login to view your cart</p>
+                        <a href="login.html" class="btn btn-outline">Login Now</a>
+                    </div>
+                `;
+                document.getElementById('cartCount').textContent = '';
+                return;
+            }
+
+            try {
+                const response = await api.getCart();
+
+                if (response.success) {
+                    cartData = response.data;
+                    renderCart(cartData);
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                document.getElementById('cartContent').innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">❌</div>
+                        <h2>Error loading cart</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-outline" onclick="loadCart()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCart(data) {
+            const items = data.items || [];
+            document.getElementById('cartCount').textContent = `${items.length} item${items.length !== 1 ? 's' : ''} in cart`;
+
+            if (items.length === 0) {
+                document.getElementById('cartContent').innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h2>Your cart is empty</h2>
+                        <p>Browse products and add them to your cart</p>
+                        <a href="listings.html?type=selling" class="btn btn-outline">Browse Products</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const itemsHtml = items.map(item => `
+                <div class="cart-item" data-id="${item.cart_item_id}">
+                    <img src="${item.main_image_url || 'https://via.placeholder.com/100'}" 
+                         alt="${item.title}" class="cart-item-image"
+                         onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-title">${item.title}</h3>
+                        <p class="cart-item-seller">Sold by: ${item.seller_name}</p>
+                        <p class="cart-item-price">₹${components.formatPrice(item.price)}</p>
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="quantity-control">
+                            <button class="quantity-btn" onclick="updateQuantity(${item.cart_item_id}, ${item.quantity - 1})">−</button>
+                            <span class="quantity-value">${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity(${item.cart_item_id}, ${item.quantity + 1})">+</button>
+                        </div>
+                        <button class="remove-btn" onclick="removeItem(${item.cart_item_id})">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('cartContent').innerHTML = `
+                <div class="cart-grid">
+                    <div class="cart-items">
+                        ${itemsHtml}
+                    </div>
+                    <div class="cart-summary">
+                        <h2>Order Summary</h2>
+                        <div class="summary-row">
+                            <span>Subtotal (${items.length} items)</span>
+                            <span>₹${components.formatPrice(data.total)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span>Calculated at checkout</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span>₹${components.formatPrice(data.total)}</span>
+                        </div>
+                        <button class="checkout-btn" onclick="proceedToCheckout()">
+                            Proceed to Checkout →
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function updateQuantity(cartItemId, newQuantity) {
+            if (newQuantity < 1) {
+                removeItem(cartItemId);
+                return;
+            }
+
+            try {
+                await api.updateCartItem(cartItemId, newQuantity);
+                loadCart(); // Reload cart
+            } catch (error) {
+                alert('Failed to update quantity: ' + error.message);
+            }
+        }
+
+        async function removeItem(cartItemId) {
+            if (!confirm('Remove this item from cart?')) return;
+
+            try {
+                await api.removeCartItem(cartItemId);
+                loadCart(); // Reload cart
+            } catch (error) {
+                alert('Failed to remove item: ' + error.message);
+            }
+        }
+
+        function proceedToCheckout() {
+            if (!cartData || cartData.items.length === 0) {
+                alert('Your cart is empty');
+                return;
+            }
+            window.location.href = 'checkout.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            app.initAuth();
+            app.initLiveChat();
+            loadCart();
+        });
+    </script>
+</body>
+
+</html>

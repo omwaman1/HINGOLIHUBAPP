@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hingoli Hub™ - Your Local Marketplace</title>
+    <meta name="description"
+        content="Hingoli Hub™ is your trusted local marketplace for Hingoli district. Find services, buy & sell products, discover local businesses, and explore job opportunities.">
+    <meta name="keywords" content="Hingoli, marketplace, local services, buy sell, jobs, businesses, Maharashtra">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Hingoli Hub™ - Your Local Marketplace">
+    <meta property="og:description"
+        content="Find services, buy & sell products, discover local businesses, and explore job opportunities in Hingoli.">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Hingoli Hub"
+                    style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">Hingoli Hub™</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html?type=services">Services</a></li>
+                <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                <li><a href="listings.html?type=business">Businesses</a></li>
+                <li><a href="listings.html?type=jobs">Jobs</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+
+            <!-- Cart & Auth - Hidden on mobile -->
+            <div class="hide-mobile" style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="cart.html" style="position: relative; text-decoration: none; font-size: 1.3rem;">🛒<span
+                        id="cartBadge"
+                        style="display:none; position: absolute; top: -8px; right: -8px; background: #ff6b35; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">0</span></a>
+                <div id="authNav">
+                    <a href="login.html" class="btn btn-white">👤 Login</a>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenu" class="mobile-menu">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <span style="font-weight: 700; font-size: 16px;">🏠 Hingoli Hub™</span>
+                <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+            </div>
+            <div class="mobile-menu-links">
+                <a href="index.html">🏠 Home</a>
+                <a href="listings.html?type=services">🔧 Services</a>
+                <a href="listings.html?type=selling">🛒 Buy & Sell</a>
+                <a href="listings.html?type=business">🏪 Businesses</a>
+                <a href="listings.html?type=jobs">💼 Jobs</a>
+                <a href="about.html">ℹ️ About Us</a>
+                <a href="contact.html">📞 Contact Us</a>
+                <a href="cart.html">🛒 Cart</a>
+                <a href="dashboard.html">👤 My Account</a>
+                <a href="login.html" class="btn btn-primary"
+                    style="text-align: center; color: white; margin-top: 12px;">Login / Register</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
+        // Close menu when clicking outside
+        document.getElementById('mobileMenu')?.addEventListener('click', function (e) {
+            if (e.target === this) toggleMobileMenu();
+        });
+    </script>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">🎉 #1 Local Marketplace in Hingoli</span>
+            <h1 class="hero-title">
+                Your Trusted<br>
+                <span>Local Marketplace</span>
+            </h1>
+            <p class="hero-description">
+                Discover services, buy & sell products, find local businesses, and explore job opportunities - all in
+                one place for Hingoli district.
+            </p>
+
+            <!-- Search Box -->
+            <form class="search-box" id="searchForm">
+                <input type="text" id="searchInput" placeholder="What are you looking for?">
+                <select id="categorySelect">
+                    <option value="">All Categories</option>
+                    <option value="services">Services</option>
+                    <option value="selling">Buy & Sell</option>
+                    <option value="business">Businesses</option>
+                    <option value="jobs">Jobs</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="section-header">
+            <p class="section-tag">Browse</p>
+            <h2 class="section-title">Explore Categories</h2>
+            <p class="section-description">Find what you need from our curated categories designed for Hingoli
+                district.</p>
+        </div>
+
+        <div class="category-grid">
+            <div class="category-card" onclick="app.goToListings('services')">
+                <div class="category-icon">🔧</div>
+                <h3 class="category-title">Services</h3>
+                <p class="category-count">Electricians, plumbers & more</p>
+            </div>
+
+            <div class="category-card" onclick="app.goToListings('selling')">
+                <div class="category-icon">🛒</div>
+                <h3 class="category-title">Buy & Sell</h3>
+                <p class="category-count">New & used products</p>
+            </div>
+
+            <div class="category-card" onclick="app.goToListings('business')">
+                <div class="category-icon">🏪</div>
+                <h3 class="category-title">Local Businesses</h3>
+                <p class="category-count">Shops, restaurants & more</p>
+            </div>
+
+            <div class="category-card" onclick="app.goToListings('jobs')">
+                <div class="category-icon">💼</div>
+                <h3 class="category-title">Jobs</h3>
+                <p class="category-count">Local job opportunities</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Listings Section -->
+    <section class="listings-section">
+        <div class="section-header">
+            <p class="section-tag">Featured</p>
+            <h2 class="section-title">Popular Listings</h2>
+            <p class="section-description">Top-rated and verified listings from trusted sellers and service providers.
+            </p>
+        </div>
+
+        <div class="listings-grid" id="featuredListings">
+            <!-- Listings will be loaded here by JavaScript -->
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="listings.html" class="btn btn-outline">View All Listings →</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="listings-section" style="background: white;">
+        <div class="section-header">
+            <p class="section-tag">Services</p>
+            <h2 class="section-title">Home & Professional Services</h2>
+            <p class="section-description">Find trusted service providers for all your needs.</p>
+        </div>
+
+        <div class="listings-grid" id="servicesListings">
+            <!-- Loaded by JavaScript -->
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="listings.html?type=services" class="btn btn-outline">View All Services →</a>
+        </div>
+    </section>
+
+    <!-- Buy & Sell Section -->
+    <section class="listings-section">
+        <div class="section-header">
+            <p class="section-tag">Marketplace</p>
+            <h2 class="section-title">Buy & Sell Products</h2>
+            <p class="section-description">Great deals on new and pre-owned items from local sellers.</p>
+        </div>
+
+        <div class="listings-grid" id="sellingListings">
+            <!-- Loaded by JavaScript -->
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="listings.html?type=selling" class="btn btn-outline">View All Products →</a>
+        </div>
+    </section>
+
+    <!-- Local Businesses Section -->
+    <section class="listings-section" style="background: white;">
+        <div class="section-header">
+            <p class="section-tag">Directory</p>
+            <h2 class="section-title">Local Businesses</h2>
+            <p class="section-description">Discover restaurants, shops, clinics and more in Hingoli.</p>
+        </div>
+
+        <div class="listings-grid" id="businessListings">
+            <!-- Loaded by JavaScript -->
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="listings.html?type=business" class="btn btn-outline">View All Businesses →</a>
+        </div>
+    </section>
+
+    <!-- Jobs Section -->
+    <section class="listings-section">
+        <div class="section-header">
+            <p class="section-tag">Careers</p>
+            <h2 class="section-title">Job Opportunities</h2>
+            <p class="section-description">Find your next job opportunity in Hingoli district.</p>
+        </div>
+
+        <div class="listings-grid" id="jobsListings">
+            <!-- Loaded by JavaScript -->
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="listings.html?type=jobs" class="btn btn-outline">View All Jobs →</a>
+        </div>
+    </section>
+
+    <!-- Download App CTA -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Get the Hingoli Hub™ App</h2>
+            <p>Download our app for the best experience. Post listings, chat with sellers, and get instant
+                notifications.</p>
+
+            <div class="cta-buttons">
+                <a href="https://play.google.com/store/apps/details?id=com.hingoli.hub" class="store-btn"
+                    target="_blank">
+                    <span class="store-icon">▶️</span>
+                    <div class="store-text">
+                        <small>Get it on</small>
+                        <strong>Google Play</strong>
+                    </div>
+                </a>
+
+                <a href="https://play.googleapis.com/download/playconsole/AOTCm0Q3uRpq3beSflyBNzPeTXh26cHDoJcJDUNrnFOM2lGeEnHMF_wU9LHaHLttJG-IOP5cpo5t6sJNO1KWw6dSPYcZU4pV16eUSAEj-QfHhJ6me_m_eXXDM8f5IaoLAhWxNMknJEBa-ZTtK18yc5K6l1tN8km0xepq3E2NR2nPziifQQemK7TEG0iTPrEs"
+                    class="store-btn" target="_blank">
+                    <span class="store-icon">📱</span>
+                    <div class="store-text">
+                        <small>Download</small>
+                        <strong>Android APK</strong>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>🏠 Hingoli Hub™</h3>
+                <p>Your trusted local marketplace connecting the Hingoli community with services, products, businesses,
+                    and opportunities.</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Browse</h4>
+                <ul>
+                    <li><a href="listings.html?type=services">Services</a></li>
+                    <li><a href="listings.html?type=selling">Buy & Sell</a></li>
+                    <li><a href="listings.html?type=business">Businesses</a></li>
+                    <li><a href="listings.html?type=jobs">Jobs</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/api/privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="/api/terms-of-service.html">Terms of Service</a></li>
+                    <li><a href="/api/refund-policy.html">Refund Policy</a></li>
+                    <li><a href="shipping-policy.html">Shipping Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:support@hellohingoli.com">support@hellohingoli.com</a></li>
+                    <li><a href="tel:+919595340263">+91 9595340263</a></li>
+                    <li>Hingoli, Maharashtra</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2024 Hingoli Hub™. All rights reserved.</p>
+            <p>Made with ❤️ in Hingoli</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
