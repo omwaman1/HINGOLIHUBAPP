@@ -33,7 +33,8 @@ if ($reelId && is_numeric($reelId)) {
     $error = "Invalid reel ID";
 }
 
-$playStoreUrl = "https://play.google.com/store/apps/details?id=com.hingoli.hub";
+$playStoreUrl = "market://details?id=com.hingoli.hub";
+$playStoreWeb = "https://play.google.com/store/apps/details?id=com.hingoli.hub";
 $deepLink = "hingoliHub://reel/" . ($reelId ?? '');
 
 // Output HTML
@@ -113,19 +114,65 @@ header('Content-Type: text/html; charset=utf-8');
     
     <a href="<?php echo $deepLink; ?>" class="btn btn-primary" id="openApp">📱 Open in Hingoli Hub</a>
     <br>
-    <a href="<?php echo $playStoreUrl; ?>" class="btn btn-secondary">⬇️ Download App</a>
+    <a href="<?php echo $playStoreUrl; ?>" class="btn btn-secondary" id="downloadApp">⬇️ Download App</a>
     <p class="footer">© 2024 Hingoli Hub. All rights reserved.</p>
 </div>
 <script>
+    var deepLink = "<?php echo $deepLink; ?>";
+    var playStore = "<?php echo $playStoreUrl; ?>";
+    var playStoreWeb = "<?php echo $playStoreWeb; ?>";
+    
+    // Try to open app automatically, fallback to Play Store app
+    (function() {
+        var clicked = false;
+        
+        // Try deep link via hidden iframe (works better on mobile)
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = deepLink;
+        document.body.appendChild(iframe);
+        
+        // Also try direct location change
+        window.location.href = deepLink;
+        
+        // After 1 second, if still on page, go to Play Store app
+        setTimeout(function() {
+            if (!clicked && document.hidden !== true) {
+                // App didn't open, try Play Store app first
+                window.location.href = playStore;
+                // If that fails too, fallback to web after another second
+                setTimeout(function() {
+                    if (document.hidden !== true) {
+                        window.location.href = playStoreWeb;
+                    }
+                }, 800);
+            }
+        }, 1000);
+        
+        // If page becomes hidden (app opened), don't redirect
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clicked = true;
+            }
+        });
+    })();
+    
+    // Download button - try market first, then web
+    document.getElementById("downloadApp").addEventListener("click", function(e) {
+        e.preventDefault();
+        window.location.href = playStore;
+        setTimeout(function() {
+            window.location.href = playStoreWeb;
+        }, 800);
+    });
+    
+    // Open app button
     document.getElementById("openApp").addEventListener("click", function(e) {
         e.preventDefault();
-        var deepLink = this.href;
-        var playStore = "<?php echo $playStoreUrl; ?>";
-        var start = Date.now();
-        var timeout = setTimeout(function() {
-            if (Date.now() - start < 2000) { window.location.href = playStore; }
-        }, 1500);
         window.location.href = deepLink;
+        setTimeout(function() {
+            window.location.href = playStore;
+        }, 1000);
     });
 </script>
 </body>
