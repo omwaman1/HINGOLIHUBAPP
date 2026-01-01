@@ -34,21 +34,30 @@ class ReelsViewModel @Inject constructor(
     fun loadReels() {
         viewModelScope.launch {
             _uiState.value = ReelsUiState(isLoading = true)
+            android.util.Log.d("ReelsVM", "Loading reels...")
             
             try {
                 val response = repository.getReels()
+                android.util.Log.d("ReelsVM", "Response: success=${response.success}, message=${response.message}")
+                android.util.Log.d("ReelsVM", "Data: ${response.data?.reels?.size ?: 0} reels")
+                
                 if (response.success && response.data != null) {
                     _uiState.value = ReelsUiState(
                         isLoading = false,
                         reels = response.data.reels
                     )
+                    android.util.Log.d("ReelsVM", "Loaded ${response.data.reels.size} reels successfully")
                 } else {
+                    val errorMsg = response.message ?: "Failed to load reels"
+                    android.util.Log.e("ReelsVM", "Load failed: $errorMsg")
                     _uiState.value = ReelsUiState(
                         isLoading = false,
-                        error = response.message ?: "Failed to load reels"
+                        error = errorMsg
                     )
                 }
             } catch (e: Exception) {
+                android.util.Log.e("ReelsVM", "Exception loading reels: ${e.javaClass.simpleName} - ${e.message}")
+                e.printStackTrace()
                 _uiState.value = ReelsUiState(
                     isLoading = false,
                     error = e.message ?: "Network error"
