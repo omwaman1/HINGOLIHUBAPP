@@ -339,7 +339,7 @@ fun ReelVideoItem(
                 .align(Alignment.BottomEnd)
                 .padding(end = 12.dp, bottom = 60.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Like button with count
             ReelActionButton(
@@ -435,10 +435,7 @@ fun ReelActionButton(
         )
     ) {
         Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.3f)),
+            modifier = Modifier.size(48.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
