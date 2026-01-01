@@ -78,6 +78,18 @@ function validateJWT(string $token): ?array {
 }
 
 /**
+ * Decode JWT token (alias for validateJWT that throws on error)
+ * Used by getReels and other optional auth endpoints
+ */
+function decodeJWT(string $token): array {
+    $result = validateJWT($token);
+    if ($result === null) {
+        throw new Exception('Invalid or expired token');
+    }
+    return $result;
+}
+
+/**
  * Get user from Authorization header
  */
 function getAuthUser(): ?array {
