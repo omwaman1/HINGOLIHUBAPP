@@ -53,6 +53,7 @@ import com.hingoli.hub.data.model.Reel
 import com.hingoli.hub.data.settings.SettingsManager
 import com.hingoli.hub.ui.theme.*
 import kotlinx.coroutines.delay
+import android.widget.Toast
 
 @Composable
 fun ReelsScreen(
@@ -64,6 +65,14 @@ fun ReelsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var isMuted by remember { mutableStateOf(false) }
     val view = LocalView.current
+    val context = LocalContext.current
+    
+    // Observe toast events and show Toast
+    LaunchedEffect(Unit) {
+        viewModel.toastEvent.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
     
     // Set status bar icons to white (light icons on dark background) for Reels
     DisposableEffect(Unit) {

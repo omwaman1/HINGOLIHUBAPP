@@ -1,13 +1,17 @@
 package com.hingoli.hub.ui.reels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hingoli.hub.data.model.Reel
 import com.hingoli.hub.data.model.ReelActionRequest
 import com.hingoli.hub.data.repository.ListingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +30,10 @@ class ReelsViewModel @Inject constructor(
     
     private val _uiState = MutableStateFlow(ReelsUiState())
     val uiState: StateFlow<ReelsUiState> = _uiState.asStateFlow()
+    
+    // Toast events for like feedback
+    private val _toastEvent = MutableSharedFlow<String>()
+    val toastEvent: SharedFlow<String> = _toastEvent.asSharedFlow()
     
     init {
         loadReels()
@@ -93,22 +101,37 @@ class ReelsViewModel @Inject constructor(
                             }
                         )
                     }
+                    // Show success toast
+                    val message = if (response.data.isLiked) "Liked!" else "Unliked"
+                    _toastEvent.emit(message)
+                    Log.d("ReelsVM", "Like success: reelId=$reelId, isLiked=${response.data.isLiked}")
+                } else {
+                    // Revert on API failure
+                    revertLike(reelId)
+                    Log.e("ReelsVM", "Like API failed: reelId=$reelId, message=${response.data}")
+                    _toastEvent.emit("Failed to like")
                 }
             } catch (e: Exception) {
                 // Revert on error
-                _uiState.update { state ->
-                    state.copy(
-                        reels = state.reels.map { reel ->
-                            if (reel.reelId == reelId) {
-                                reel.copy(
-                                    isLiked = !reel.isLiked,
-                                    likesCount = if (reel.isLiked) reel.likesCount - 1 else reel.likesCount + 1
-                                )
-                            } else reel
-                        }
-                    )
-                }
+                revertLike(reelId)
+                Log.e("ReelsVM", "Like exception: reelId=$reelId, error=${e.message}")
+                _toastEvent.emit("Error: ${e.message}")
             }
+        }
+    }
+    
+    private fun revertLike(reelId: Int) {
+        _uiState.update { state ->
+            state.copy(
+                reels = state.reels.map { reel ->
+                    if (reel.reelId == reelId) {
+                        reel.copy(
+                            isLiked = !reel.isLiked,
+                            likesCount = if (reel.isLiked) reel.likesCount - 1 else reel.likesCount + 1
+                        )
+                    } else reel
+                }
+            )
         }
     }
     
