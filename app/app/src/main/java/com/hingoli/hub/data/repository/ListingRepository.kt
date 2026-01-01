@@ -154,17 +154,25 @@ class ListingRepository @Inject constructor(
     
     suspend fun getReels(page: Int = 1): ReelsResponse {
         return try {
+            android.util.Log.d("ReelsRepo", "Calling getReels API...")
             val response = apiService.getReels(page = page)
+            android.util.Log.d("ReelsRepo", "HTTP Code: ${response.code()}")
+            android.util.Log.d("ReelsRepo", "isSuccessful: ${response.isSuccessful}")
+            
             if (response.isSuccessful && response.body() != null) {
+                android.util.Log.d("ReelsRepo", "Success! Body: ${response.body()}")
                 response.body()!!
             } else {
+                val errorBody = response.errorBody()?.string()
+                android.util.Log.e("ReelsRepo", "Error! HTTP ${response.code()}, ErrorBody: $errorBody")
                 ReelsResponse(
                     success = false,
-                    message = response.body()?.message ?: "Failed to load reels",
+                    message = "HTTP ${response.code()}: ${errorBody ?: "Unknown error"}",
                     data = null
                 )
             }
         } catch (e: Exception) {
+            android.util.Log.e("ReelsRepo", "Exception: ${e.javaClass.simpleName} - ${e.message}")
             ReelsResponse(
                 success = false,
                 message = e.message ?: "Network error",
