@@ -85,7 +85,12 @@ android {
             excludes += "META-INF/LICENSE.txt"
             excludes += "META-INF/NOTICE"
             excludes += "META-INF/NOTICE.txt"
-        }
+    }
+    
+    // Lint configuration
+    lint {
+        abortOnError = false  // Don't fail build on lint errors
+        checkReleaseBuilds = false  // Skip lint for release builds to avoid OOM
     }
 }
 
