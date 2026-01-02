@@ -24,8 +24,8 @@ android {
         applicationId = "com.hingoli.hub"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.0.5"
+        versionCode = 6
+        versionName = "1.0.6"
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -42,13 +42,13 @@ android {
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv5/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv6/\"")
         }
         release {
             isMinifyEnabled = true      // Enable code shrinking
             isShrinkResources = true    // Enable resource shrinking
             signingConfig = signingConfigs.getByName("release")
-            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv5/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://hellohingoli.com/apiv6/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

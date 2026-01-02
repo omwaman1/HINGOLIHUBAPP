@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Hingoli Hub - आमच्याबद्दल</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 24px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #1a73e8;
+            font-size: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 20px 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .feature-item .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .feature-item h4 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .feature-item p {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid #1a73e8;
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin: 16px 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: #1565c0;
+            font-weight: 500;
+        }
+
+        .list-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item .icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .list-item .content h4 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .list-item .content p {
+            font-size: 13px;
+            color: #666;
+            margin: 0;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .contact-item .icon {
+            font-size: 20px;
+        }
+
+        .contact-item a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .version-info {
+            text-align: center;
+            padding: 30px;
+            color: white;
+        }
+
+        .version-info p {
+            margin: 5px 0;
+            opacity: 0.8;
+        }
+
+        .marathi {
+            font-size: 14px;
+            color: #777;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🏪</div>
+            <h1>Hingoli Hub</h1>
+            <p>हिंगोलीचे स्थानिक मार्केटप्लेस</p>
+            <p style="margin-top: 8px; font-size: 14px;">Your Local Marketplace</p>
+        </div>
+
+        <!-- About Section -->
+        <div class="card">
+            <h2>📱 About Hingoli Hub / आमच्याबद्दल</h2>
+            <p>
+                Hingoli Hub is a local marketplace app designed specifically for the people of Hingoli district,
+                Maharashtra.
+                Our mission is to connect local businesses, service providers, job seekers, and buyers on a single
+                platform.
+            </p>
+            <p class="marathi">
+                हिंगोली हब हे हिंगोली जिल्ह्यातील लोकांसाठी विशेष तयार केलेले स्थानिक मार्केटप्लेस अॅप आहे.
+                स्थानिक व्यवसाय, सेवा प्रदाते, नोकरी शोधणारे आणि खरेदीदार यांना एका प्लॅटफॉर्मवर जोडणे हे आमचे ध्येय
+                आहे.
+            </p>
+            <div class="highlight-box">
+                <p>🎯 100% Free to Use | वापरण्यास मोफत</p>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="card">
+            <h2>✨ App Features / वैशिष्ट्ये</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="icon">🛠️</div>
+                    <h4>Services</h4>
+                    <p>सेवा शोधा</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🏢</div>
+                    <h4>Businesses</h4>
+                    <p>व्यवसाय पहा</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">💼</div>
+                    <h4>Jobs</h4>
+                    <p>नोकऱ्या शोधा</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🛒</div>
+                    <h4>Shop</h4>
+                    <p>खरेदी करा</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📦</div>
+                    <h4>Buy & Sell</h4>
+                    <p>विक्री करा</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">💬</div>
+                    <h4>Chat</h4>
+                    <p>संपर्क करा</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use Section -->
+        <div class="card">
+            <h2>📖 How to Use / वापर कसे करावे</h2>
+            <div class="list-item">
+                <div class="icon">1️⃣</div>
+                <div class="content">
+                    <h4>Register with Phone</h4>
+                    <p>फोन नंबरने नोंदणी करा - OTP द्वारे व्हेरिफाय करा</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">2️⃣</div>
+                <div class="content">
+                    <h4>Browse Listings</h4>
+                    <p>सेवा, व्यवसाय, नोकऱ्या आणि उत्पादने ब्राउज करा</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">3️⃣</div>
+                <div class="content">
+                    <h4>Contact Sellers</h4>
+                    <p>विक्रेत्यांशी चॅटद्वारे किंवा कॉलद्वारे संपर्क साधा</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">4️⃣</div>
+                <div class="content">
+                    <h4>Post Your Listings</h4>
+                    <p>तुमची सेवा, व्यवसाय किंवा उत्पादन मोफत पोस्ट करा</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div class="card">
+            <h2>📂 Categories / श्रेण्या</h2>
+            <p><strong>Services:</strong> Plumber, Electrician, Carpenter, Photography, Catering, Tutoring, AC Repair,
+                and more...</p>
+            <p><strong>Businesses:</strong> Shops, Hotels, Hospitals, Schools, Restaurants, Showrooms...</p>
+            <p><strong>Jobs:</strong> Full-time, Part-time, Freelance opportunities in Hingoli</p>
+            <p><strong>Shop:</strong> New products from local businesses with online ordering</p>
+            <p><strong>Buy & Sell:</strong> Used items, Second-hand goods at great prices</p>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="card">
+            <h2>🌟 Why Choose Us / आम्हाला का निवडावे</h2>
+            <div class="list-item">
+                <div class="icon">✅</div>
+                <div class="content">
+                    <h4>100% Free</h4>
+                    <p>No charges for listing or using the app</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">🏠</div>
+                <div class="content">
+                    <h4>Local Focus</h4>
+                    <p>Made specifically for Hingoli district</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">🔒</div>
+                <div class="content">
+                    <h4>Safe & Secure</h4>
+                    <p>Verified phone numbers for all users</p>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="icon">🌐</div>
+                <div class="content">
+                    <h4>Marathi Support</h4>
+                    <p>App available in Marathi and English</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="card">
+            <h2>📞 Contact Us / संपर्क</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="icon">📧</div>
+                    <span>Email: <a href="mailto:support@hellohingoli.com">support@hellohingoli.com</a></span>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">🌐</div>
+                    <span>Website: <a href="https://hellohingoli.com">hellohingoli.com</a></span>
+                </div>
+                <div class="contact-item">
+                    <div class="icon">📍</div>
+                    <span>Location: Hingoli, Maharashtra, India</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version Info -->
+        <div class="version-info">
+            <p><strong>Version 1.0.0</strong></p>
+            <p>© 2025 Hingoli Hub. All rights reserved.</p>
+            <p style="margin-top: 16px;">Made with ❤️ in Hingoli</p>
+        </div>
+    </div>
+</body>
+
+</html>
